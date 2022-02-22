@@ -1,0 +1,11 @@
+[package]
+name = "vcf2parquet-bin"
+version = "0.1.0"
+
+
+[dependencies]
+# logging management
+simplelog = { version = "0.11" }
+
+# cli management
+clap      = { version = "3", features = ["derive"] }

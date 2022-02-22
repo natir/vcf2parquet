@@ -1,0 +1,32 @@
+[package]
+name = "vcf2parquet"
+description = "Convert a vcf in parquet"
+version = "0.1.0"
+authors = ["Pierre Marijon <pierre@marijon.fr>"]
+edition = "2021"
+rust-version = "1.56"
+
+readme = "Readme.md"
+license-file = "LICENSE"
+
+keywords = ["bioinformatics", "parquet"]
+
+
+[dependencies]
+vcf2parquet-lib = { path = "vcf2parquet-lib", version = "0.1.0", optional = true }
+vcf2parquet-bin = { path = "vcf2parquet-bin", version = "0.1.0", optional = true }
+
+
+[workspace]
+members = ["vcf2parquet-lib", "vcf2parquet-bin"]
+
+
+[features]
+default = ["lib"]
+
+lib = ["vcf2parquet-lib"]
+bin = ["vcf2parquet-bin"]
+
+
+[package.metadata.docs.rs]
+all-features = true
