@@ -4,6 +4,8 @@ version = "0.1.0"
 
 
 [dependencies]
+vcf2parquet-lib = { path = "../vcf2parquet-lib", version = "0.1.0" }
+
 # logging management
 simplelog = { version = "0.11" }
 
