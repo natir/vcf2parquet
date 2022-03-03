@@ -24,7 +24,7 @@ fn main() -> error::Result<()> {
 
     let mut output = std::fs::File::create(params.output()).map_err(error::mapping)?;
 
-    lib::noodles2arrow(&mut reader, output).map_err(error::mapping)?;
+    lib::noodles2arrow(&mut reader, &mut output, params.batch_size()).map_err(error::mapping)?;
 
     Ok(())
 }

@@ -9,13 +9,15 @@
 /* mod section */
 pub mod block;
 pub mod error;
+pub mod internal;
 pub mod schema;
 
-pub fn noodles2arrow<R, W>(input: &mut R, output: W) -> error::Result<()>
+pub fn noodles2arrow<R, W>(input: &mut R, output: &mut W, batch_size: usize) -> error::Result<()>
 where
     R: std::io::BufRead,
-    W: 'static + parquet::file::writer::ParquetWriter,
+    W: std::io::Write,
 {
+    // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
     let vcf_header = reader
@@ -23,43 +25,43 @@ where
         .map_err(error::mapping)?
         .parse()
         .map_err(error::mapping)?;
-
-    let schema = std::sync::Arc::new(schema::from_header(&vcf_header)?);
     let mut records = reader.records(&vcf_header);
 
-    let properties = parquet::file::properties::WriterProperties::builder()
-        .set_compression(parquet::basic::Compression::SNAPPY)
-        .build();
+    // Parquet section
+    let schema = schema::from_header(&vcf_header)?;
 
-    let mut writer = parquet::arrow::arrow_writer::ArrowWriter::try_new(
-        output,
-        std::sync::Arc::clone(&schema),
-        Some(properties),
-    )
-    .map_err(error::mapping)?;
+    std::sync::Arc::new(arrow2::datatypes::Schema {
+        fields: Vec::new(),
+        metadata: std::collections::BTreeMap::new(),
+    });
 
+    let options = parquet2::write::WriteOptions {
+        write_statistics: true,
+        compression: parquet2::compression::Compression::Snappy,
+        version: parquet2::write::Version::V2,
+    };
+
+    let mut writer = parquet2::write::FileWriter::new(output, schema.clone(), options, None);
+
+    // Read and write section
     let mut record_in_batch = 0;
-    let mut block: block::Block = block::Block::new();
+    let mut block: block::Block = block::Block::new(schema.clone());
 
     loop {
-        if record_in_batch == 10_000 {
-            let batch: arrow::record_batch::RecordBatch = block.try_into()?;
-            block = block::Block::new();
-            writer.write(&batch).map_err(error::mapping)?;
+        if record_in_batch == batch_size {
             record_in_batch = 0;
         }
 
         match records.next() {
             Some(result) => block.add_record(&(result?)),
             None => {
-                let batch: arrow::record_batch::RecordBatch = block.try_into()?;
-                writer.write(&batch).map_err(error::mapping)?;
+                let batch: arrow2::chunk::Chunk<std::sync::Arc<dyn arrow2::array::Array>> =
+                    block.try_into()?;
+                //                writer.write(&batch, batch_size).map_err(error::mapping)?;
                 break;
             }
         }
     }
-
-    writer.close().map_err(error::mapping)?;
 
     Ok(())
 }

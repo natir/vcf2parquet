@@ -7,8 +7,8 @@ edition = "2021"
 # input output management
 niffler     = { version = "2" }
 noodles     = { version = "0.18", features = ["vcf"] }
-arrow       = { version = "9" }
-parquet     = { version = "9" }
+arrow2      = { version = "0.9", features = ["io_parquet", "io_parquet_compression"] }
+parquet2    = { version = "0.10" }
 
 # logging and error management
 log         = { version = "0.4" }

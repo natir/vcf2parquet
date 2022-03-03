@@ -15,6 +15,10 @@ pub struct Command {
     /// Output path
     #[clap(short = 'o', long = "output")]
     output: std::path::PathBuf,
+
+    /// Batch size (default 10,000)
+    #[clap(short = 'b', long = "batch-size")]
+    batch_size: Option<usize>,
 }
 
 impl Command {
@@ -24,5 +28,9 @@ impl Command {
 
     pub fn output(&self) -> &std::path::PathBuf {
         &self.output
+    }
+
+    pub fn batch_size(&self) -> usize {
+        self.batch_size.unwrap_or(10_000)
     }
 }

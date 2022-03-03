@@ -14,12 +14,12 @@ pub enum Error {
 
     /// Arrow error
     #[error(transparent)]
-    ArrowError { error: arrow::error::ArrowError },
+    ArrowError { error: arrow2::error::ArrowError },
 
     /// Parquet error
     #[error(transparent)]
     ParquetError {
-        error: parquet::errors::ParquetError,
+        error: parquet2::error::ParquetError,
     },
 
     /// Io error
@@ -46,14 +46,14 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<arrow::error::ArrowError> for Error {
-    fn from(error: arrow::error::ArrowError) -> Self {
+impl From<arrow2::error::ArrowError> for Error {
+    fn from(error: arrow2::error::ArrowError) -> Self {
         Error::ArrowError { error }
     }
 }
 
-impl From<parquet::errors::ParquetError> for Error {
-    fn from(error: parquet::errors::ParquetError) -> Self {
+impl From<parquet2::error::ParquetError> for Error {
+    fn from(error: parquet2::error::ParquetError) -> Self {
         Error::ParquetError { error }
     }
 }
