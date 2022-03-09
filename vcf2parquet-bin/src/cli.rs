@@ -31,6 +31,6 @@ impl Command {
     }
 
     pub fn batch_size(&self) -> usize {
-        self.batch_size.unwrap_or(10_000)
+        self.batch_size.unwrap_or(100)
     }
 }
