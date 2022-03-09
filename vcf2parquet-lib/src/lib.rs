@@ -25,7 +25,11 @@ where
         .parse()
         .map_err(error::mapping)?;
 
-    let chunk_iterator = record2chunk::Record2Chunk::new(reader.records(&vcf_header), batch_size);
+    let chunk_iterator = record2chunk::Record2Chunk::new(
+        reader.records(&vcf_header),
+        batch_size,
+        vcf_header.clone(),
+    );
 
     // Parquet section
     let schema = schema::from_header(&vcf_header)?;
