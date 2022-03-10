@@ -13,11 +13,11 @@ pub fn from_header(header: &noodles::vcf::Header) -> error::Result<arrow2::datat
     // required column
     columns.extend(required_column());
 
-    // filter value
-    columns.extend(filter());
-
     // info field
-    //columns.extend(info(header));
+    columns.extend(info(header));
+
+    // genotype field
+    //columns.extend(genotype(header));
 
     Ok(arrow2::datatypes::Schema::from(columns))
 }
@@ -46,19 +46,16 @@ fn required_column() -> Vec<arrow2::datatypes::Field> {
             false,
         ),
         arrow2::datatypes::Field::new("quality", arrow2::datatypes::DataType::Float32, true),
-    ]
-}
-
-fn filter() -> Vec<arrow2::datatypes::Field> {
-    vec![arrow2::datatypes::Field::new(
-        "filter",
-        arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+        arrow2::datatypes::Field::new(
             "filter",
-            arrow2::datatypes::DataType::Utf8,
-            true,
-        ))),
-        false,
-    )]
+            arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                "filter",
+                arrow2::datatypes::DataType::Utf8,
+                true,
+            ))),
+            false,
+        ),
+    ]
 }
 
 fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
@@ -68,17 +65,45 @@ fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
         let arrow_type = match value.ty() {
             noodles::vcf::header::info::Type::Integer => arrow2::datatypes::DataType::Int32,
             noodles::vcf::header::info::Type::Float => arrow2::datatypes::DataType::Float32,
-            noodles::vcf::header::info::Type::Flag => arrow2::datatypes::DataType::Utf8,
+            noodles::vcf::header::info::Type::Flag => arrow2::datatypes::DataType::Boolean,
             noodles::vcf::header::info::Type::Character => arrow2::datatypes::DataType::Utf8,
             noodles::vcf::header::info::Type::String => arrow2::datatypes::DataType::Utf8,
         };
 
-        match value.number() {
-            noodles::vcf::header::Number::Count(1) => fields.push(arrow2::datatypes::Field::new(
+        match name.number() {
+            noodles::vcf::header::Number::Count(0 | 1) => fields.push(
+                arrow2::datatypes::Field::new(name.to_string(), arrow_type, false),
+            ),
+            _ => fields.push(arrow2::datatypes::Field::new(
                 name.to_string(),
-                arrow_type,
+                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                    name.to_string(),
+                    arrow_type,
+                    true,
+                ))),
                 false,
             )),
+        }
+    }
+
+    fields
+}
+
+fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
+    let mut fields = Vec::new();
+
+    for (name, value) in header.formats() {
+        let arrow_type = match value.ty() {
+            noodles::vcf::header::format::Type::Integer => arrow2::datatypes::DataType::Int32,
+            noodles::vcf::header::format::Type::Float => arrow2::datatypes::DataType::Float32,
+            noodles::vcf::header::format::Type::Character => arrow2::datatypes::DataType::Utf8,
+            noodles::vcf::header::format::Type::String => arrow2::datatypes::DataType::Utf8,
+        };
+
+        match value.number() {
+            noodles::vcf::header::Number::Count(0 | 1) => fields.push(
+                arrow2::datatypes::Field::new(name.to_string(), arrow_type, false),
+            ),
             _ => fields.push(arrow2::datatypes::Field::new(
                 name.to_string(),
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(

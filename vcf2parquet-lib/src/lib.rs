@@ -19,20 +19,21 @@ where
     // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
-    let vcf_header = reader
+    let vcf_header: noodles::vcf::Header = reader
         .read_header()
         .map_err(error::mapping)?
         .parse()
         .map_err(error::mapping)?;
 
+    // Parquet section
+    let schema = schema::from_header(&vcf_header)?;
+
     let chunk_iterator = record2chunk::Record2Chunk::new(
         reader.records(&vcf_header),
         batch_size,
         vcf_header.clone(),
+        schema.clone(),
     );
-
-    // Parquet section
-    let schema = schema::from_header(&vcf_header)?;
 
     let options = arrow2::io::parquet::write::WriteOptions {
         write_statistics: true,

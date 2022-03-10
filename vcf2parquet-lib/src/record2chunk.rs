@@ -4,6 +4,7 @@
 
 /* crate use */
 use arrow2::array::MutableArray;
+use arrow2::array::MutablePrimitiveArray;
 use arrow2::array::TryPush;
 
 /* project use */
@@ -16,6 +17,7 @@ where
     length: usize,
     end: bool,
     header: noodles::vcf::Header,
+    schema: arrow2::datatypes::Schema,
 }
 
 impl<'a, R> Record2Chunk<'a, R>
@@ -26,17 +28,19 @@ where
         inner: noodles::vcf::reader::Records<'a, 'a, R>,
         length: usize,
         header: noodles::vcf::Header,
+        schema: arrow2::datatypes::Schema,
     ) -> Self {
         Self {
             inner,
             length,
             end: false,
             header,
+            schema,
         }
     }
 
     pub fn encodings(&self) -> Vec<arrow2::io::parquet::write::Encoding> {
-        vec![arrow2::io::parquet::write::Encoding::Plain; 7]
+        vec![arrow2::io::parquet::write::Encoding::Plain; self.schema.fields.len()]
     }
 }
 
@@ -54,151 +58,420 @@ where
             return None;
         }
 
-        let name2dayta: std::collections::HashMap<String, ColumnData> =
-            std::collections::HashMap::new();
-
-        let mut chromosomes = arrow2::array::MutableUtf8Array::<i32>::with_capacity(self.length);
-        let mut positions = arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(self.length);
-        let mut identifiers = arrow2::array::MutableListArray::<
-            i32,
-            arrow2::array::MutableUtf8Array<i32>,
-        >::with_capacity(self.length);
-        let mut references = arrow2::array::MutableUtf8Array::<i32>::with_capacity(self.length);
-        let mut alternatives: arrow2::array::MutableListArray<
-            i32,
-            arrow2::array::MutableUtf8Array<i32>,
-        > = arrow2::array::MutableListArray::new();
-        let mut qualities = arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(self.length);
-
-        let mut filters = arrow2::array::MutableListArray::<
-            i32,
-            arrow2::array::MutableUtf8Array<i32>,
-        >::with_capacity(self.length);
-
-        let mut infos: std::collections::HashMap<String, ColumnData> =
-            std::collections::HashMap::new();
+        let mut name2data = Name2Data::new(self.length);
+        name2data.add_info(&self.header, self.length);
+        name2data.add_genotype(&self.header, self.length);
 
         for _ in 0..self.length {
             match self.inner.next() {
                 Some(Ok(record)) => {
                     // Chromosome name
-                    chromosomes.push(Some(record.chromosome().to_string()));
+                    name2data
+                        .get_mut("chromosome")
+                        .unwrap()
+                        .push_string(record.chromosome().to_string());
 
                     // Position
-                    positions.push(record.position().try_into().ok());
+                    name2data
+                        .get_mut("position")
+                        .unwrap()
+                        .push_i32(record.position().try_into().ok());
 
                     // ID
                     if record.ids().is_empty() {
-                        identifiers.push_null();
+                        name2data.get_mut("identifier").unwrap().push_null();
                     } else {
-                        let data: Vec<Option<String>> =
-                            record.ids().iter().map(|x| Some(x.to_string())).collect();
-
-                        if let Err(e) = identifiers.try_push(Some(data)) {
+                        if let Err(e) = name2data.get_mut("identifier").unwrap().push_vecstring(
+                            record.ids().iter().map(|x| Some(x.to_string())).collect(),
+                        ) {
                             return Some(Err(e));
                         }
                     }
 
                     // Ref sequence
-                    references.push(Some(record.reference_bases().to_string()));
+                    name2data
+                        .get_mut("reference")
+                        .unwrap()
+                        .push_string(record.reference_bases().to_string());
 
                     // Alt sequences
                     if record.alternate_bases().is_empty() {
-                        alternatives.push_null();
+                        name2data.get_mut("alternate").unwrap().push_null();
                     } else {
-                        let data: Vec<Option<String>> = record
-                            .alternate_bases()
-                            .iter()
-                            .map(|x| Some(x.to_string()))
-                            .collect();
-
-                        if let Err(e) = alternatives.try_push(Some(data)) {
+                        if let Err(e) = name2data.get_mut("alternate").unwrap().push_vecstring(
+                            record
+                                .alternate_bases()
+                                .iter()
+                                .map(|x| Some(x.to_string()))
+                                .collect(),
+                        ) {
                             return Some(Err(e));
                         }
                     }
 
                     // Quality
                     if let Some(quality) = record.quality_score() {
-                        qualities.push(quality.try_into().ok());
+                        name2data
+                            .get_mut("quality")
+                            .unwrap()
+                            .push_f32(quality.try_into().ok());
                     } else {
-                        qualities.push_null();
+                        name2data.get_mut("quality").unwrap().push_null();
                     }
 
                     // Filter
                     if let Some(f) = record.filters() {
                         match f {
                             noodles::vcf::record::Filters::Pass => {
-                                if let Err(e) =
-                                    filters.try_push(Some(vec![Some("PASS".to_string())]))
+                                if let Err(e) = name2data
+                                    .get_mut("filter")
+                                    .unwrap()
+                                    .push_vecstring(vec![Some("PASS".to_string())])
                                 {
                                     return Some(Err(e));
                                 }
                             }
                             noodles::vcf::record::Filters::Fail(fs) => {
-                                let data: Vec<Option<String>> =
-                                    fs.iter().map(|x| Some(x.to_string())).collect();
-                                if let Err(e) = filters.try_push(Some(data)) {
+                                if let Err(e) = name2data.get_mut("filter").unwrap().push_vecstring(
+                                    fs.iter().map(|x| Some(x.to_string())).collect(),
+                                ) {
                                     return Some(Err(e));
                                 }
                             }
                         }
                     } else {
-                        filters.push_null();
+                        name2data.get_mut("filter").unwrap().push_null();
                     }
 
                     // Info
+                    for value in record.info().values() {
+                        match value.value() {
+                            Some(noodles::vcf::record::info::field::Value::Integer(val)) => {
+                                name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_i32(Some(*val))
+                            }
+                            Some(noodles::vcf::record::info::field::Value::Float(val)) => name2data
+                                .get_mut(value.key().as_ref())
+                                .unwrap()
+                                .push_f32(Some(*val)),
+                            Some(noodles::vcf::record::info::field::Value::Flag) => name2data
+                                .get_mut(value.key().as_ref())
+                                .unwrap()
+                                .push_bool(Some(true)),
+
+                            Some(noodles::vcf::record::info::field::Value::Character(val)) => {
+                                name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_string(val.to_string())
+                            }
+                            Some(noodles::vcf::record::info::field::Value::String(val)) => {
+                                name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_string(val.to_string())
+                            }
+                            Some(noodles::vcf::record::info::field::Value::IntegerArray(vals)) => {
+                                if let Err(e) = name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_veci32(vals.to_vec())
+                                {
+                                    return Some(Err(e));
+                                }
+                            }
+                            Some(noodles::vcf::record::info::field::Value::FloatArray(vals)) => {
+                                if let Err(e) = name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_vecf32(vals.to_vec())
+                                {
+                                    return Some(Err(e));
+                                }
+                            }
+                            Some(noodles::vcf::record::info::field::Value::CharacterArray(
+                                vals,
+                            )) => {
+                                if let Err(e) = name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_vecstring(
+                                        vals.iter().map(|x| x.map(String::from)).collect(),
+                                    )
+                                {
+                                    return Some(Err(e));
+                                }
+                            }
+                            Some(noodles::vcf::record::info::field::Value::StringArray(vals)) => {
+                                if let Err(e) = name2data
+                                    .get_mut(value.key().as_ref())
+                                    .unwrap()
+                                    .push_vecstring(vals.to_vec())
+                                {
+                                    return Some(Err(e));
+                                }
+                            }
+                            None => name2data.get_mut(value.key().as_ref()).unwrap().push_null(),
+                        }
+                    }
+
+                    // format
                 }
                 Some(Err(e)) => return Some(Err(arrow2::error::ArrowError::Io(e))),
                 None => {
                     self.end = true;
 
-                    return Some(Ok(arrow2::chunk::Chunk::new(vec![
-                        chromosomes.into_arc(),
-                        positions.into_arc(),
-                        identifiers.into_arc(),
-                        references.into_arc(),
-                        alternatives.into_arc(),
-                        qualities.into_arc(),
-                        filters.into_arc(),
-                    ])));
+                    return Some(Ok(arrow2::chunk::Chunk::new(
+                        name2data.into_arc(&self.schema),
+                    )));
                 }
             }
         }
 
-        Some(Ok(arrow2::chunk::Chunk::new(vec![
-            chromosomes.into_arc(),
-            positions.into_arc(),
-            identifiers.into_arc(),
-            references.into_arc(),
-            alternatives.into_arc(),
-            qualities.into_arc(),
-            filters.into_arc(),
-        ])))
+        Some(Ok(arrow2::chunk::Chunk::new(
+            name2data.into_arc(&self.schema),
+        )))
     }
 }
 
-type name2data = std::collections::HashMap<String, ColumnData>;
+struct Name2Data(std::collections::HashMap<String, ColumnData>);
+
+impl Name2Data {
+    pub fn new(length: usize) -> Self {
+        let mut name2data = std::collections::HashMap::new();
+
+        name2data.insert(
+            "chromosome".to_string(),
+            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
+                length,
+            )),
+        );
+        name2data.insert(
+            "position".to_string(),
+            ColumnData::Int(MutablePrimitiveArray::<i32>::with_capacity(length)),
+        );
+
+        name2data.insert(
+            "identifier".to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::<
+                i32,
+                arrow2::array::MutableUtf8Array<i32>,
+            >::with_capacity(length)),
+        );
+
+        name2data.insert(
+            "reference".to_string(),
+            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
+                length,
+            )),
+        );
+
+        name2data.insert(
+            "alternate".to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+        );
+
+        name2data.insert(
+            "quality".to_string(),
+            ColumnData::Float(MutablePrimitiveArray::<f32>::with_capacity(length)),
+        );
+
+        name2data.insert(
+            "filter".to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::<
+                i32,
+                arrow2::array::MutableUtf8Array<i32>,
+            >::with_capacity(length)),
+        );
+
+        Name2Data(name2data)
+    }
+
+    pub fn get(&self, key: &str) -> Option<&ColumnData> {
+        self.0.get(key)
+    }
+
+    pub fn get_mut(&mut self, key: &str) -> Option<&mut ColumnData> {
+        self.0.get_mut(key)
+    }
+
+    pub fn add_info(&mut self, header: &noodles::vcf::Header, length: usize) {
+        for (key, value) in header.infos() {
+            match (key.ty(), key.number()) {
+                (
+                    noodles::vcf::header::info::Type::Integer,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
+                        length,
+                    )),
+                ),
+                (noodles::vcf::header::info::Type::Integer, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::info::Type::Float,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
+                        length,
+                    )),
+                ),
+                (noodles::vcf::header::info::Type::Float, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::info::Type::Flag,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
+                ),
+                (noodles::vcf::header::info::Type::Flag, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::info::Type::Character,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
+                ),
+                (noodles::vcf::header::info::Type::Character, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::info::Type::String,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
+                ),
+                (noodles::vcf::header::info::Type::String, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+            };
+        }
+    }
+
+    pub fn add_genotype(&mut self, header: &noodles::vcf::Header, length: usize) {
+        for (key, value) in header.formats() {
+            match (value.ty(), value.number()) {
+                (
+                    noodles::vcf::header::format::Type::Integer,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
+                        length,
+                    )),
+                ),
+                (noodles::vcf::header::format::Type::Integer, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::format::Type::Float,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
+                        length,
+                    )),
+                ),
+                (noodles::vcf::header::format::Type::Float, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::format::Type::Character,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
+                ),
+                (noodles::vcf::header::format::Type::Character, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::format::Type::String,
+                    noodles::vcf::header::Number::Count(0 | 1),
+                ) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
+                ),
+                (noodles::vcf::header::format::Type::String, _) => self.0.insert(
+                    key.to_string(),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+            };
+        }
+    }
+
+    pub fn into_arc(
+        mut self,
+        schema: &arrow2::datatypes::Schema,
+    ) -> Vec<std::sync::Arc<dyn arrow2::array::Array>> {
+        schema
+            .fields
+            .iter()
+            .map(|x| self.0.remove(&x.name).unwrap().into_arc())
+            .collect()
+    }
+}
 
 enum ColumnData {
+    Bool(arrow2::array::MutableBooleanArray),
     Int(arrow2::array::MutablePrimitiveArray<i32>),
     Float(arrow2::array::MutablePrimitiveArray<f32>),
     String(arrow2::array::MutableUtf8Array<i32>),
-    ListInt(arrow2::array::MutableListArray<i32, arrow2::array::MutablePrimitiveArray<i32>>),
-    ListFloat(arrow2::array::MutableListArray<i32, arrow2::array::MutablePrimitiveArray<f32>>),
+    ListBool(arrow2::array::MutableListArray<i32, arrow2::array::MutableBooleanArray>),
+    ListInt(arrow2::array::MutableListArray<i32, MutablePrimitiveArray<i32>>),
+    ListFloat(arrow2::array::MutableListArray<i32, MutablePrimitiveArray<f32>>),
     ListString(arrow2::array::MutableListArray<i32, arrow2::array::MutableUtf8Array<i32>>),
 }
 
 impl ColumnData {
-    pub fn push_i32(&mut self, value: i32) {
+    pub fn push_null(&mut self) {
         match self {
-            ColumnData::Int(a) => a.push(Some(value)),
+            ColumnData::Bool(a) => a.push_null(),
+            ColumnData::Int(a) => a.push_null(),
+            ColumnData::Float(a) => a.push_null(),
+            ColumnData::String(a) => a.push_null(),
+            ColumnData::ListBool(a) => a.push_null(),
+            ColumnData::ListInt(a) => a.push_null(),
+            ColumnData::ListFloat(a) => a.push_null(),
+            ColumnData::ListString(a) => a.push_null(),
+        }
+    }
+
+    pub fn push_bool(&mut self, value: Option<bool>) {
+        match self {
+            ColumnData::Bool(a) => a.push(value),
             _ => todo!(),
         }
     }
 
-    pub fn push_f32(&mut self, value: f32) {
+    pub fn push_i32(&mut self, value: Option<i32>) {
         match self {
-            ColumnData::Float(a) => a.push(Some(value)),
+            ColumnData::Int(a) => a.push(value),
+            _ => todo!(),
+        }
+    }
+
+    pub fn push_f32(&mut self, value: Option<f32>) {
+        match self {
+            ColumnData::Float(a) => a.push(value),
             _ => todo!(),
         }
     }
@@ -206,6 +479,13 @@ impl ColumnData {
     pub fn push_string(&mut self, value: String) {
         match self {
             ColumnData::String(a) => a.push(Some(value)),
+            _ => todo!(),
+        }
+    }
+
+    pub fn push_vecbool(&mut self, value: Vec<Option<bool>>) -> arrow2::error::Result<()> {
+        match self {
+            ColumnData::ListBool(a) => a.try_push(Some(value)),
             _ => todo!(),
         }
     }
@@ -233,9 +513,11 @@ impl ColumnData {
 
     pub fn into_arc(self) -> std::sync::Arc<dyn arrow2::array::Array> {
         match self {
+            ColumnData::Bool(a) => a.into_arc(),
             ColumnData::Int(a) => a.into_arc(),
             ColumnData::Float(a) => a.into_arc(),
             ColumnData::String(a) => a.into_arc(),
+            ColumnData::ListBool(a) => a.into_arc(),
             ColumnData::ListInt(a) => a.into_arc(),
             ColumnData::ListFloat(a) => a.into_arc(),
             ColumnData::ListString(a) => a.into_arc(),
