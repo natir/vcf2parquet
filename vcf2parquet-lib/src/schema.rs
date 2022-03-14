@@ -70,12 +70,12 @@ fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
             noodles::vcf::header::info::Type::String => arrow2::datatypes::DataType::Utf8,
         };
 
-        match name.number() {
+        match value.number() {
             noodles::vcf::header::Number::Count(0 | 1) => fields.push(
-                arrow2::datatypes::Field::new(name.to_string(), arrow_type, false),
+                arrow2::datatypes::Field::new(format!("info_{}", name), arrow_type, false),
             ),
             _ => fields.push(arrow2::datatypes::Field::new(
-                name.to_string(),
+                format!("info_{}", name),
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
                     name.to_string(),
                     arrow_type,

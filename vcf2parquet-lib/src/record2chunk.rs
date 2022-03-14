@@ -148,34 +148,34 @@ where
                         match value.value() {
                             Some(noodles::vcf::record::info::field::Value::Integer(val)) => {
                                 name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_i32(Some(*val))
                             }
                             Some(noodles::vcf::record::info::field::Value::Float(val)) => name2data
-                                .get_mut(value.key().as_ref())
+                                .get_mut(&format!("info_{}", value.key()))
                                 .unwrap()
                                 .push_f32(Some(*val)),
                             Some(noodles::vcf::record::info::field::Value::Flag) => name2data
-                                .get_mut(value.key().as_ref())
+                                .get_mut(&format!("info_{}", value.key()))
                                 .unwrap()
                                 .push_bool(Some(true)),
 
                             Some(noodles::vcf::record::info::field::Value::Character(val)) => {
                                 name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_string(val.to_string())
                             }
                             Some(noodles::vcf::record::info::field::Value::String(val)) => {
                                 name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_string(val.to_string())
                             }
                             Some(noodles::vcf::record::info::field::Value::IntegerArray(vals)) => {
                                 if let Err(e) = name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_veci32(vals.to_vec())
                                 {
@@ -184,7 +184,7 @@ where
                             }
                             Some(noodles::vcf::record::info::field::Value::FloatArray(vals)) => {
                                 if let Err(e) = name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_vecf32(vals.to_vec())
                                 {
@@ -195,7 +195,7 @@ where
                                 vals,
                             )) => {
                                 if let Err(e) = name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_vecstring(
                                         vals.iter().map(|x| x.map(String::from)).collect(),
@@ -206,14 +206,17 @@ where
                             }
                             Some(noodles::vcf::record::info::field::Value::StringArray(vals)) => {
                                 if let Err(e) = name2data
-                                    .get_mut(value.key().as_ref())
+                                    .get_mut(&format!("info_{}", value.key()))
                                     .unwrap()
                                     .push_vecstring(vals.to_vec())
                                 {
                                     return Some(Err(e));
                                 }
                             }
-                            None => name2data.get_mut(value.key().as_ref()).unwrap().push_null(),
+                            None => name2data
+                                .get_mut(&format!("info_{}", value.key()))
+                                .unwrap()
+                                .push_null(),
                         }
                     }
 
@@ -299,64 +302,64 @@ impl Name2Data {
 
     pub fn add_info(&mut self, header: &noodles::vcf::Header, length: usize) {
         for (key, value) in header.infos() {
-            match (key.ty(), key.number()) {
+            match (value.ty(), value.number()) {
                 (
                     noodles::vcf::header::info::Type::Integer,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Integer, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Float,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Float, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Flag,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Flag, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Character,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Character, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::String,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::String, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
@@ -370,48 +373,48 @@ impl Name2Data {
                     noodles::vcf::header::format::Type::Integer,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::format::Type::Integer, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::format::Type::Float,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::format::Type::Float, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::format::Type::Character,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::format::Type::Character, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::format::Type::String,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::format::Type::String, _) => self.0.insert(
-                    key.to_string(),
+                    format!("info_{}", key),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
