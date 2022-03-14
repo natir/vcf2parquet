@@ -17,7 +17,7 @@ pub fn from_header(header: &noodles::vcf::Header) -> error::Result<arrow2::datat
     columns.extend(info(header));
 
     // genotype field
-    //columns.extend(genotype(header));
+    columns.extend(genotype(header));
 
     Ok(arrow2::datatypes::Schema::from(columns))
 }
@@ -92,27 +92,31 @@ fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
 fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
     let mut fields = Vec::new();
 
-    for (name, value) in header.formats() {
-        let arrow_type = match value.ty() {
-            noodles::vcf::header::format::Type::Integer => arrow2::datatypes::DataType::Int32,
-            noodles::vcf::header::format::Type::Float => arrow2::datatypes::DataType::Float32,
-            noodles::vcf::header::format::Type::Character => arrow2::datatypes::DataType::Utf8,
-            noodles::vcf::header::format::Type::String => arrow2::datatypes::DataType::Utf8,
-        };
+    for sample in header.sample_names() {
+        for (name, value) in header.formats() {
+            let key = format!("format_{}_{}", sample, name);
 
-        match value.number() {
-            noodles::vcf::header::Number::Count(0 | 1) => fields.push(
-                arrow2::datatypes::Field::new(name.to_string(), arrow_type, false),
-            ),
-            _ => fields.push(arrow2::datatypes::Field::new(
-                name.to_string(),
-                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    name.to_string(),
-                    arrow_type,
-                    true,
-                ))),
-                false,
-            )),
+            let arrow_type = match value.ty() {
+                noodles::vcf::header::format::Type::Integer => arrow2::datatypes::DataType::Int32,
+                noodles::vcf::header::format::Type::Float => arrow2::datatypes::DataType::Float32,
+                noodles::vcf::header::format::Type::Character => arrow2::datatypes::DataType::Utf8,
+                noodles::vcf::header::format::Type::String => arrow2::datatypes::DataType::Utf8,
+            };
+
+            match value.number() {
+                noodles::vcf::header::Number::Count(0 | 1) => {
+                    fields.push(arrow2::datatypes::Field::new(key, arrow_type, false))
+                }
+                _ => fields.push(arrow2::datatypes::Field::new(
+                    key,
+                    arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                        name.to_string(),
+                        arrow_type,
+                        true,
+                    ))),
+                    false,
+                )),
+            }
         }
     }
 
