@@ -8,6 +8,7 @@
 
 /* mod section */
 pub mod error;
+pub mod name2data;
 pub mod record2chunk;
 pub mod schema;
 
