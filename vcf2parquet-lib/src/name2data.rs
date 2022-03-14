@@ -116,6 +116,7 @@ impl Name2Data {
         not_changed_key.remove("reference");
 
         // Alt sequences
+        //println!("{:?}", record.alternate_bases());
         if record.alternate_bases().is_empty() {
             self.get_mut("alternate").unwrap().push_null();
         } else if let Err(e) = self.get_mut("alternate").unwrap().push_vecstring(
@@ -285,6 +286,10 @@ impl Name2Data {
         mut self,
         schema: &arrow2::datatypes::Schema,
     ) -> Vec<std::sync::Arc<dyn arrow2::array::Array>> {
+        // println!("LENGTH OF COLUMN:");
+        // self.0
+        //     .iter()
+        //     .for_each(|(k, v)| println!("{}: {}", k, v.len()));
         schema
             .fields
             .iter()
@@ -458,6 +463,19 @@ impl ColumnData {
         }
     }
 
+    pub fn len(&self) -> usize {
+        match self {
+            ColumnData::Bool(a) => a.len(),
+            ColumnData::Int(a) => a.len(),
+            ColumnData::Float(a) => a.len(),
+            ColumnData::String(a) => a.len(),
+            ColumnData::ListBool(a) => a.len(),
+            ColumnData::ListInt(a) => a.len(),
+            ColumnData::ListFloat(a) => a.len(),
+            ColumnData::ListString(a) => a.len(),
+        }
+    }
+
     pub fn push_bool(&mut self, value: Option<bool>) {
         match self {
             ColumnData::Bool(a) => a.push(value),
@@ -508,6 +526,7 @@ impl ColumnData {
     }
 
     pub fn push_vecstring(&mut self, value: Vec<Option<String>>) -> arrow2::error::Result<()> {
+        //println!("push vec string value: {:?}", value);
         match self {
             ColumnData::ListString(a) => a.try_push(Some(value)),
             _ => todo!(),

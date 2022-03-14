@@ -12,7 +12,12 @@ pub mod name2data;
 pub mod record2chunk;
 pub mod schema;
 
-pub fn noodles2arrow<R, W>(input: &mut R, output: &mut W, batch_size: usize) -> error::Result<()>
+pub fn noodles2arrow<R, W>(
+    input: &mut R,
+    output: &mut W,
+    batch_size: usize,
+    compression: arrow2::io::parquet::write::Compression,
+) -> error::Result<()>
 where
     R: std::io::BufRead,
     W: std::io::Write,
@@ -38,7 +43,7 @@ where
 
     let options = arrow2::io::parquet::write::WriteOptions {
         write_statistics: true,
-        compression: arrow2::io::parquet::write::Compression::Snappy,
+        compression,
         version: arrow2::io::parquet::write::Version::V2,
     };
 
