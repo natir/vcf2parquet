@@ -19,7 +19,7 @@ pub enum Error {
     /// Parquet error
     #[error(transparent)]
     ParquetError {
-        error: parquet2::error::ParquetError,
+        error: arrow2::io::parquet::read::ParquetError,
     },
 
     /// Io error
@@ -52,8 +52,8 @@ impl From<arrow2::error::ArrowError> for Error {
     }
 }
 
-impl From<parquet2::error::ParquetError> for Error {
-    fn from(error: parquet2::error::ParquetError) -> Self {
+impl From<arrow2::io::parquet::read::ParquetError> for Error {
+    fn from(error: arrow2::io::parquet::read::ParquetError) -> Self {
         Error::ParquetError { error }
     }
 }

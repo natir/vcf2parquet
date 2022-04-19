@@ -116,7 +116,6 @@ impl Name2Data {
         not_changed_key.remove("reference");
 
         // Alt sequences
-        //println!("{:?}", record.alternate_bases());
         if record.alternate_bases().is_empty() {
             self.get_mut("alternate").unwrap().push_null();
         } else if let Err(e) = self.get_mut("alternate").unwrap().push_vecstring(
@@ -286,15 +285,13 @@ impl Name2Data {
         mut self,
         schema: &arrow2::datatypes::Schema,
     ) -> Vec<std::sync::Arc<dyn arrow2::array::Array>> {
-        // println!("LENGTH OF COLUMN:");
-        // self.0
-        //     .iter()
-        //     .for_each(|(k, v)| println!("{}: {}", k, v.len()));
-        schema
+        let s: Vec<std::sync::Arc<dyn arrow2::array::Array>> = schema
             .fields
             .iter()
             .map(|x| self.0.remove(&x.name).unwrap().into_arc())
-            .collect()
+            .collect();
+
+        s
     }
 
     fn add_info(
@@ -453,26 +450,23 @@ impl ColumnData {
     pub fn push_null(&mut self) {
         match self {
             ColumnData::Bool(a) => a.push_null(),
-            ColumnData::Int(a) => a.push_null(),
-            ColumnData::Float(a) => a.push_null(),
+            ColumnData::Int(a) => {
+                //self.push_i32(Some(i32::MIN));
+                a.push_null()
+            }
+            ColumnData::Float(a) => {
+                //self.push_f32(Some(NAN));
+                a.push_null()
+            }
             ColumnData::String(a) => a.push_null(),
             ColumnData::ListBool(a) => a.push_null(),
             ColumnData::ListInt(a) => a.push_null(),
             ColumnData::ListFloat(a) => a.push_null(),
-            ColumnData::ListString(a) => a.push_null(),
-        }
-    }
-
-    pub fn len(&self) -> usize {
-        match self {
-            ColumnData::Bool(a) => a.len(),
-            ColumnData::Int(a) => a.len(),
-            ColumnData::Float(a) => a.len(),
-            ColumnData::String(a) => a.len(),
-            ColumnData::ListBool(a) => a.len(),
-            ColumnData::ListInt(a) => a.len(),
-            ColumnData::ListFloat(a) => a.len(),
-            ColumnData::ListString(a) => a.len(),
+            ColumnData::ListString(_a) => {
+                if let Err(e) = self.push_vecstring(vec![None]) {
+                    panic!("ListString {:?}", e);
+                }
+            }
         }
     }
 
@@ -526,7 +520,6 @@ impl ColumnData {
     }
 
     pub fn push_vecstring(&mut self, value: Vec<Option<String>>) -> arrow2::error::Result<()> {
-        //println!("push vec string value: {:?}", value);
         match self {
             ColumnData::ListString(a) => a.try_push(Some(value)),
             _ => todo!(),

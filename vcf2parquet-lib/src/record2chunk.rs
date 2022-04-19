@@ -75,7 +75,6 @@ where
                 }
             }
         }
-        //        println!("{:?}", name2data.get("alternate"));
 
         Some(Ok(arrow2::chunk::Chunk::new(
             name2data.into_arc(&self.schema),
