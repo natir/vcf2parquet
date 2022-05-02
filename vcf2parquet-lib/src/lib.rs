@@ -16,7 +16,7 @@ pub fn noodles2arrow<R, W>(
     input: &mut R,
     output: &mut W,
     batch_size: usize,
-    compression: arrow2::io::parquet::write::Compression,
+    compression: arrow2::io::parquet::write::CompressionOptions,
 ) -> error::Result<()>
 where
     R: std::io::BufRead,

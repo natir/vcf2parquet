@@ -14,7 +14,7 @@ pub enum Compression {
     Lzo,
     Brotli,
     Lz4,
-    Zstd,
+    // Zstd,
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -49,18 +49,18 @@ impl Command {
         self.batch_size.unwrap_or(100_000)
     }
 
-    pub fn compression(&self) -> arrow2::io::parquet::write::Compression {
+    pub fn compression(&self) -> arrow2::io::parquet::write::CompressionOptions {
         match self.compression {
             Some(Compression::Uncompressed) => {
-                arrow2::io::parquet::write::Compression::Uncompressed
+                arrow2::io::parquet::write::CompressionOptions::Uncompressed
             }
-            Some(Compression::Snappy) => arrow2::io::parquet::write::Compression::Snappy,
-            Some(Compression::Gzip) => arrow2::io::parquet::write::Compression::Gzip,
-            Some(Compression::Lzo) => arrow2::io::parquet::write::Compression::Lzo,
-            Some(Compression::Brotli) => arrow2::io::parquet::write::Compression::Brotli,
-            Some(Compression::Lz4) => arrow2::io::parquet::write::Compression::Lz4,
-            Some(Compression::Zstd) => arrow2::io::parquet::write::Compression::Zstd,
-            None => arrow2::io::parquet::write::Compression::Snappy,
+            Some(Compression::Snappy) => arrow2::io::parquet::write::CompressionOptions::Snappy,
+            Some(Compression::Gzip) => arrow2::io::parquet::write::CompressionOptions::Gzip,
+            Some(Compression::Lzo) => arrow2::io::parquet::write::CompressionOptions::Lzo,
+            Some(Compression::Brotli) => arrow2::io::parquet::write::CompressionOptions::Brotli,
+            Some(Compression::Lz4) => arrow2::io::parquet::write::CompressionOptions::Lz4,
+            // Some(Compression::Zstd) => arrow2::io::parquet::write::CompressionOptions::Zstd,
+            None => arrow2::io::parquet::write::CompressionOptions::Snappy,
         }
     }
 }
