@@ -7,6 +7,7 @@
 /* project use */
 use crate::*;
 
+/// Generate a parquet schema corresponding to vcf header
 pub fn from_header(header: &noodles::vcf::Header) -> error::Result<arrow2::datatypes::Schema> {
     let mut columns = Vec::new();
 
@@ -125,4 +126,223 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
     }
 
     fields
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static VCF_FILE: &[u8] = b"##fileformat=VCFv4.1
+##fileDate=2022-05-28
+##source=ClinVar
+##reference=GRCh38
+##ID=<Description=\"ClinVar Variation ID\">
+##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
+##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
+##INFO=<ID=DBVARID,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
+##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\">
+##INFO=<ID=CLNVC,Number=2,Type=String,Description=\"Variant type\">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\">
+##FORMAT=<ID=DP,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\">
+##FORMAT=<ID=GQ,Number=1,Type=Character,Description=\"Genotype Quality\">
+##FORMAT=<ID=GT,Number=3,Type=String,Description=\"Genotype\">
+##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
+##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
+";
+
+    lazy_static::lazy_static! {
+        static ref MINI_COLS: Vec<arrow2::datatypes::Field> = vec![
+            arrow2::datatypes::Field::new("chromosome", arrow2::datatypes::DataType::Utf8, false),
+            arrow2::datatypes::Field::new("position", arrow2::datatypes::DataType::Int32, false),
+            arrow2::datatypes::Field::new(
+                "identifier",
+                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                    "id",
+                    arrow2::datatypes::DataType::Utf8,
+                    false,
+                ))),
+                false,
+            ),
+            arrow2::datatypes::Field::new("reference", arrow2::datatypes::DataType::Utf8, false),
+            arrow2::datatypes::Field::new(
+                "alternate",
+                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                    "alternate",
+                    arrow2::datatypes::DataType::Utf8,
+                    false,
+                ))),
+                false,
+            ),
+            arrow2::datatypes::Field::new("quality", arrow2::datatypes::DataType::Float32, true),
+            arrow2::datatypes::Field::new(
+                "filter",
+                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                    "filter",
+                    arrow2::datatypes::DataType::Utf8,
+                    false,
+                ))),
+                false,
+            ),
+        ];
+
+    static ref INFO_COLS: Vec<arrow2::datatypes::Field> = vec![
+            arrow2::datatypes::Field {
+                name: "info_ALLELEID".to_string(),
+                data_type: arrow2::datatypes::DataType::Int32,
+                is_nullable: false,
+                metadata: std::collections::BTreeMap::new()
+            },
+            arrow2::datatypes::Field {
+                name: "info_AF_ESP".to_string(),
+                data_type: arrow2::datatypes::DataType::Float32,
+                is_nullable: false,
+                metadata: std::collections::BTreeMap::new()
+            },
+            arrow2::datatypes::Field {
+                name: "info_DBVARID".to_string(),
+                data_type: arrow2::datatypes::DataType::Boolean,
+                is_nullable: false,
+                metadata: std::collections::BTreeMap::new()
+            },
+            arrow2::datatypes::Field {
+                name: "info_GENEINFO".to_string(),
+                data_type: arrow2::datatypes::DataType::Utf8,
+                is_nullable: false,
+                metadata: std::collections::BTreeMap::new()
+            },
+            arrow2::datatypes::Field {
+                name: "info_CLNVC".to_string(),
+                data_type: arrow2::datatypes::DataType::List(Box::new(
+                    arrow2::datatypes::Field {
+                        name: "info_CLNVC".to_string(),
+                        data_type: arrow2::datatypes::DataType::Utf8,
+                        is_nullable: false,
+                        metadata: std::collections::BTreeMap::new()
+                    }
+                )),
+                is_nullable: false,
+                metadata: std::collections::BTreeMap::new()
+            }
+    ];
+
+    static ref FORMAT_COLS: Vec<arrow2::datatypes::Field> = vec![
+                arrow2::datatypes::Field {
+                    name: "format_first_AD".to_string(),
+                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_first_AD".to_string(),
+                            data_type: arrow2::datatypes::DataType::Int32,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    )),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_first_DP".to_string(),
+                    data_type: arrow2::datatypes::DataType::Float32,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_first_GQ".to_string(),
+                    data_type: arrow2::datatypes::DataType::Utf8,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_first_GT".to_string(),
+                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_first_GT".to_string(),
+                            data_type: arrow2::datatypes::DataType::Utf8,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    )),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_AD".to_string(),
+                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_second_AD".to_string(),
+                            data_type: arrow2::datatypes::DataType::Int32,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    )),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_DP".to_string(),
+                    data_type: arrow2::datatypes::DataType::Float32,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_GQ".to_string(),
+                    data_type: arrow2::datatypes::DataType::Utf8,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_GT".to_string(),
+                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_second_GT".to_string(),
+                            data_type: arrow2::datatypes::DataType::Utf8,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    )),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+            ];
+    }
+
+    #[test]
+    fn mini_cols() {
+        assert_eq!(required_column(), *MINI_COLS)
+    }
+
+    #[test]
+    fn info_cols() {
+        let mut reader = noodles::vcf::Reader::new(VCF_FILE);
+
+        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+
+        assert_eq!(info(&header), *INFO_COLS);
+    }
+
+    #[test]
+    fn genotype_cols() {
+        let mut reader = noodles::vcf::Reader::new(VCF_FILE);
+
+        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+
+        assert_eq!(genotype(&header), *FORMAT_COLS);
+    }
+
+    #[test]
+    fn all_cols() {
+        let mut reader = noodles::vcf::Reader::new(VCF_FILE);
+
+        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+
+        let mut data: Vec<arrow2::datatypes::Field> = Vec::new();
+        data.extend_from_slice(&*MINI_COLS);
+        data.extend_from_slice(&*INFO_COLS);
+        data.extend_from_slice(&*FORMAT_COLS);
+
+        assert_eq!(
+            from_header(&header).unwrap(),
+            arrow2::datatypes::Schema::from(data)
+        );
+    }
 }

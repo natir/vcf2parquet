@@ -6,6 +6,7 @@
 
 /* project use */
 
+#[non_exhaustive]
 #[derive(thiserror::Error, std::fmt::Debug)]
 pub enum Error {
     /// Not support type conversion
@@ -65,3 +66,56 @@ impl From<noodles::vcf::header::ParseError> for Error {
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn error_conversion() {
+        let error: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, "test");
+        assert_eq!(
+            format!("{:?}", mapping(error)),
+            format!(
+                "{:?}",
+                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, "test"))
+            )
+        );
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, "test"))
+            ),
+            "IoError { error: Custom { kind: NotFound, error: \"test\" } }".to_string()
+        );
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                Error::from(arrow2::error::ArrowError::NotYetImplemented(
+                    "test".to_string()
+                ))
+            ),
+            "ArrowError { error: NotYetImplemented(\"test\") }".to_string()
+        );
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                Error::from(arrow2::io::parquet::read::ParquetError::General(
+                    "test".to_string()
+                ))
+            ),
+            "ParquetError { error: General(\"test\") }".to_string()
+        );
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                Error::from(noodles::vcf::header::ParseError::MissingHeader)
+            ),
+            "NoodlesHeaderError { error: MissingHeader }".to_string()
+        );
+    }
+}
