@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["vcf2parquet_bin"] = [{"text":"impl FromArgMatches for <a class=\"struct\" href=\"vcf2parquet_bin/cli/struct.Command.html\" title=\"struct vcf2parquet_bin::cli::Command\">Command</a>","synthetic":false,"types":["vcf2parquet_bin::cli::Command"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

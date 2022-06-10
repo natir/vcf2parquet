@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["from_header","Generate a parquet schema corresponding to vcf header"]]});

@@ -1,0 +1,4 @@
+(function() {var implementors = {};
+implementors["vcf2parquet_bin"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.61.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"vcf2parquet_bin/error/enum.Error.html\" title=\"enum vcf2parquet_bin::error::Error\">Error</a>","synthetic":false,"types":["vcf2parquet_bin::error::Error"]}];
+implementors["vcf2parquet_lib"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.61.0/core/fmt/trait.Display.html\" title=\"trait core::fmt::Display\">Display</a> for <a class=\"enum\" href=\"vcf2parquet_lib/error/enum.Error.html\" title=\"enum vcf2parquet_lib::error::Error\">Error</a>","synthetic":false,"types":["vcf2parquet_lib::error::Error"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
