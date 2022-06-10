@@ -25,6 +25,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
+          args: --workspace
 
   test:
     runs-on: ${{ matrix.os }}
@@ -57,7 +58,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --no-fail-fast
+          args: --no-fail-fast --workspace
 
   coverage:
     runs-on: ubuntu-latest
@@ -77,7 +78,7 @@ jobs:
           use-tool-cache: true
 
       - name: Run cargo-tarpaulin
-        run: cargo tarpaulin --all-features --timeout 600 --out Xml -- --test-threads 1
+        run: cargo tarpaulin --workspace --all-features --timeout 600 --out Xml -- --test-threads 1
 
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v1.0.3
