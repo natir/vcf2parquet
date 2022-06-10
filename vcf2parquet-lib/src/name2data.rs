@@ -9,10 +9,12 @@ use arrow2::array::TryPush;
 
 /* project use */
 
+///Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure
 #[derive(Debug)]
 pub struct Name2Data(std::collections::HashMap<String, ColumnData>);
 
 impl Name2Data {
+    /// Create a new Name2Data, vcf header is required to add info and genotype column
     pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
         let mut name2data = std::collections::HashMap::new();
 
@@ -66,14 +68,17 @@ impl Name2Data {
         Name2Data(name2data)
     }
 
+    /// Just a wrapper arround [std::collections::HashMap::get]
     pub fn get(&self, key: &str) -> Option<&ColumnData> {
         self.0.get(key)
     }
 
+    /// Just a wrapper arround [std::collections::HashMap::get_mut]
     pub fn get_mut(&mut self, key: &str) -> Option<&mut ColumnData> {
         self.0.get_mut(key)
     }
 
+    /// Add a vcf record in [std::collections::HashMap] struct
     pub fn add_record(
         &mut self,
         record: noodles::vcf::Record,
@@ -281,6 +286,7 @@ impl Name2Data {
         Ok(())
     }
 
+    ///Convert Name2Data in vector of arrow2 array
     pub fn into_arc(
         mut self,
         schema: &arrow2::datatypes::Schema,
@@ -447,6 +453,7 @@ pub enum ColumnData {
 }
 
 impl ColumnData {
+    /// Add a Null value in array
     pub fn push_null(&mut self) {
         match self {
             ColumnData::Bool(a) => a.push_null(),
@@ -470,6 +477,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a boolean value in array, if it's not a boolean array failled
     pub fn push_bool(&mut self, value: Option<bool>) {
         match self {
             ColumnData::Bool(a) => a.push(value),
@@ -477,6 +485,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a i32 value in array, if it's not a integer array failled
     pub fn push_i32(&mut self, value: Option<i32>) {
         match self {
             ColumnData::Int(a) => a.push(value),
@@ -484,6 +493,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a f32 value in array, if it's not a float array failled
     pub fn push_f32(&mut self, value: Option<f32>) {
         match self {
             ColumnData::Float(a) => a.push(value),
@@ -491,6 +501,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a string value in array, if it's not a string array failled
     pub fn push_string(&mut self, value: String) {
         match self {
             ColumnData::String(a) => a.push(Some(value)),
@@ -498,6 +509,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a vector of bool value in array, if it's not a vector of bool array failled
     pub fn push_vecbool(&mut self, value: Vec<Option<bool>>) -> arrow2::error::Result<()> {
         match self {
             ColumnData::ListBool(a) => a.try_push(Some(value)),
@@ -505,6 +517,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a vector of integer value in array, if it's not a vector of integer array failled
     pub fn push_veci32(&mut self, value: Vec<Option<i32>>) -> arrow2::error::Result<()> {
         match self {
             ColumnData::ListInt(a) => a.try_push(Some(value)),
@@ -512,6 +525,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a vector of float value in array, if it's not a vector of float array failled
     pub fn push_vecf32(&mut self, value: Vec<Option<f32>>) -> arrow2::error::Result<()> {
         match self {
             ColumnData::ListFloat(a) => a.try_push(Some(value)),
@@ -519,6 +533,7 @@ impl ColumnData {
         }
     }
 
+    /// Add a vector of string value in array, if it's not a vector of string array failled
     pub fn push_vecstring(&mut self, value: Vec<Option<String>>) -> arrow2::error::Result<()> {
         match self {
             ColumnData::ListString(a) => a.try_push(Some(value)),
@@ -526,6 +541,7 @@ impl ColumnData {
         }
     }
 
+    /// Convert ColumnData in Arrow2 array
     pub fn into_arc(self) -> std::sync::Arc<dyn arrow2::array::Array> {
         match self {
             ColumnData::Bool(a) => a.into_arc(),
