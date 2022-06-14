@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["vcf2parquet_bin"] = [{"text":"impl ValueEnum for <a class=\"enum\" href=\"vcf2parquet_bin/cli/enum.Compression.html\" title=\"enum vcf2parquet_bin::cli::Compression\">Compression</a>","synthetic":false,"types":["vcf2parquet_bin::cli::Compression"]}];
+implementors["vcf2parquet"] = [{"text":"impl ValueEnum for <a class=\"enum\" href=\"vcf2parquet/cli/enum.Compression.html\" title=\"enum vcf2parquet::cli::Compression\">Compression</a>","synthetic":false,"types":["vcf2parquet::cli::Compression"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

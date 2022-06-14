@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Record2Chunk",""]]});
