@@ -54,6 +54,35 @@
 <span id="49">49</span>
 <span id="50">50</span>
 <span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
 </pre><pre class="rust"><code><span class="doccomment">//! error of vcf2parquet-bin</span>
 
 <span class="comment">/* std use */</span>
@@ -66,15 +95,15 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
     <span class="doccomment">/// Io error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">IoError</span> { <span class="ident">error</span>: <span class="ident">std::io::Error</span> },
+    <span class="ident">Io</span> { <span class="ident">error</span>: <span class="ident">std::io::Error</span> },
 
     <span class="doccomment">/// Niffler error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">NifflerError</span> { <span class="ident">error</span>: <span class="ident">niffler::Error</span> },
+    <span class="ident">Niffler</span> { <span class="ident">error</span>: <span class="ident">niffler::Error</span> },
 
     <span class="doccomment">/// vcf2parquet-lib error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">LibError</span> {
+    <span class="ident">Lib</span> {
         <span class="ident">error</span>: <span class="ident">vcf2parquet_lib::error::Error</span>,
     },
 }
@@ -88,23 +117,52 @@
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::IoError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Io</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">niffler::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">niffler::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::NifflerError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Niffler</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">vcf2parquet_lib::error::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">vcf2parquet_lib::error::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::LibError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Lib</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">tests</span> {
+    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">error_conversion</span>() {
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(
+                <span class="string">&quot;{:?}&quot;</span>,
+                <span class="ident">Error::from</span>(<span class="ident">std::io::Error::new</span>(<span class="ident">std::io::ErrorKind::NotFound</span>, <span class="string">&quot;test&quot;</span>))
+            ),
+            <span class="string">&quot;Io { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.<span class="ident">to_string</span>()
+        );
+
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">Error::from</span>(<span class="ident">niffler::Error::FileTooShort</span>)),
+            <span class="string">&quot;Niffler { error: FileTooShort }&quot;</span>.<span class="ident">to_string</span>()
+        );
+
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(
+                <span class="string">&quot;{:?}&quot;</span>,
+                <span class="ident">Error::from</span>(<span class="ident">vcf2parquet_lib::error::Error::NoConversion</span>)
+            ),
+            <span class="string">&quot;Lib { error: NoConversion }&quot;</span>.<span class="ident">to_string</span>()
+        );
+    }
+}
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_bin" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
 </body></html>

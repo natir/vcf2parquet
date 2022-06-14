@@ -141,21 +141,21 @@
 
     <span class="doccomment">/// Arrow error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">ArrowError</span> { <span class="ident">error</span>: <span class="ident">arrow2::error::ArrowError</span> },
+    <span class="ident">Arrow</span> { <span class="ident">error</span>: <span class="ident">arrow2::error::ArrowError</span> },
 
     <span class="doccomment">/// Parquet error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">ParquetError</span> {
+    <span class="ident">Parquet</span> {
         <span class="ident">error</span>: <span class="ident">arrow2::io::parquet::read::ParquetError</span>,
     },
 
     <span class="doccomment">/// Io error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">IoError</span> { <span class="ident">error</span>: <span class="ident">std::io::Error</span> },
+    <span class="ident">Io</span> { <span class="ident">error</span>: <span class="ident">std::io::Error</span> },
 
     <span class="doccomment">/// Noodles header vcf error</span>
     <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">NoodlesHeaderError</span> {
+    <span class="ident">NoodlesHeader</span> {
         <span class="ident">error</span>: <span class="ident">noodles::vcf::header::ParseError</span>,
     },
 }
@@ -169,25 +169,25 @@
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::IoError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Io</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">arrow2::error::ArrowError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">arrow2::error::ArrowError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::ArrowError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Arrow</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">arrow2::io::parquet::read::ParquetError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">arrow2::io::parquet::read::ParquetError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::ParquetError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::Parquet</span> { <span class="ident">error</span> }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">noodles::vcf::header::ParseError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">noodles::vcf::header::ParseError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::NoodlesHeaderError</span> { <span class="ident">error</span> }
+        <span class="ident">Error::NoodlesHeader</span> { <span class="ident">error</span> }
     }
 }
 
@@ -213,7 +213,7 @@
                 <span class="string">&quot;{:?}&quot;</span>,
                 <span class="ident">Error::from</span>(<span class="ident">std::io::Error::new</span>(<span class="ident">std::io::ErrorKind::NotFound</span>, <span class="string">&quot;test&quot;</span>))
             ),
-            <span class="string">&quot;IoError { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Io { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.<span class="ident">to_string</span>()
         );
 
         <span class="macro">assert_eq!</span>(
@@ -223,7 +223,7 @@
                     <span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>()
                 ))
             ),
-            <span class="string">&quot;ArrowError { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Arrow { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
         );
 
         <span class="macro">assert_eq!</span>(
@@ -233,7 +233,7 @@
                     <span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>()
                 ))
             ),
-            <span class="string">&quot;ParquetError { error: General(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Parquet { error: General(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
         );
 
         <span class="macro">assert_eq!</span>(
@@ -241,7 +241,7 @@
                 <span class="string">&quot;{:?}&quot;</span>,
                 <span class="ident">Error::from</span>(<span class="ident">noodles::vcf::header::ParseError::MissingHeader</span>)
             ),
-            <span class="string">&quot;NoodlesHeaderError { error: MissingHeader }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;NoodlesHeader { error: MissingHeader }&quot;</span>.<span class="ident">to_string</span>()
         );
     }
 }
