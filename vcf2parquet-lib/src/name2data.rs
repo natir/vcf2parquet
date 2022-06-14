@@ -15,6 +15,7 @@ pub struct Name2Data(std::collections::HashMap<String, ColumnData>);
 
 impl Name2Data {
     /// Create a new Name2Data, vcf header is required to add info and genotype column
+    /// length parameter is used to preallocate memory
     pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
         let mut name2data = std::collections::HashMap::new();
 
@@ -191,6 +192,7 @@ impl Name2Data {
                     self.get_mut(&key).unwrap().push_string(val.to_string())
                 }
                 Some(noodles::vcf::record::info::field::Value::String(val)) => {
+                    println!("{}", key);
                     self.get_mut(&key).unwrap().push_string(val.to_string())
                 }
                 Some(noodles::vcf::record::info::field::Value::IntegerArray(vals)) => {
@@ -457,14 +459,8 @@ impl ColumnData {
     pub fn push_null(&mut self) {
         match self {
             ColumnData::Bool(a) => a.push_null(),
-            ColumnData::Int(a) => {
-                //self.push_i32(Some(i32::MIN));
-                a.push_null()
-            }
-            ColumnData::Float(a) => {
-                //self.push_f32(Some(NAN));
-                a.push_null()
-            }
+            ColumnData::Int(a) => a.push_null(),
+            ColumnData::Float(a) => a.push_null(),
             ColumnData::String(a) => a.push_null(),
             ColumnData::ListBool(a) => a.push_null(),
             ColumnData::ListInt(a) => a.push_null(),
@@ -553,5 +549,143 @@ impl ColumnData {
             ColumnData::ListFloat(a) => a.into_arc(),
             ColumnData::ListString(a) => a.into_arc(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    static VCF_FILE: &[u8] = b"##fileformat=VCFv4.1
+##fileDate=2022-05-28
+##source=ClinVar
+##reference=GRCh38
+##ID=<Description=\"ClinVar Variation ID\">
+##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
+##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
+##INFO=<ID=DBVARID,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
+##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\">
+##INFO=<ID=CLNVC,Number=2,Type=String,Description=\"Variant type\">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\">
+##FORMAT=<ID=DC,Number=1,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\">
+##FORMAT=<ID=GQ,Number=1,Type=Character,Description=\"Genotype Quality\">
+##FORMAT=<ID=GF,Number=3,Type=String,Description=\"Genotype\">
+##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
+##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
+#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
+1\t10\t.\tA\tC,T\t23\tPASS\tALLELEID=14;AF_ESP=1.2;DBVARID;GENEINFO=c;CLNVC=test1,test2\tAD:GQ:GF:DC\t1:c:test:1.2\t2:a:Test:4.5
+";
+
+    #[test]
+    fn init() {
+        let mut reader = noodles::vcf::Reader::new(VCF_FILE);
+
+        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+
+        let mut data = Name2Data::new(10, &header);
+        let mut col_names = data.0.keys().cloned().collect::<Vec<String>>();
+        col_names.sort();
+
+        assert_eq!(
+            col_names,
+            vec![
+                "alternate".to_string(),
+                "chromosome".to_string(),
+                "filter".to_string(),
+                "format_first_AD".to_string(),
+                "format_first_DC".to_string(),
+                "format_first_GF".to_string(),
+                "format_first_GQ".to_string(),
+                "format_second_AD".to_string(),
+                "format_second_DC".to_string(),
+                "format_second_GF".to_string(),
+                "format_second_GQ".to_string(),
+                "identifier".to_string(),
+                "info_AF_ESP".to_string(),
+                "info_ALLELEID".to_string(),
+                "info_CLNVC".to_string(),
+                "info_DBVARID".to_string(),
+                "info_GENEINFO".to_string(),
+                "position".to_string(),
+                "quality".to_string(),
+                "reference".to_string()
+            ]
+        );
+
+        assert_eq!(
+            format!("{:?}", data.get("chromosome")),
+            format!(
+                "{:?}",
+                Some(&ColumnData::String(arrow2::array::MutableUtf8Array::new()))
+            )
+        );
+
+        assert_eq!(
+            format!("{:?}", data.get_mut("chromosome")),
+            format!(
+                "{:?}",
+                Some(&ColumnData::String(arrow2::array::MutableUtf8Array::new()))
+            )
+        );
+    }
+
+    #[test]
+    fn add_record() {
+        println!("{}", String::from_utf8(VCF_FILE.to_vec()).unwrap());
+
+        let mut reader = noodles::vcf::Reader::new(VCF_FILE);
+
+        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+
+        let mut data = Name2Data::new(10, &header);
+
+        let mut iterator = reader.records(&header);
+        let record = iterator.next().unwrap().unwrap();
+
+        data.add_record(record, &header).unwrap();
+        assert_eq!(format!("{:?}", data.get("alternate")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1, 2], values: [67, 84], validity: None }, validity: None }))".to_string());
+
+        assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [49], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [80, 65, 83, 83], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("format_first_AD")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }, validity: None }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("format_first_DC")),
+            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))".to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("format_first_GQ")), "Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("format_first_GF")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [116, 101, 115, 116], validity: None }, validity: None }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("format_second_AD")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutablePrimitiveArray { data_type: Int32, values: [2], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_DC")),
+            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [4.5], validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_GQ")),
+            "Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [97], validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_GF")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [84, 101, 115, 116], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("identifier")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 0], values: [], validity: Some([0b_______0]) }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_AF_ESP")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("info_ALLELEID")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))"
+                .to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("info_CLNVC")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 5, 10], values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_DBVARID")), "Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_GENEINFO")), "Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("position")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))"
+                .to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("quality")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("reference")), "Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [65], validity: None }))".to_string());
     }
 }
