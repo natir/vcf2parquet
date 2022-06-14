@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["vcf2parquet_bin"] = [{"text":"impl ArgEnum for <a class=\"enum\" href=\"vcf2parquet_bin/cli/enum.Compression.html\" title=\"enum vcf2parquet_bin::cli::Compression\">Compression</a>","synthetic":false,"types":["vcf2parquet_bin::cli::Compression"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
