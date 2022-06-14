@@ -15,21 +15,21 @@ pub enum Error {
 
     /// Arrow error
     #[error(transparent)]
-    ArrowError { error: arrow2::error::ArrowError },
+    Arrow { error: arrow2::error::ArrowError },
 
     /// Parquet error
     #[error(transparent)]
-    ParquetError {
+    Parquet {
         error: arrow2::io::parquet::read::ParquetError,
     },
 
     /// Io error
     #[error(transparent)]
-    IoError { error: std::io::Error },
+    Io { error: std::io::Error },
 
     /// Noodles header vcf error
     #[error(transparent)]
-    NoodlesHeaderError {
+    NoodlesHeader {
         error: noodles::vcf::header::ParseError,
     },
 }
@@ -43,25 +43,25 @@ where
 
 impl From<std::io::Error> for Error {
     fn from(error: std::io::Error) -> Self {
-        Error::IoError { error }
+        Error::Io { error }
     }
 }
 
 impl From<arrow2::error::ArrowError> for Error {
     fn from(error: arrow2::error::ArrowError) -> Self {
-        Error::ArrowError { error }
+        Error::Arrow { error }
     }
 }
 
 impl From<arrow2::io::parquet::read::ParquetError> for Error {
     fn from(error: arrow2::io::parquet::read::ParquetError) -> Self {
-        Error::ParquetError { error }
+        Error::Parquet { error }
     }
 }
 
 impl From<noodles::vcf::header::ParseError> for Error {
     fn from(error: noodles::vcf::header::ParseError) -> Self {
-        Error::NoodlesHeaderError { error }
+        Error::NoodlesHeader { error }
     }
 }
 
@@ -87,7 +87,7 @@ mod tests {
                 "{:?}",
                 Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, "test"))
             ),
-            "IoError { error: Custom { kind: NotFound, error: \"test\" } }".to_string()
+            "Io { error: Custom { kind: NotFound, error: \"test\" } }".to_string()
         );
 
         assert_eq!(
@@ -97,7 +97,7 @@ mod tests {
                     "test".to_string()
                 ))
             ),
-            "ArrowError { error: NotYetImplemented(\"test\") }".to_string()
+            "Arrow { error: NotYetImplemented(\"test\") }".to_string()
         );
 
         assert_eq!(
@@ -107,7 +107,7 @@ mod tests {
                     "test".to_string()
                 ))
             ),
-            "ParquetError { error: General(\"test\") }".to_string()
+            "Parquet { error: General(\"test\") }".to_string()
         );
 
         assert_eq!(
@@ -115,7 +115,7 @@ mod tests {
                 "{:?}",
                 Error::from(noodles::vcf::header::ParseError::MissingHeader)
             ),
-            "NoodlesHeaderError { error: MissingHeader }".to_string()
+            "NoodlesHeader { error: MissingHeader }".to_string()
         );
     }
 }
