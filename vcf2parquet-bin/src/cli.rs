@@ -64,3 +64,126 @@ impl Command {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic_value() {
+        let mut params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Snappy),
+        };
+
+        assert_eq!(
+            params.input(),
+            &std::path::Path::new("test/input.vcf").to_path_buf()
+        );
+
+        assert_eq!(
+            params.output(),
+            &std::path::Path::new("test/output.parquet").to_path_buf()
+        );
+
+        assert_eq!(params.batch_size(), 100_000);
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: Some(100),
+            compression: Some(Compression::Snappy),
+        };
+
+        assert_eq!(params.batch_size(), 100);
+    }
+
+    #[test]
+    fn compression() {
+        let mut params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: None,
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Snappy
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Uncompressed),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Uncompressed
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Snappy),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Snappy
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Gzip),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Gzip
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Lzo),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Lzo
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Brotli),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Brotli
+        );
+
+        params = Command {
+            input: std::path::Path::new("test/input.vcf").to_path_buf(),
+            output: std::path::Path::new("test/output.parquet").to_path_buf(),
+            batch_size: None,
+            compression: Some(Compression::Lz4),
+        };
+
+        assert_eq!(
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Lz4
+        );
+    }
+}
