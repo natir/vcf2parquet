@@ -13,7 +13,7 @@ pub mod record2chunk;
 pub mod schema;
 
 /// Read `input` vcf and write parquet in `output`
-pub fn noodles2arrow<R, W>(
+pub fn vcf2parquet<R, W>(
     input: &mut R,
     output: &mut W,
     batch_size: usize,
@@ -63,6 +63,63 @@ where
         writer.write(group?)?;
     }
     let _ = writer.end(None)?;
+
+    Ok(())
+}
+
+/// Read `input` vcf and write each row group in a parquet file match with template
+pub fn vcf2multiparquet<R, W>(
+    input: &mut R,
+    template: String,
+    batch_size: usize,
+    compression: arrow2::io::parquet::write::CompressionOptions,
+) -> error::Result<()>
+where
+    R: std::io::BufRead,
+{
+    // VCF section
+    let mut reader = noodles::vcf::Reader::new(input);
+
+    let vcf_header: noodles::vcf::Header = reader
+        .read_header()
+        .map_err(error::mapping)?
+        .parse()
+        .map_err(error::mapping)?;
+
+    // Parquet section
+    let schema = schema::from_header(&vcf_header)?;
+
+    let chunk_iterator = record2chunk::Record2Chunk::new(
+        reader.records(&vcf_header),
+        batch_size,
+        vcf_header.clone(),
+        schema.clone(),
+    );
+
+    let options = arrow2::io::parquet::write::WriteOptions {
+        write_statistics: true,
+        compression,
+        version: arrow2::io::parquet::write::Version::V2,
+    };
+
+    let encodings = chunk_iterator.encodings();
+    let row_groups = arrow2::io::parquet::write::RowGroupIterator::try_new(
+        chunk_iterator,
+        &schema,
+        options,
+        encodings,
+    )?;
+
+    for (index, group) in row_groups.enumerate() {
+        let output = std::fs::File::create(template.replace("{}", &index.to_string()))
+            .map_err(error::mapping)?;
+        let mut writer =
+            arrow2::io::parquet::write::FileWriter::try_new(output, schema.clone(), options)?;
+
+        writer.start()?;
+        writer.write(group?)?;
+        writer.end(None)?;
+    }
 
     Ok(())
 }
@@ -252,7 +309,7 @@ mod tests {
         let mut input = std::io::BufReader::new(&*VCF_FILE);
         let mut output = Vec::new();
 
-        noodles2arrow(
+        vcf2parquet(
             &mut input,
             &mut output,
             1,
@@ -268,7 +325,7 @@ mod tests {
         let mut input = std::io::BufReader::new(&raw_data[..]);
         let mut output = Vec::new();
 
-        let result = noodles2arrow(
+        let result = vcf2parquet(
             &mut input,
             &mut output,
             1,

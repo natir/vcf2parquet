@@ -9,10 +9,10 @@ use clap::Parser as _;
 use vcf2parquet_lib as lib;
 
 /* mod section */
-mod cli;
-mod error;
+pub mod cli;
+pub mod error;
 
-fn main() -> error::Result<()> {
+pub fn main() -> error::Result<()> {
     let params = cli::Command::parse();
 
     let mut reader = std::fs::File::open(params.input())
@@ -24,7 +24,7 @@ fn main() -> error::Result<()> {
 
     let mut output = std::fs::File::create(params.output()).map_err(error::mapping)?;
 
-    lib::noodles2arrow(
+    lib::vcf2parquet(
         &mut reader,
         &mut output,
         params.batch_size(),
