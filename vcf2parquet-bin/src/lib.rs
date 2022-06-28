@@ -15,6 +15,13 @@ pub mod error;
 pub fn main() -> error::Result<()> {
     let params = cli::Command::parse();
 
+    match params.subcommand() {
+        cli::SubCommand::Convert(subparams) => convert(&params, &subparams),
+        cli::SubCommand::Split(subparams) => split(&params, &subparams),
+    }
+}
+
+fn convert(params: &cli::Command, subparams: &cli::Convert) -> error::Result<()> {
     let mut reader = std::fs::File::open(params.input())
         .map_err(error::mapping)
         .map(Box::new)
@@ -22,11 +29,30 @@ pub fn main() -> error::Result<()> {
         .map_err(error::mapping)?
         .map(|(file, _)| std::io::BufReader::new(file))?;
 
-    let mut output = std::fs::File::create(params.output()).map_err(error::mapping)?;
+    let mut output = std::fs::File::create(subparams.output()).map_err(error::mapping)?;
 
     lib::vcf2parquet(
         &mut reader,
         &mut output,
+        params.batch_size(),
+        params.compression(),
+    )
+    .map_err(error::mapping)?;
+
+    Ok(())
+}
+
+fn split(params: &cli::Command, subparams: &cli::Split) -> error::Result<()> {
+    let mut reader = std::fs::File::open(params.input())
+        .map_err(error::mapping)
+        .map(Box::new)
+        .map(|x| niffler::get_reader(x))
+        .map_err(error::mapping)?
+        .map(|(file, _)| std::io::BufReader::new(file))?;
+
+    lib::vcf2multiparquet(
+        &mut reader,
+        subparams.format(),
         params.batch_size(),
         params.compression(),
     )

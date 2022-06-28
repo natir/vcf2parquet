@@ -28,5 +28,9 @@ lib = ["vcf2parquet-lib"]
 bin = ["vcf2parquet-bin"]
 
 
+[[bin]]
+name = "vcf2parquet"
+required-features = ["bin"]
+
 [package.metadata.docs.rs]
 all-features = true

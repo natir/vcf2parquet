@@ -15,3 +15,4 @@ thiserror   = { version = "1" }
 
 [dev-dependencies]
 lazy_static = { version = "1" }
+tempfile    = { version = "3" }

@@ -68,9 +68,9 @@ where
 }
 
 /// Read `input` vcf and write each row group in a parquet file match with template
-pub fn vcf2multiparquet<R, W>(
+pub fn vcf2multiparquet<R>(
     input: &mut R,
-    template: String,
+    template: &str,
     batch_size: usize,
     compression: arrow2::io::parquet::write::CompressionOptions,
 ) -> error::Result<()>
@@ -305,7 +305,7 @@ mod tests {
     ];
 
     #[test]
-    fn positives() {
+    fn convert_positives() {
         let mut input = std::io::BufReader::new(&*VCF_FILE);
         let mut output = Vec::new();
 
@@ -333,5 +333,28 @@ mod tests {
         );
 
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn multi_positives() {
+        let mut input = std::io::BufReader::new(&*VCF_FILE);
+        let dir = tempfile::tempdir().unwrap();
+
+        let format = dir
+            .path()
+            .join("test_{}.parquet")
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_string();
+        println!("{}", format);
+
+        vcf2multiparquet(
+            &mut input,
+            &format,
+            1,
+            arrow2::io::parquet::write::CompressionOptions::Gzip,
+        )
+        .unwrap();
     }
 }
