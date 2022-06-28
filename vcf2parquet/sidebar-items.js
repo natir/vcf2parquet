@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"mod":[["cli","cli of vcf2parquet-bin"],["error","error of vcf2parquet-bin"]]});
+initSidebarItems({"fn":[["vcf2multiparquet","Read `input` vcf and write each row group in a parquet file match with template"],["vcf2parquet","Read `input` vcf and write parquet in `output`"]],"mod":[["error","vcf2parquet error"],["name2data","Struct to link name and data"],["record2chunk","Convert vcf record iterator into Parquet chunk"],["schema","Construct parquet schema corresponding to vcf"]]});

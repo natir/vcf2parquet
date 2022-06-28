@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["vcf2parquet_bin"] = [{"text":"impl Subcommand for <a class=\"enum\" href=\"vcf2parquet_bin/cli/enum.SubCommand.html\" title=\"enum vcf2parquet_bin::cli::SubCommand\">SubCommand</a>","synthetic":false,"types":["vcf2parquet_bin::cli::SubCommand"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
