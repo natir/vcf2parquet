@@ -11,13 +11,13 @@ use arrow2::array::TryPush;
 
 ///Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure
 #[derive(Debug)]
-pub struct Name2Data(std::collections::HashMap<String, ColumnData>);
+pub struct Name2Data(rustc_hash::FxHashMap<String, ColumnData>);
 
 impl Name2Data {
     /// Create a new Name2Data, vcf header is required to add info and genotype column
     /// length parameter is used to preallocate memory
     pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
-        let mut name2data = std::collections::HashMap::new();
+        let mut name2data = rustc_hash::FxHashMap::default();
 
         name2data.insert(
             "chromosome".to_string(),
@@ -89,7 +89,7 @@ impl Name2Data {
             .0
             .keys()
             .cloned()
-            .collect::<std::collections::HashSet<String>>();
+            .collect::<rustc_hash::FxHashSet<String>>();
 
         // Chromosome name
         self.get_mut("chromosome")
@@ -302,7 +302,7 @@ impl Name2Data {
     }
 
     fn add_info(
-        data: &mut std::collections::HashMap<String, ColumnData>,
+        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
         header: &noodles::vcf::Header,
         length: usize,
     ) {
@@ -372,7 +372,7 @@ impl Name2Data {
     }
 
     fn add_genotype(
-        data: &mut std::collections::HashMap<String, ColumnData>,
+        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
         header: &noodles::vcf::Header,
         length: usize,
     ) {
