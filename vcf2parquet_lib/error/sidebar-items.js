@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Error",""]],"fn":[["mapping",""]],"type":[["Result",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["mapping",""]],"type":[["Result",""]]};

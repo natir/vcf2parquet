@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ColumnData",""]],"struct":[["Name2Data","Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure"]]});
+window.SIDEBAR_ITEMS = {"enum":[["ColumnData",""]],"struct":[["Name2Data","Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure"]]};

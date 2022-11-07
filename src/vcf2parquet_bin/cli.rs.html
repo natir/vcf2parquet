@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-bin/src/cli.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cli.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_bin/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_bin/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_bin/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-bin/src/cli.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>cli.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_bin/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_bin/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_bin/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -257,260 +252,259 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
-</pre><pre class="rust"><code><span class="doccomment">//! cli of vcf2parquet-bin</span>
+</pre><pre class="rust"><code><span class="doccomment">//! cli of vcf2parquet-bin
 
-<span class="comment">/* std use */</span>
+</span><span class="comment">/* std use */
 
-<span class="comment">/* crate use */</span>
+/* crate use */
 
-<span class="comment">/* project use */</span>
+/* project use */
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">clap::ArgEnum</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Compression</span> {
-    <span class="ident">Uncompressed</span>,
-    <span class="ident">Snappy</span>,
-    <span class="ident">Gzip</span>,
-    <span class="ident">Lzo</span>,
-    <span class="ident">Brotli</span>,
-    <span class="ident">Lz4</span>,
-    <span class="comment">// Zstd,</span>
+</span><span class="attribute">#[derive(Debug, clap::ArgEnum, Clone, Copy)]
+</span><span class="kw">pub enum </span>Compression {
+    Uncompressed,
+    Snappy,
+    Gzip,
+    Lzo,
+    Brotli,
+    Lz4,
+    <span class="comment">// Zstd,
+</span>}
+
+<span class="attribute">#[derive(clap::Parser, std::fmt::Debug)]
+</span><span class="kw">pub struct </span>Command {
+    <span class="doccomment">/// Input path
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;i&#39;</span>, long = <span class="string">&quot;input&quot;</span>)]
+    </span>input: std::path::PathBuf,
+
+    <span class="doccomment">/// Batch size (default 100,000)
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;b&#39;</span>, long = <span class="string">&quot;batch-size&quot;</span>)]
+    </span>batch_size: <span class="prelude-ty">Option</span>&lt;usize&gt;,
+
+    <span class="doccomment">/// Compression method (default snappy)
+    </span><span class="attribute">#[clap(arg_enum, short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;compression&quot;</span>)]
+    </span>compression: <span class="prelude-ty">Option</span>&lt;Compression&gt;,
+
+    <span class="attribute">#[clap(subcommand)]
+    </span>subcommand: SubCommand,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">clap::Parser</span>, <span class="ident">std::fmt::Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Command</span> {
-    <span class="doccomment">/// Input path</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span> <span class="op">=</span> <span class="string">&#39;i&#39;</span>, <span class="ident">long</span> <span class="op">=</span> <span class="string">&quot;input&quot;</span>)]</span>
-    <span class="ident">input</span>: <span class="ident">std::path::PathBuf</span>,
-
-    <span class="doccomment">/// Batch size (default 100,000)</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span> <span class="op">=</span> <span class="string">&#39;b&#39;</span>, <span class="ident">long</span> <span class="op">=</span> <span class="string">&quot;batch-size&quot;</span>)]</span>
-    <span class="ident">batch_size</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
-
-    <span class="doccomment">/// Compression method (default snappy)</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">arg_enum</span>, <span class="ident">short</span> <span class="op">=</span> <span class="string">&#39;c&#39;</span>, <span class="ident">long</span> <span class="op">=</span> <span class="string">&quot;compression&quot;</span>)]</span>
-    <span class="ident">compression</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Compression</span><span class="op">&gt;</span>,
-
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
-    <span class="ident">subcommand</span>: <span class="ident">SubCommand</span>,
+<span class="attribute">#[derive(clap::Parser, std::fmt::Debug, Clone)]
+</span><span class="kw">pub enum </span>SubCommand {
+    Convert(Convert),
+    Split(Split),
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">clap::Parser</span>, <span class="ident">std::fmt::Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SubCommand</span> {
-    <span class="ident">Convert</span>(<span class="ident">Convert</span>),
-    <span class="ident">Split</span>(<span class="ident">Split</span>),
+<span class="doccomment">/// Convert a vcf in a parquet
+</span><span class="attribute">#[derive(clap::Parser, std::fmt::Debug, Clone)]
+</span><span class="kw">pub struct </span>Convert {
+    <span class="doccomment">/// Output path
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;o&#39;</span>, long = <span class="string">&quot;output&quot;</span>)]
+    </span>output: std::path::PathBuf,
 }
 
-<span class="doccomment">/// Convert a vcf in a parquet</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">clap::Parser</span>, <span class="ident">std::fmt::Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Convert</span> {
-    <span class="doccomment">/// Output path</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span> <span class="op">=</span> <span class="string">&#39;o&#39;</span>, <span class="ident">long</span> <span class="op">=</span> <span class="string">&quot;output&quot;</span>)]</span>
-    <span class="ident">output</span>: <span class="ident">std::path::PathBuf</span>,
+<span class="doccomment">/// Convert a vcf in multiple parquet file each file contains `batch_size` record
+</span><span class="attribute">#[derive(clap::Parser, std::fmt::Debug, Clone)]
+</span><span class="kw">pub struct </span>Split {
+    <span class="doccomment">/// Output format string, first {} are replace by number
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;f&#39;</span>, long = <span class="string">&quot;output-format&quot;</span>)]
+    </span>format: String,
 }
 
-<span class="doccomment">/// Convert a vcf in multiple parquet file each file contains `batch_size` record</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">clap::Parser</span>, <span class="ident">std::fmt::Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Split</span> {
-    <span class="doccomment">/// Output format string, first {} are replace by number</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span> <span class="op">=</span> <span class="string">&#39;f&#39;</span>, <span class="ident">long</span> <span class="op">=</span> <span class="string">&quot;output-format&quot;</span>)]</span>
-    <span class="ident">format</span>: <span class="ident">String</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">Command</span> {
-    <span class="doccomment">/// Get input</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">std::path::PathBuf</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">input</span>
+<span class="kw">impl </span>Command {
+    <span class="doccomment">/// Get input
+    </span><span class="kw">pub fn </span>input(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>std::path::PathBuf {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.input
     }
 
-    <span class="doccomment">/// Get batch_size set by user or default value</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">batch_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">batch_size</span>.<span class="ident">unwrap_or</span>(<span class="number">100_000</span>)
+    <span class="doccomment">/// Get batch_size set by user or default value
+    </span><span class="kw">pub fn </span>batch_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.batch_size.unwrap_or(<span class="number">100_000</span>)
     }
 
-    <span class="doccomment">/// Get compression set by user or default value</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compression</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">compression</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Uncompressed</span>) =&gt; {
-                <span class="ident">arrow2::io::parquet::write::CompressionOptions::Uncompressed</span>
+    <span class="doccomment">/// Get compression set by user or default value
+    </span><span class="kw">pub fn </span>compression(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; arrow2::io::parquet::write::CompressionOptions {
+        <span class="kw">match </span><span class="self">self</span>.compression {
+            <span class="prelude-val">Some</span>(Compression::Uncompressed) =&gt; {
+                arrow2::io::parquet::write::CompressionOptions::Uncompressed
             }
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Snappy</span>) =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Snappy</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Gzip</span>) =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Gzip</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Lzo</span>) =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Lzo</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Brotli</span>) =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Brotli</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">Compression::Lz4</span>) =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Lz4</span>,
-            <span class="comment">// Some(Compression::Zstd) =&gt; arrow2::io::parquet::write::CompressionOptions::Zstd,</span>
-            <span class="prelude-val">None</span> =&gt; <span class="ident">arrow2::io::parquet::write::CompressionOptions::Snappy</span>,
+            <span class="prelude-val">Some</span>(Compression::Snappy) =&gt; arrow2::io::parquet::write::CompressionOptions::Snappy,
+            <span class="prelude-val">Some</span>(Compression::Gzip) =&gt; arrow2::io::parquet::write::CompressionOptions::Gzip,
+            <span class="prelude-val">Some</span>(Compression::Lzo) =&gt; arrow2::io::parquet::write::CompressionOptions::Lzo,
+            <span class="prelude-val">Some</span>(Compression::Brotli) =&gt; arrow2::io::parquet::write::CompressionOptions::Brotli,
+            <span class="prelude-val">Some</span>(Compression::Lz4) =&gt; arrow2::io::parquet::write::CompressionOptions::Lz4,
+            <span class="comment">// Some(Compression::Zstd) =&gt; arrow2::io::parquet::write::CompressionOptions::Zstd,
+            </span><span class="prelude-val">None </span>=&gt; arrow2::io::parquet::write::CompressionOptions::Snappy,
         }
     }
 
-    <span class="doccomment">/// Get subcommand</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subcommand</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">SubCommand</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">subcommand</span>
+    <span class="doccomment">/// Get subcommand
+    </span><span class="kw">pub fn </span>subcommand(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>SubCommand {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.subcommand
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Convert</span> {
-    <span class="doccomment">/// Get output</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">std::path::PathBuf</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">output</span>
+<span class="kw">impl </span>Convert {
+    <span class="doccomment">/// Get output
+    </span><span class="kw">pub fn </span>output(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>std::path::PathBuf {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.output
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Split</span> {
-    <span class="doccomment">/// Get output format</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">format</span>
+<span class="kw">impl </span>Split {
+    <span class="doccomment">/// Get output format
+    </span><span class="kw">pub fn </span>format(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.format
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">basic_value</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Snappy</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>basic_value() {
+        <span class="kw">let </span><span class="kw-2">mut </span>params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">input</span>(),
-            <span class="kw-2">&amp;</span><span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>()
+            params.input(),
+            <span class="kw-2">&amp;</span>std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf()
         );
 
-        <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">subcommand</span>.<span class="ident">clone</span>() {
-            <span class="ident">SubCommand::Convert</span>(<span class="ident">c</span>) =&gt; <span class="macro">assert_eq!</span>(
-                <span class="ident">c</span>.<span class="ident">output</span>(),
-                <span class="kw-2">&amp;</span><span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>()
+        <span class="kw">match </span>params.subcommand.clone() {
+            SubCommand::Convert(c) =&gt; <span class="macro">assert_eq!</span>(
+                c.output(),
+                <span class="kw-2">&amp;</span>std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf()
             ),
-            <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
         }
 
-        <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">batch_size</span>(), <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(params.batch_size(), <span class="number">100_000</span>);
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">Some</span>(<span class="number">100</span>),
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Snappy</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Split</span>(<span class="ident">Split</span> {
-                <span class="ident">format</span>: <span class="string">&quot;test_{}.parquet&quot;</span>.<span class="ident">to_string</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">Some</span>(<span class="number">100</span>),
+            compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            subcommand: SubCommand::Split(Split {
+                format: <span class="string">&quot;test_{}.parquet&quot;</span>.to_string(),
             }),
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">params</span>.<span class="ident">batch_size</span>(), <span class="number">100</span>);
+        <span class="macro">assert_eq!</span>(params.batch_size(), <span class="number">100</span>);
 
-        <span class="kw">match</span> <span class="ident">params</span>.<span class="ident">subcommand</span>.<span class="ident">clone</span>() {
-            <span class="ident">SubCommand::Split</span>(<span class="ident">s</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">s</span>.<span class="ident">format</span>(), <span class="string">&quot;test_{}.parquet&quot;</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+        <span class="kw">match </span>params.subcommand.clone() {
+            SubCommand::Split(s) =&gt; <span class="macro">assert_eq!</span>(s.format(), <span class="string">&quot;test_{}.parquet&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">compression</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">None</span>,
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>compression() {
+        <span class="kw">let </span><span class="kw-2">mut </span>params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">None</span>,
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Snappy</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Snappy
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Uncompressed</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Uncompressed),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Uncompressed</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Uncompressed
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Snappy</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Snappy</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Snappy
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Gzip</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Gzip),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Gzip</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Gzip
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Lzo</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Lzo),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Lzo</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Lzo
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Brotli</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Brotli),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Brotli</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Brotli
         );
 
-        <span class="ident">params</span> <span class="op">=</span> <span class="ident">Command</span> {
-            <span class="ident">input</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/input.vcf&quot;</span>).<span class="ident">to_path_buf</span>(),
-            <span class="ident">batch_size</span>: <span class="prelude-val">None</span>,
-            <span class="ident">compression</span>: <span class="prelude-val">Some</span>(<span class="ident">Compression::Lz4</span>),
-            <span class="ident">subcommand</span>: <span class="ident">SubCommand::Convert</span>(<span class="ident">Convert</span> {
-                <span class="ident">output</span>: <span class="ident">std::path::Path::new</span>(<span class="string">&quot;test/output.parquet&quot;</span>).<span class="ident">to_path_buf</span>(),
+        params = Command {
+            input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
+            batch_size: <span class="prelude-val">None</span>,
+            compression: <span class="prelude-val">Some</span>(Compression::Lz4),
+            subcommand: SubCommand::Convert(Convert {
+                output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">params</span>.<span class="ident">compression</span>(),
-            <span class="ident">arrow2::io::parquet::write::CompressionOptions::Lz4</span>
+            params.compression(),
+            arrow2::io::parquet::write::CompressionOptions::Lz4
         );
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_bin" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_bin" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

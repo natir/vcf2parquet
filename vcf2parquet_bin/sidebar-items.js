@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"mod":[["cli","cli of vcf2parquet-bin"],["error","error of vcf2parquet-bin"]]});
+window.SIDEBAR_ITEMS = {"fn":[["main",""]],"mod":[["cli","cli of vcf2parquet-bin"],["error","error of vcf2parquet-bin"]]};

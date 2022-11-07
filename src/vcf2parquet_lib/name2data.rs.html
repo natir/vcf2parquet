@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/name2data.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>name2data.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_lib/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/name2data.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>name2data.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_lib/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -743,441 +738,441 @@
 <span id="738">738</span>
 <span id="739">739</span>
 <span id="740">740</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Struct to link name and data</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Struct to link name and data
 
-<span class="comment">/* std use */</span>
+</span><span class="comment">/* std use */
 
-<span class="comment">/* crate use */</span>
-<span class="kw">use</span> <span class="ident">arrow2::array::MutableArray</span>;
-<span class="kw">use</span> <span class="ident">arrow2::array::MutablePrimitiveArray</span>;
-<span class="kw">use</span> <span class="ident">arrow2::array::TryPush</span>;
+/* crate use */
+</span><span class="kw">use </span>arrow2::array::MutableArray;
+<span class="kw">use </span>arrow2::array::MutablePrimitiveArray;
+<span class="kw">use </span>arrow2::array::TryPush;
 
-<span class="comment">/* project use */</span>
+<span class="comment">/* project use */
 
-<span class="doccomment">///Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Name2Data</span>(<span class="ident">std::collections::HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ColumnData</span><span class="op">&gt;</span>);
+</span><span class="doccomment">///Alias of [std::collections::HashMap] that associate a column name and [ColumnData], a proxy of arrow2 datastructure
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>Name2Data(rustc_hash::FxHashMap&lt;String, ColumnData&gt;);
 
-<span class="kw">impl</span> <span class="ident">Name2Data</span> {
-    <span class="doccomment">/// Create a new Name2Data, vcf header is required to add info and genotype column</span>
-    <span class="doccomment">/// length parameter is used to preallocate memory</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">length</span>: <span class="ident">usize</span>, <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">noodles::vcf::Header</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name2data</span> <span class="op">=</span> <span class="ident">std::collections::HashMap::new</span>();
+<span class="kw">impl </span>Name2Data {
+    <span class="doccomment">/// Create a new Name2Data, vcf header is required to add info and genotype column
+    /// length parameter is used to preallocate memory
+    </span><span class="kw">pub fn </span>new(length: usize, header: <span class="kw-2">&amp;</span>noodles::vcf::Header) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>name2data = rustc_hash::FxHashMap::default();
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;chromosome&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(
-                <span class="ident">length</span>,
+        name2data.insert(
+            <span class="string">&quot;chromosome&quot;</span>.to_string(),
+            ColumnData::String(arrow2::array::MutableUtf8Array::&lt;i32&gt;::with_capacity(
+                length,
             )),
         );
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;position&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::Int</span>(<span class="ident">MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>)),
+        name2data.insert(
+            <span class="string">&quot;position&quot;</span>.to_string(),
+            ColumnData::Int(MutablePrimitiveArray::&lt;i32&gt;::with_capacity(length)),
         );
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;identifier&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray</span>::<span class="op">&lt;</span>
-                <span class="ident">i32</span>,
-                <span class="ident">arrow2::array::MutableUtf8Array</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
-            <span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>)),
+        name2data.insert(
+            <span class="string">&quot;identifier&quot;</span>.to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::&lt;
+                i32,
+                arrow2::array::MutableUtf8Array&lt;i32&gt;,
+            &gt;::with_capacity(length)),
         );
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;reference&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(
-                <span class="ident">length</span>,
+        name2data.insert(
+            <span class="string">&quot;reference&quot;</span>.to_string(),
+            ColumnData::String(arrow2::array::MutableUtf8Array::&lt;i32&gt;::with_capacity(
+                length,
             )),
         );
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;alternate&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+        name2data.insert(
+            <span class="string">&quot;alternate&quot;</span>.to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
         );
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;quality&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::Float</span>(<span class="ident">MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>)),
+        name2data.insert(
+            <span class="string">&quot;quality&quot;</span>.to_string(),
+            ColumnData::Float(MutablePrimitiveArray::&lt;f32&gt;::with_capacity(length)),
         );
 
-        <span class="ident">name2data</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;filter&quot;</span>.<span class="ident">to_string</span>(),
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray</span>::<span class="op">&lt;</span>
-                <span class="ident">i32</span>,
-                <span class="ident">arrow2::array::MutableUtf8Array</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>,
-            <span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>)),
+        name2data.insert(
+            <span class="string">&quot;filter&quot;</span>.to_string(),
+            ColumnData::ListString(arrow2::array::MutableListArray::&lt;
+                i32,
+                arrow2::array::MutableUtf8Array&lt;i32&gt;,
+            &gt;::with_capacity(length)),
         );
 
-        <span class="ident"><span class="self">Self</span>::add_info</span>(<span class="kw-2">&amp;mut</span> <span class="ident">name2data</span>, <span class="ident">header</span>, <span class="ident">length</span>);
-        <span class="ident"><span class="self">Self</span>::add_genotype</span>(<span class="kw-2">&amp;mut</span> <span class="ident">name2data</span>, <span class="ident">header</span>, <span class="ident">length</span>);
+        <span class="self">Self</span>::add_info(<span class="kw-2">&amp;mut </span>name2data, header, length);
+        <span class="self">Self</span>::add_genotype(<span class="kw-2">&amp;mut </span>name2data, header, length);
 
-        <span class="ident">Name2Data</span>(<span class="ident">name2data</span>)
+        Name2Data(name2data)
     }
 
-    <span class="doccomment">/// Just a wrapper arround [std::collections::HashMap::get]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ColumnData</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get</span>(<span class="ident">key</span>)
+    <span class="doccomment">/// Just a wrapper arround [std::collections::HashMap::get]
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>ColumnData&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.get(key)
     }
 
-    <span class="doccomment">/// Just a wrapper arround [std::collections::HashMap::get_mut]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">ColumnData</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get_mut</span>(<span class="ident">key</span>)
+    <span class="doccomment">/// Just a wrapper arround [std::collections::HashMap::get_mut]
+    </span><span class="kw">pub fn </span>get_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>ColumnData&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.get_mut(key)
     }
 
-    <span class="doccomment">/// Add a vcf record in [std::collections::HashMap] struct</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_record</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">record</span>: <span class="ident">noodles::vcf::Record</span>,
-        <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">noodles::vcf::Header</span>,
-    ) -&gt; <span class="ident">std::result::Result</span><span class="op">&lt;</span>(), <span class="ident">arrow2::error::ArrowError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">not_changed_key</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="number">0</span>
-            .<span class="ident">keys</span>()
-            .<span class="ident">cloned</span>()
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">std::collections::HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="doccomment">/// Add a vcf record in [std::collections::HashMap] struct
+    </span><span class="kw">pub fn </span>add_record(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        record: noodles::vcf::Record,
+        header: <span class="kw-2">&amp;</span>noodles::vcf::Header,
+    ) -&gt; std::result::Result&lt;(), arrow2::error::ArrowError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>not_changed_key = <span class="self">self
+            </span>.<span class="number">0
+            </span>.keys()
+            .cloned()
+            .collect::&lt;rustc_hash::FxHashSet&lt;String&gt;&gt;();
 
-        <span class="comment">// Chromosome name</span>
-        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;chromosome&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">push_string</span>(<span class="ident">record</span>.<span class="ident">chromosome</span>().<span class="ident">to_string</span>());
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;chromosome&quot;</span>);
+        <span class="comment">// Chromosome name
+        </span><span class="self">self</span>.get_mut(<span class="string">&quot;chromosome&quot;</span>)
+            .unwrap()
+            .push_string(record.chromosome().to_string());
+        not_changed_key.remove(<span class="string">&quot;chromosome&quot;</span>);
 
-        <span class="comment">// Position</span>
-        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;position&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">push_i32</span>(<span class="ident">record</span>.<span class="ident">position</span>().<span class="ident">try_into</span>().<span class="ident">ok</span>());
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;position&quot;</span>);
+        <span class="comment">// Position
+        </span><span class="self">self</span>.get_mut(<span class="string">&quot;position&quot;</span>)
+            .unwrap()
+            .push_i32(record.position().try_into().ok());
+        not_changed_key.remove(<span class="string">&quot;position&quot;</span>);
 
-        <span class="comment">// ID</span>
-        <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">ids</span>().<span class="ident">is_empty</span>() {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;identifier&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>();
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">get_mut</span>(<span class="string">&quot;identifier&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">push_vecstring</span>(<span class="ident">record</span>.<span class="ident">ids</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>.<span class="ident">to_string</span>())).<span class="ident">collect</span>())
+        <span class="comment">// ID
+        </span><span class="kw">if </span>record.ids().is_empty() {
+            <span class="self">self</span>.get_mut(<span class="string">&quot;identifier&quot;</span>).unwrap().push_null();
+        } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
+            </span>.get_mut(<span class="string">&quot;identifier&quot;</span>)
+            .unwrap()
+            .push_vecstring(record.ids().iter().map(|x| <span class="prelude-val">Some</span>(x.to_string())).collect())
         {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
         }
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;identifier&quot;</span>);
+        not_changed_key.remove(<span class="string">&quot;identifier&quot;</span>);
 
-        <span class="comment">// Ref sequence</span>
-        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;reference&quot;</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">push_string</span>(<span class="ident">record</span>.<span class="ident">reference_bases</span>().<span class="ident">to_string</span>());
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;reference&quot;</span>);
+        <span class="comment">// Ref sequence
+        </span><span class="self">self</span>.get_mut(<span class="string">&quot;reference&quot;</span>)
+            .unwrap()
+            .push_string(record.reference_bases().to_string());
+        not_changed_key.remove(<span class="string">&quot;reference&quot;</span>);
 
-        <span class="comment">// Alt sequences</span>
-        <span class="kw">if</span> <span class="ident">record</span>.<span class="ident">alternate_bases</span>().<span class="ident">is_empty</span>() {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;alternate&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>();
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;alternate&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">push_vecstring</span>(
-            <span class="ident">record</span>
-                .<span class="ident">alternate_bases</span>()
-                .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>.<span class="ident">to_string</span>()))
-                .<span class="ident">collect</span>(),
+        <span class="comment">// Alt sequences
+        </span><span class="kw">if </span>record.alternate_bases().is_empty() {
+            <span class="self">self</span>.get_mut(<span class="string">&quot;alternate&quot;</span>).unwrap().push_null();
+        } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="string">&quot;alternate&quot;</span>).unwrap().push_vecstring(
+            record
+                .alternate_bases()
+                .iter()
+                .map(|x| <span class="prelude-val">Some</span>(x.to_string()))
+                .collect(),
         ) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
         }
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;alternate&quot;</span>);
+        not_changed_key.remove(<span class="string">&quot;alternate&quot;</span>);
 
-        <span class="comment">// Quality</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">quality</span>) <span class="op">=</span> <span class="ident">record</span>.<span class="ident">quality_score</span>() {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;quality&quot;</span>)
-                .<span class="ident">unwrap</span>()
-                .<span class="ident">push_f32</span>(<span class="ident">quality</span>.<span class="ident">try_into</span>().<span class="ident">ok</span>());
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;quality&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>();
+        <span class="comment">// Quality
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(quality) = record.quality_score() {
+            <span class="self">self</span>.get_mut(<span class="string">&quot;quality&quot;</span>)
+                .unwrap()
+                .push_f32(quality.try_into().ok());
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.get_mut(<span class="string">&quot;quality&quot;</span>).unwrap().push_null();
         }
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;quality&quot;</span>);
+        not_changed_key.remove(<span class="string">&quot;quality&quot;</span>);
 
-        <span class="comment">// Filter</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="ident">record</span>.<span class="ident">filters</span>() {
-            <span class="kw">match</span> <span class="ident">f</span> {
-                <span class="ident">noodles::vcf::record::Filters::Pass</span> =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>
-                        .<span class="ident">get_mut</span>(<span class="string">&quot;filter&quot;</span>)
-                        .<span class="ident">unwrap</span>()
-                        .<span class="ident">push_vecstring</span>(<span class="macro">vec!</span>[<span class="prelude-val">Some</span>(<span class="string">&quot;PASS&quot;</span>.<span class="ident">to_string</span>())])
+        <span class="comment">// Filter
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(f) = record.filters() {
+            <span class="kw">match </span>f {
+                noodles::vcf::record::Filters::Pass =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
+                        </span>.get_mut(<span class="string">&quot;filter&quot;</span>)
+                        .unwrap()
+                        .push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">Some</span>(<span class="string">&quot;PASS&quot;</span>.to_string())])
                     {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
-                <span class="ident">noodles::vcf::record::Filters::Fail</span>(<span class="ident">fs</span>) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>
-                        .<span class="ident">get_mut</span>(<span class="string">&quot;filter&quot;</span>)
-                        .<span class="ident">unwrap</span>()
-                        .<span class="ident">push_vecstring</span>(<span class="ident">fs</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>.<span class="ident">to_string</span>())).<span class="ident">collect</span>())
+                noodles::vcf::record::Filters::Fail(fs) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
+                        </span>.get_mut(<span class="string">&quot;filter&quot;</span>)
+                        .unwrap()
+                        .push_vecstring(fs.iter().map(|x| <span class="prelude-val">Some</span>(x.to_string())).collect())
                     {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="string">&quot;filter&quot;</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>();
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.get_mut(<span class="string">&quot;filter&quot;</span>).unwrap().push_null();
         }
-        <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="string">&quot;filter&quot;</span>);
+        not_changed_key.remove(<span class="string">&quot;filter&quot;</span>);
 
-        <span class="comment">// Info</span>
-        <span class="kw">for</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">record</span>.<span class="ident">info</span>().<span class="ident">values</span>() {
-            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">value</span>.<span class="ident">key</span>());
-            <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="comment">// Info
+        </span><span class="kw">for </span>value <span class="kw">in </span>record.info().values() {
+            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, value.key());
+            not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
-            <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">value</span>() {
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::Integer</span>(<span class="ident">val</span>)) =&gt; {
-                    <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_i32</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">val</span>))
+            <span class="kw">match </span>value.value() {
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Integer(val)) =&gt; {
+                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_i32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::Float</span>(<span class="ident">val</span>)) =&gt; {
-                    <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_f32</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">val</span>))
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Float(val)) =&gt; {
+                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_f32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::Flag</span>) =&gt; {
-                    <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_bool</span>(<span class="prelude-val">Some</span>(<span class="bool-val">true</span>))
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Flag) =&gt; {
+                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_bool(<span class="prelude-val">Some</span>(<span class="bool-val">true</span>))
                 }
 
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::Character</span>(<span class="ident">val</span>)) =&gt; {
-                    <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_string</span>(<span class="ident">val</span>.<span class="ident">to_string</span>())
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Character(val)) =&gt; {
+                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::String</span>(<span class="ident">val</span>)) =&gt; {
-                    <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_string</span>(<span class="ident">val</span>.<span class="ident">to_string</span>())
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::String(val)) =&gt; {
+                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::IntegerArray</span>(<span class="ident">vals</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_veci32</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::IntegerArray(vals)) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec()) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::FloatArray</span>(<span class="ident">vals</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_vecf32</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::FloatArray(vals)) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecf32(vals.to_vec()) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::CharacterArray</span>(<span class="ident">vals</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>
-                        .<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>)
-                        .<span class="ident">unwrap</span>()
-                        .<span class="ident">push_vecstring</span>(<span class="ident">vals</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">map</span>(<span class="ident">String::from</span>)).<span class="ident">collect</span>())
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::CharacterArray(vals)) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
+                        </span>.get_mut(<span class="kw-2">&amp;</span>key)
+                        .unwrap()
+                        .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())
                     {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
-                <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::info::field::Value::StringArray</span>(<span class="ident">vals</span>)) =&gt; {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_vecstring</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::StringArray(vals)) =&gt; {
+                    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecstring(vals.to_vec()) {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                     }
                 }
-                <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>(),
+                <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_null(),
             }
         }
 
-        <span class="comment">// format</span>
-        <span class="kw">for</span> (<span class="ident">genotypes</span>, <span class="ident">sample</span>) <span class="kw">in</span> <span class="ident">record</span>.<span class="ident">genotypes</span>().<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">header</span>.<span class="ident">sample_names</span>()) {
-            <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">genotypes</span>.<span class="ident">iter</span>() {
-                <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, <span class="ident">sample</span>, <span class="ident">key</span>);
-                <span class="ident">not_changed_key</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="comment">// format
+        </span><span class="kw">for </span>(genotypes, sample) <span class="kw">in </span>record.genotypes().iter().zip(header.sample_names()) {
+            <span class="kw">for </span>(key, value) <span class="kw">in </span>genotypes.iter() {
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, sample, key);
+                not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
-                <span class="kw">match</span> <span class="ident">value</span>.<span class="ident">value</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::Integer</span>(<span class="ident">val</span>)) =&gt; {
-                        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_i32</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">val</span>))
+                <span class="kw">match </span>value.value() {
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Integer(val)) =&gt; {
+                        <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_i32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::Float</span>(<span class="ident">val</span>)) =&gt; {
-                        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_f32</span>(<span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="ident">val</span>))
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Float(val)) =&gt; {
+                        <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_f32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::Character</span>(
-                        <span class="ident">val</span>,
-                    )) =&gt; <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_string</span>(<span class="ident">val</span>.<span class="ident">to_string</span>()),
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::String</span>(<span class="ident">val</span>)) =&gt; {
-                        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_string</span>(<span class="ident">val</span>.<span class="ident">to_string</span>())
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Character(
+                        val,
+                    )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string()),
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::String(val)) =&gt; {
+                        <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
                     }
                     <span class="prelude-val">Some</span>(
-                        <span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::IntegerArray</span>(<span class="ident">vals</span>),
+                        noodles::vcf::record::genotypes::genotype::field::Value::IntegerArray(vals),
                     ) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_veci32</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec()) {
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                         }
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::FloatArray</span>(
-                        <span class="ident">vals</span>,
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::FloatArray(
+                        vals,
                     )) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_vecf32</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecf32(vals.to_vec()) {
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                         }
                     }
                     <span class="prelude-val">Some</span>(
-                        <span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::CharacterArray</span>(
-                            <span class="ident">vals</span>,
+                        noodles::vcf::record::genotypes::genotype::field::Value::CharacterArray(
+                            vals,
                         ),
                     ) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>
-                            .<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>)
-                            .<span class="ident">unwrap</span>()
-                            .<span class="ident">push_vecstring</span>(<span class="ident">vals</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">map</span>(<span class="ident">String::from</span>)).<span class="ident">collect</span>())
+                        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
+                            </span>.get_mut(<span class="kw-2">&amp;</span>key)
+                            .unwrap()
+                            .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())
                         {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                         }
                     }
-                    <span class="prelude-val">Some</span>(<span class="ident">noodles::vcf::record::genotypes::genotype::field::Value::StringArray</span>(
-                        <span class="ident">vals</span>,
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::StringArray(
+                        vals,
                     )) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_vecstring</span>(<span class="ident">vals</span>.<span class="ident">to_vec</span>()) {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                        <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecstring(vals.to_vec()) {
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                         }
                     }
-                    <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>(),
+                    <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_null(),
                 }
             }
         }
 
-        <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">not_changed_key</span> {
-            <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>).<span class="ident">unwrap</span>().<span class="ident">push_null</span>();
+        <span class="kw">for </span>key <span class="kw">in </span>not_changed_key {
+            <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_null();
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">///Convert Name2Data in vector of arrow2 array</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_arc</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">schema</span>: <span class="kw-2">&amp;</span><span class="ident">arrow2::datatypes::Schema</span>,
-    ) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">std::sync::Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">arrow2::array::Array</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">s</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">std::sync::Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">arrow2::array::Array</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">schema</span>
-            .<span class="ident">fields</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>.<span class="ident">name</span>).<span class="ident">unwrap</span>().<span class="ident">into_arc</span>())
-            .<span class="ident">collect</span>();
+    <span class="doccomment">///Convert Name2Data in vector of arrow2 array
+    </span><span class="kw">pub fn </span>into_arc(
+        <span class="kw-2">mut </span><span class="self">self</span>,
+        schema: <span class="kw-2">&amp;</span>arrow2::datatypes::Schema,
+    ) -&gt; Vec&lt;std::sync::Arc&lt;<span class="kw">dyn </span>arrow2::array::Array&gt;&gt; {
+        <span class="kw">let </span>s: Vec&lt;std::sync::Arc&lt;<span class="kw">dyn </span>arrow2::array::Array&gt;&gt; = schema
+            .fields
+            .iter()
+            .map(|x| <span class="self">self</span>.<span class="number">0</span>.remove(<span class="kw-2">&amp;</span>x.name).unwrap().into_arc())
+            .collect();
 
-        <span class="ident">s</span>
+        s
     }
 
-    <span class="kw">fn</span> <span class="ident">add_info</span>(
-        <span class="ident">data</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::collections::HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ColumnData</span><span class="op">&gt;</span>,
-        <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">noodles::vcf::Header</span>,
-        <span class="ident">length</span>: <span class="ident">usize</span>,
+    <span class="kw">fn </span>add_info(
+        data: <span class="kw-2">&amp;mut </span>rustc_hash::FxHashMap&lt;String, ColumnData&gt;,
+        header: <span class="kw-2">&amp;</span>noodles::vcf::Header,
+        length: usize,
     ) {
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">header</span>.<span class="ident">infos</span>() {
-            <span class="kw">match</span> (<span class="ident">value</span>.<span class="ident">ty</span>(), <span class="ident">value</span>.<span class="ident">number</span>()) {
+        <span class="kw">for </span>(key, value) <span class="kw">in </span>header.infos() {
+            <span class="kw">match </span>(value.ty(), value.number()) {
                 (
-                    <span class="ident">noodles::vcf::header::info::Type::Integer</span>,
-                    <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::Int</span>(<span class="ident">arrow2::array::MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(
-                        <span class="ident">length</span>,
+                    noodles::vcf::header::info::Type::Integer,
+                    noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                ) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::Int(arrow2::array::MutablePrimitiveArray::&lt;i32&gt;::with_capacity(
+                        length,
                     )),
                 ),
-                (<span class="ident">noodles::vcf::header::info::Type::Integer</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::ListInt</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+                (noodles::vcf::header::info::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    <span class="ident">noodles::vcf::header::info::Type::Float</span>,
-                    <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::Float</span>(<span class="ident">arrow2::array::MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(
-                        <span class="ident">length</span>,
+                    noodles::vcf::header::info::Type::Float,
+                    noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                ) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::Float(arrow2::array::MutablePrimitiveArray::&lt;f32&gt;::with_capacity(
+                        length,
                     )),
                 ),
-                (<span class="ident">noodles::vcf::header::info::Type::Float</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::ListFloat</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+                (noodles::vcf::header::info::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    <span class="ident">noodles::vcf::header::info::Type::Flag</span>,
-                    <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::Bool</span>(<span class="ident">arrow2::array::MutableBooleanArray::with_capacity</span>(<span class="ident">length</span>)),
+                    noodles::vcf::header::info::Type::Flag,
+                    noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                ) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
-                (<span class="ident">noodles::vcf::header::info::Type::Flag</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::ListBool</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
-                ),
-                (
-                    <span class="ident">noodles::vcf::header::info::Type::Character</span>,
-                    <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::with_capacity</span>(<span class="ident">length</span>)),
-                ),
-                (<span class="ident">noodles::vcf::header::info::Type::Character</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+                (noodles::vcf::header::info::Type::Flag, <span class="kw">_</span>) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    <span class="ident">noodles::vcf::header::info::Type::String</span>,
-                    <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::with_capacity</span>(<span class="ident">length</span>)),
+                    noodles::vcf::header::info::Type::Character,
+                    noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                ) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
-                (<span class="ident">noodles::vcf::header::info::Type::String</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, <span class="ident">key</span>),
-                    <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+                (noodles::vcf::header::info::Type::Character, <span class="kw">_</span>) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+                ),
+                (
+                    noodles::vcf::header::info::Type::String,
+                    noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                ) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
+                ),
+                (noodles::vcf::header::info::Type::String, <span class="kw">_</span>) =&gt; data.insert(
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">add_genotype</span>(
-        <span class="ident">data</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::collections::HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ColumnData</span><span class="op">&gt;</span>,
-        <span class="ident">header</span>: <span class="kw-2">&amp;</span><span class="ident">noodles::vcf::Header</span>,
-        <span class="ident">length</span>: <span class="ident">usize</span>,
+    <span class="kw">fn </span>add_genotype(
+        data: <span class="kw-2">&amp;mut </span>rustc_hash::FxHashMap&lt;String, ColumnData&gt;,
+        header: <span class="kw-2">&amp;</span>noodles::vcf::Header,
+        length: usize,
     ) {
-        <span class="kw">for</span> <span class="ident">sample</span> <span class="kw">in</span> <span class="ident">header</span>.<span class="ident">sample_names</span>() {
-            <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">header</span>.<span class="ident">formats</span>() {
-                <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, <span class="ident">sample</span>, <span class="ident">key</span>);
+        <span class="kw">for </span>sample <span class="kw">in </span>header.sample_names() {
+            <span class="kw">for </span>(key, value) <span class="kw">in </span>header.formats() {
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, sample, key);
 
-                <span class="kw">match</span> (<span class="ident">value</span>.<span class="ident">ty</span>(), <span class="ident">value</span>.<span class="ident">number</span>()) {
+                <span class="kw">match </span>(value.ty(), value.number()) {
                     (
-                        <span class="ident">noodles::vcf::header::format::Type::Integer</span>,
-                        <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                    ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::Int</span>(
-                            <span class="ident">arrow2::array::MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>),
+                        noodles::vcf::header::format::Type::Integer,
+                        noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                    ) =&gt; data.insert(
+                        key,
+                        ColumnData::Int(
+                            arrow2::array::MutablePrimitiveArray::&lt;i32&gt;::with_capacity(length),
                         ),
                     ),
-                    (<span class="ident">noodles::vcf::header::format::Type::Integer</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::ListInt</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(<span class="ident">length</span>)),
+                    (noodles::vcf::header::format::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
+                        key,
+                        ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                     ),
                     (
-                        <span class="ident">noodles::vcf::header::format::Type::Float</span>,
-                        <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                    ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::Float</span>(
-                            <span class="ident">arrow2::array::MutablePrimitiveArray</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span><span class="ident">::with_capacity</span>(<span class="ident">length</span>),
+                        noodles::vcf::header::format::Type::Float,
+                        noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                    ) =&gt; data.insert(
+                        key,
+                        ColumnData::Float(
+                            arrow2::array::MutablePrimitiveArray::&lt;f32&gt;::with_capacity(length),
                         ),
                     ),
-                    (<span class="ident">noodles::vcf::header::format::Type::Float</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::ListFloat</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(
-                            <span class="ident">length</span>,
+                    (noodles::vcf::header::format::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
+                        key,
+                        ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(
+                            length,
                         )),
                     ),
                     (
-                        <span class="ident">noodles::vcf::header::format::Type::Character</span>,
-                        <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                    ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::with_capacity</span>(<span class="ident">length</span>)),
+                        noodles::vcf::header::format::Type::Character,
+                        noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                    ) =&gt; data.insert(
+                        key,
+                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                     ),
-                    (<span class="ident">noodles::vcf::header::format::Type::Character</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(
-                            <span class="ident">length</span>,
+                    (noodles::vcf::header::format::Type::Character, <span class="kw">_</span>) =&gt; data.insert(
+                        key,
+                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
+                            length,
                         )),
                     ),
                     (
-                        <span class="ident">noodles::vcf::header::format::Type::String</span>,
-                        <span class="ident">noodles::vcf::header::Number::Count</span>(<span class="number">0</span> <span class="op">|</span> <span class="number">1</span>),
-                    ) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::with_capacity</span>(<span class="ident">length</span>)),
+                        noodles::vcf::header::format::Type::String,
+                        noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
+                    ) =&gt; data.insert(
+                        key,
+                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                     ),
-                    (<span class="ident">noodles::vcf::header::format::Type::String</span>, <span class="kw">_</span>) =&gt; <span class="ident">data</span>.<span class="ident">insert</span>(
-                        <span class="ident">key</span>,
-                        <span class="ident">ColumnData::ListString</span>(<span class="ident">arrow2::array::MutableListArray::with_capacity</span>(
-                            <span class="ident">length</span>,
+                    (noodles::vcf::header::format::Type::String, <span class="kw">_</span>) =&gt; data.insert(
+                        key,
+                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
+                            length,
                         )),
                     ),
                 };
@@ -1186,121 +1181,121 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ColumnData</span> {
-    <span class="ident">Bool</span>(<span class="ident">arrow2::array::MutableBooleanArray</span>),
-    <span class="ident">Int</span>(<span class="ident">arrow2::array::MutablePrimitiveArray</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
-    <span class="ident">Float</span>(<span class="ident">arrow2::array::MutablePrimitiveArray</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>),
-    <span class="ident">String</span>(<span class="ident">arrow2::array::MutableUtf8Array</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
-    <span class="ident">ListBool</span>(<span class="ident">arrow2::array::MutableListArray</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="ident">arrow2::array::MutableBooleanArray</span><span class="op">&gt;</span>),
-    <span class="ident">ListInt</span>(<span class="ident">arrow2::array::MutableListArray</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="ident">MutablePrimitiveArray</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="op">&gt;</span>),
-    <span class="ident">ListFloat</span>(<span class="ident">arrow2::array::MutableListArray</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="ident">MutablePrimitiveArray</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span><span class="op">&gt;</span>),
-    <span class="ident">ListString</span>(<span class="ident">arrow2::array::MutableListArray</span><span class="op">&lt;</span><span class="ident">i32</span>, <span class="ident">arrow2::array::MutableUtf8Array</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="op">&gt;</span>),
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>ColumnData {
+    Bool(arrow2::array::MutableBooleanArray),
+    Int(arrow2::array::MutablePrimitiveArray&lt;i32&gt;),
+    Float(arrow2::array::MutablePrimitiveArray&lt;f32&gt;),
+    String(arrow2::array::MutableUtf8Array&lt;i32&gt;),
+    ListBool(arrow2::array::MutableListArray&lt;i32, arrow2::array::MutableBooleanArray&gt;),
+    ListInt(arrow2::array::MutableListArray&lt;i32, MutablePrimitiveArray&lt;i32&gt;&gt;),
+    ListFloat(arrow2::array::MutableListArray&lt;i32, MutablePrimitiveArray&lt;f32&gt;&gt;),
+    ListString(arrow2::array::MutableListArray&lt;i32, arrow2::array::MutableUtf8Array&lt;i32&gt;&gt;),
 }
 
-<span class="kw">impl</span> <span class="ident">ColumnData</span> {
-    <span class="doccomment">/// Add a Null value in array</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_null</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::Bool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::Int</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::Float</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::String</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::ListBool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::ListInt</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::ListFloat</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push_null</span>(),
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">_a</span>) =&gt; {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">push_vecstring</span>(<span class="macro">vec!</span>[<span class="prelude-val">None</span>]) {
-                    <span class="macro">panic!</span>(<span class="string">&quot;ListString {:?}&quot;</span>, <span class="ident">e</span>);
+<span class="kw">impl </span>ColumnData {
+    <span class="doccomment">/// Add a Null value in array
+    </span><span class="kw">pub fn </span>push_null(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::Bool(a) =&gt; a.push_null(),
+            ColumnData::Int(a) =&gt; a.push_null(),
+            ColumnData::Float(a) =&gt; a.push_null(),
+            ColumnData::String(a) =&gt; a.push_null(),
+            ColumnData::ListBool(a) =&gt; a.push_null(),
+            ColumnData::ListInt(a) =&gt; a.push_null(),
+            ColumnData::ListFloat(a) =&gt; a.push_null(),
+            ColumnData::ListString(_a) =&gt; {
+                <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">None</span>]) {
+                    <span class="macro">panic!</span>(<span class="string">&quot;ListString {:?}&quot;</span>, e);
                 }
             }
         }
     }
 
-    <span class="doccomment">/// Add a boolean value in array, if it&#39;s not a boolean array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_bool</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::Bool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push</span>(<span class="ident">value</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a boolean value in array, if it&#39;s not a boolean array failled
+    </span><span class="kw">pub fn </span>push_bool(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;bool&gt;) {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::Bool(a) =&gt; a.push(value),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a i32 value in array, if it&#39;s not a integer array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_i32</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::Int</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push</span>(<span class="ident">value</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a i32 value in array, if it&#39;s not a integer array failled
+    </span><span class="kw">pub fn </span>push_i32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;i32&gt;) {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::Int(a) =&gt; a.push(value),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a f32 value in array, if it&#39;s not a float array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_f32</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::Float</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push</span>(<span class="ident">value</span>),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a f32 value in array, if it&#39;s not a float array failled
+    </span><span class="kw">pub fn </span>push_f32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;f32&gt;) {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::Float(a) =&gt; a.push(value),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a string value in array, if it&#39;s not a string array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_string</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">String</span>) {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::String</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">push</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>)),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a string value in array, if it&#39;s not a string array failled
+    </span><span class="kw">pub fn </span>push_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: String) {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::String(a) =&gt; a.push(<span class="prelude-val">Some</span>(value)),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a vector of bool value in array, if it&#39;s not a vector of bool array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_vecbool</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">arrow2::error::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::ListBool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">try_push</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>)),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a vector of bool value in array, if it&#39;s not a vector of bool array failled
+    </span><span class="kw">pub fn </span>push_vecbool(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;bool&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::ListBool(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a vector of integer value in array, if it&#39;s not a vector of integer array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_veci32</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">arrow2::error::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::ListInt</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">try_push</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>)),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a vector of integer value in array, if it&#39;s not a vector of integer array failled
+    </span><span class="kw">pub fn </span>push_veci32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;i32&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::ListInt(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a vector of float value in array, if it&#39;s not a vector of float array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_vecf32</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">arrow2::error::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::ListFloat</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">try_push</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>)),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a vector of float value in array, if it&#39;s not a vector of float array failled
+    </span><span class="kw">pub fn </span>push_vecf32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;f32&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::ListFloat(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Add a vector of string value in array, if it&#39;s not a vector of string array failled</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push_vecstring</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="ident">arrow2::error::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">try_push</span>(<span class="prelude-val">Some</span>(<span class="ident">value</span>)),
-            <span class="kw">_</span> =&gt; <span class="macro">todo!</span>(),
+    <span class="doccomment">/// Add a vector of string value in array, if it&#39;s not a vector of string array failled
+    </span><span class="kw">pub fn </span>push_vecstring(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::ListString(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
+            <span class="kw">_ </span>=&gt; <span class="macro">todo!</span>(),
         }
     }
 
-    <span class="doccomment">/// Convert ColumnData in Arrow2 array</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_arc</span>(<span class="self">self</span>) -&gt; <span class="ident">std::sync::Arc</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">arrow2::array::Array</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ColumnData::Bool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::Int</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::Float</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::String</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::ListBool</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::ListInt</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::ListFloat</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
-            <span class="ident">ColumnData::ListString</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">into_arc</span>(),
+    <span class="doccomment">/// Convert ColumnData in Arrow2 array
+    </span><span class="kw">pub fn </span>into_arc(<span class="self">self</span>) -&gt; std::sync::Arc&lt;<span class="kw">dyn </span>arrow2::array::Array&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            ColumnData::Bool(a) =&gt; a.into_arc(),
+            ColumnData::Int(a) =&gt; a.into_arc(),
+            ColumnData::Float(a) =&gt; a.into_arc(),
+            ColumnData::String(a) =&gt; a.into_arc(),
+            ColumnData::ListBool(a) =&gt; a.into_arc(),
+            ColumnData::ListInt(a) =&gt; a.into_arc(),
+            ColumnData::ListFloat(a) =&gt; a.into_arc(),
+            ColumnData::ListString(a) =&gt; a.into_arc(),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">static</span> <span class="ident">VCF_FILE</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;##fileformat=VCFv4.1
+    <span class="kw">static </span>VCF_FILE: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;##fileformat=VCFv4.1
 ##fileDate=2022-05-28
 ##source=ClinVar
 ##reference=GRCh38
@@ -1329,160 +1324,159 @@
 1\t20\t.\tA\tC\t23\tq5,q10\tALLELEID=14;AF_ESP=1.2;DBVARID;GENEINFO=c;CLNVC=test1;CLNVCS=test1,test2\tAD:GQ:GF:DC\t1:c:test:1.2\t2:a:Test:4.5
 &quot;</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">init</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">noodles::vcf::Reader::new</span>(<span class="ident">VCF_FILE</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>init() {
+        <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let</span> <span class="ident">header</span>: <span class="ident">noodles::vcf::Header</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_header</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">Name2Data::new</span>(<span class="number">10</span>, <span class="kw-2">&amp;</span><span class="ident">header</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">col_names</span> <span class="op">=</span> <span class="ident">data</span>.<span class="number">0</span>.<span class="ident">keys</span>().<span class="ident">cloned</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-        <span class="ident">col_names</span>.<span class="ident">sort</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
+        <span class="kw">let </span><span class="kw-2">mut </span>col_names = data.<span class="number">0</span>.keys().cloned().collect::&lt;Vec&lt;String&gt;&gt;();
+        col_names.sort();
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">col_names</span>,
+            col_names,
             <span class="macro">vec!</span>[
-                <span class="string">&quot;alternate&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;chromosome&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;filter&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_AD&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_ADS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_DC&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_DCS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_GF&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_GFS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_GQ&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_first_GQS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_AD&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_ADS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_DC&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_DCS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_GF&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_GFS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_GQ&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;format_second_GQS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;identifier&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_AF_ESP&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_AF_ESPS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_ALLELEID&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_ALLELEIDS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_CLNVC&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_CLNVCS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_DBVARID&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_GENEINFO&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;info_GENEINFOS&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;position&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;quality&quot;</span>.<span class="ident">to_string</span>(),
-                <span class="string">&quot;reference&quot;</span>.<span class="ident">to_string</span>()
+                <span class="string">&quot;alternate&quot;</span>.to_string(),
+                <span class="string">&quot;chromosome&quot;</span>.to_string(),
+                <span class="string">&quot;filter&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_AD&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_ADS&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_DC&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_DCS&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_GF&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_GFS&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_GQ&quot;</span>.to_string(),
+                <span class="string">&quot;format_first_GQS&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_AD&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_ADS&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_DC&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_DCS&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_GF&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_GFS&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_GQ&quot;</span>.to_string(),
+                <span class="string">&quot;format_second_GQS&quot;</span>.to_string(),
+                <span class="string">&quot;identifier&quot;</span>.to_string(),
+                <span class="string">&quot;info_AF_ESP&quot;</span>.to_string(),
+                <span class="string">&quot;info_AF_ESPS&quot;</span>.to_string(),
+                <span class="string">&quot;info_ALLELEID&quot;</span>.to_string(),
+                <span class="string">&quot;info_ALLELEIDS&quot;</span>.to_string(),
+                <span class="string">&quot;info_CLNVC&quot;</span>.to_string(),
+                <span class="string">&quot;info_CLNVCS&quot;</span>.to_string(),
+                <span class="string">&quot;info_DBVARID&quot;</span>.to_string(),
+                <span class="string">&quot;info_GENEINFO&quot;</span>.to_string(),
+                <span class="string">&quot;info_GENEINFOS&quot;</span>.to_string(),
+                <span class="string">&quot;position&quot;</span>.to_string(),
+                <span class="string">&quot;quality&quot;</span>.to_string(),
+                <span class="string">&quot;reference&quot;</span>.to_string()
             ]
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;chromosome&quot;</span>)),
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;chromosome&quot;</span>)),
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::new</span>()))
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ColumnData::String(arrow2::array::MutableUtf8Array::new()))
             )
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get_mut</span>(<span class="string">&quot;chromosome&quot;</span>)),
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get_mut(<span class="string">&quot;chromosome&quot;</span>)),
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">ColumnData::String</span>(<span class="ident">arrow2::array::MutableUtf8Array::new</span>()))
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ColumnData::String(arrow2::array::MutableUtf8Array::new()))
             )
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">add_record</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">noodles::vcf::Reader::new</span>(<span class="ident">VCF_FILE</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>add_record() {
+        <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let</span> <span class="ident">header</span>: <span class="ident">noodles::vcf::Header</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">read_header</span>().<span class="ident">unwrap</span>().<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">Name2Data::new</span>(<span class="number">10</span>, <span class="kw-2">&amp;</span><span class="ident">header</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iterator</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">records</span>(<span class="kw-2">&amp;</span><span class="ident">header</span>);
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">iterator</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>iterator = reader.records(<span class="kw-2">&amp;</span>header);
+        <span class="kw">let </span>record = iterator.next().unwrap().unwrap();
 
-        <span class="ident">data</span>.<span class="ident">add_record</span>(<span class="ident">record</span>, <span class="kw-2">&amp;</span><span class="ident">header</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1, 2], values: [67, 84], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        data.add_record(record, <span class="kw-2">&amp;</span>header).unwrap();
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1, 2], values: [67, 84], validity: None }, validity: None }))&quot;</span>.to_string());
 
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;chromosome&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [49], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [80, 65, 83, 83], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;chromosome&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [49], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [80, 65, 83, 83], validity: None }, validity: None }))&quot;</span>.to_string());
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_AD&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_AD&quot;</span>)),
+            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;
+                </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_ADS&quot;</span>)),
-            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Int32, values: [2, 3], validity: None }, validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_ADS&quot;</span>)),
+            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Int32, values: [2, 3], validity: None }, validity: None }))&quot;
+                </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_DC&quot;</span>)),
-            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_DC&quot;</span>)),
+            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_DCS&quot;</span>)),
-            <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_DCS&quot;</span>)),
+            <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6], validity: None }, validity: None }))&quot;</span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_GQ&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_GQS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1, 2], values: [67, 68], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_GF&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [116, 101, 115, 116], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_first_GFS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 5, 10], values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GQ&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GQS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1, 2], values: [67, 68], validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GF&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [116, 101, 115, 116], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GFS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 5, 10], values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50], validity: None }, validity: None }))&quot;</span>.to_string());
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_second_AD&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
-        );
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_second_DC&quot;</span>)),
-            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_AD&quot;</span>)),
+            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;
+                </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_second_GQ&quot;</span>)),
-            <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_DC&quot;</span>)),
+            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;format_second_GF&quot;</span>)),
-            <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [116, 101, 115, 116], validity: None }))&quot;</span>.<span class="ident">to_string</span>()
-        );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;identifier&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 0], values: [], validity: Some([0b_______0]) }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_AF_ESP&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_AF_ESPS&quot;</span>)), <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_ALLELEID&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_GQ&quot;</span>)),
+            <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_ALLELEIDS&quot;</span>)),
-            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Int32, values: [14, 15], validity: None }, validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_GF&quot;</span>)),
+            <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 4], values: [116, 101, 115, 116], validity: None }))&quot;</span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_CLNVC&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 5], values: [116, 101, 115, 116, 49], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_CLNVCS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 5, 10], values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_DBVARID&quot;</span>)), <span class="string">&quot;Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;info_GENEINFO&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;identifier&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 0], values: [], validity: Some([0b_______0]) }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_AF_ESP&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_AF_ESPS&quot;</span>)), <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5], validity: None }, validity: None }))&quot;</span>.to_string());
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;position&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))&quot;</span>
-                .<span class="ident">to_string</span>()
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_ALLELEID&quot;</span>)),
+            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))&quot;
+                </span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;quality&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;reference&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [65], validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_ALLELEIDS&quot;</span>)),
+            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutablePrimitiveArray { data_type: Int32, values: [14, 15], validity: None }, validity: None }))&quot;
+                </span>.to_string()
+        );
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_CLNVC&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 5], values: [116, 101, 115, 116, 49], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_CLNVCS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 2], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 5, 10], values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50], validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_DBVARID&quot;</span>)), <span class="string">&quot;Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_GENEINFO&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [99], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;position&quot;</span>)),
+            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))&quot;
+                </span>.to_string()
+        );
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;quality&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;reference&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [65], validity: None }))&quot;</span>.to_string());
 
-        <span class="kw">let</span> <span class="ident">record</span> <span class="op">=</span> <span class="ident">iterator</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">Name2Data::new</span>(<span class="number">10</span>, <span class="kw-2">&amp;</span><span class="ident">header</span>);
-        <span class="ident">data</span>.<span class="ident">add_record</span>(<span class="ident">record</span>, <span class="kw-2">&amp;</span><span class="ident">header</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>record = iterator.next().unwrap().unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
+        data.add_record(record, <span class="kw-2">&amp;</span>header).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [67], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">data</span>.<span class="ident">get</span>(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 6], values: [113, 53, 44, 113, 49, 48], validity: None }, validity: None }))&quot;</span>.<span class="ident">to_string</span>());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 1], values: [67], validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: [0, 1], values: MutableUtf8Array { data_type: Utf8, offsets: [0, 6], values: [113, 53, 44, 113, 49, 48], validity: None }, validity: None }))&quot;</span>.to_string());
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

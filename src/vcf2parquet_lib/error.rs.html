@@ -1,9 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_lib/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../vcf2parquet_lib/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../vcf2parquet_lib/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -124,127 +119,126 @@
 <span id="119">119</span>
 <span id="120">120</span>
 <span id="121">121</span>
-</pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet error</span>
+</pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet error
 
-<span class="comment">/* std use */</span>
+</span><span class="comment">/* std use */
 
-<span class="comment">/* crate use */</span>
+/* crate use */
 
-<span class="comment">/* project use */</span>
+/* project use */
 
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">thiserror::Error</span>, <span class="ident">std::fmt::Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// Not support type conversion</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Conversion of arrow type in noodles type isn&#39;t support.&quot;</span>)]</span>
-    <span class="ident">NoConversion</span>,
+</span><span class="attribute">#[non_exhaustive]
+#[derive(thiserror::Error, std::fmt::Debug)]
+</span><span class="kw">pub enum </span>Error {
+    <span class="doccomment">/// Not support type conversion
+    </span><span class="attribute">#[error(<span class="string">&quot;Conversion of arrow type in noodles type isn&#39;t support.&quot;</span>)]
+    </span>NoConversion,
 
-    <span class="doccomment">/// Arrow error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">Arrow</span> { <span class="ident">error</span>: <span class="ident">arrow2::error::ArrowError</span> },
+    <span class="doccomment">/// Arrow error
+    </span><span class="attribute">#[error(transparent)]
+    </span>Arrow { error: arrow2::error::ArrowError },
 
-    <span class="doccomment">/// Parquet error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">Parquet</span> {
-        <span class="ident">error</span>: <span class="ident">arrow2::io::parquet::read::ParquetError</span>,
+    <span class="doccomment">/// Parquet error
+    </span><span class="attribute">#[error(transparent)]
+    </span>Parquet {
+        error: arrow2::io::parquet::read::ParquetError,
     },
 
-    <span class="doccomment">/// Io error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">Io</span> { <span class="ident">error</span>: <span class="ident">std::io::Error</span> },
+    <span class="doccomment">/// Io error
+    </span><span class="attribute">#[error(transparent)]
+    </span>Io { error: std::io::Error },
 
-    <span class="doccomment">/// Noodles header vcf error</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="ident">transparent</span>)]</span>
-    <span class="ident">NoodlesHeader</span> {
-        <span class="ident">error</span>: <span class="ident">noodles::vcf::header::ParseError</span>,
+    <span class="doccomment">/// Noodles header vcf error
+    </span><span class="attribute">#[error(transparent)]
+    </span>NoodlesHeader {
+        error: noodles::vcf::header::ParseError,
     },
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mapping</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">error</span>: <span class="ident">E</span>) -&gt; <span class="ident">Error</span>
-<span class="kw">where</span>
-    <span class="ident">E</span>: <span class="ident">std::convert::Into</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
+<span class="kw">pub fn </span>mapping&lt;E&gt;(error: E) -&gt; Error
+<span class="kw">where
+    </span>E: std::convert::Into&lt;Error&gt;,
 {
-    <span class="ident">error</span>.<span class="ident">into</span>()
+    error.into()
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::Io</span> { <span class="ident">error</span> }
+<span class="kw">impl </span>From&lt;std::io::Error&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(error: std::io::Error) -&gt; <span class="self">Self </span>{
+        Error::Io { error }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">arrow2::error::ArrowError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">arrow2::error::ArrowError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::Arrow</span> { <span class="ident">error</span> }
+<span class="kw">impl </span>From&lt;arrow2::error::ArrowError&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(error: arrow2::error::ArrowError) -&gt; <span class="self">Self </span>{
+        Error::Arrow { error }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">arrow2::io::parquet::read::ParquetError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">arrow2::io::parquet::read::ParquetError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::Parquet</span> { <span class="ident">error</span> }
+<span class="kw">impl </span>From&lt;arrow2::io::parquet::read::ParquetError&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(error: arrow2::io::parquet::read::ParquetError) -&gt; <span class="self">Self </span>{
+        Error::Parquet { error }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">noodles::vcf::header::ParseError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">error</span>: <span class="ident">noodles::vcf::header::ParseError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Error::NoodlesHeader</span> { <span class="ident">error</span> }
+<span class="kw">impl </span>From&lt;noodles::vcf::header::ParseError&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(error: noodles::vcf::header::ParseError) -&gt; <span class="self">Self </span>{
+        Error::NoodlesHeader { error }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+<span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T&gt; = std::result::Result&lt;T, Error&gt;;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">error_conversion</span>() {
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">std::io::Error</span> <span class="op">=</span> <span class="ident">std::io::Error::new</span>(<span class="ident">std::io::ErrorKind::NotFound</span>, <span class="string">&quot;test&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>error_conversion() {
+        <span class="kw">let </span>error: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>);
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">mapping</span>(<span class="ident">error</span>)),
+            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, mapping(error)),
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="ident">Error::from</span>(<span class="ident">std::io::Error::new</span>(<span class="ident">std::io::ErrorKind::NotFound</span>, <span class="string">&quot;test&quot;</span>))
+                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>))
             )
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="ident">Error::from</span>(<span class="ident">std::io::Error::new</span>(<span class="ident">std::io::ErrorKind::NotFound</span>, <span class="string">&quot;test&quot;</span>))
+                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>))
             ),
-            <span class="string">&quot;Io { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Io { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.to_string()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="ident">Error::from</span>(<span class="ident">arrow2::error::ArrowError::NotYetImplemented</span>(
-                    <span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>()
+                Error::from(arrow2::error::ArrowError::NotYetImplemented(
+                    <span class="string">&quot;test&quot;</span>.to_string()
                 ))
             ),
-            <span class="string">&quot;Arrow { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Arrow { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.to_string()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="ident">Error::from</span>(<span class="ident">arrow2::io::parquet::read::ParquetError::General</span>(
-                    <span class="string">&quot;test&quot;</span>.<span class="ident">to_string</span>()
+                Error::from(arrow2::io::parquet::read::ParquetError::General(
+                    <span class="string">&quot;test&quot;</span>.to_string()
                 ))
             ),
-            <span class="string">&quot;Parquet { error: General(\&quot;test\&quot;) }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;Parquet { error: General(\&quot;test\&quot;) }&quot;</span>.to_string()
         );
 
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                <span class="ident">Error::from</span>(<span class="ident">noodles::vcf::header::ParseError::MissingHeader</span>)
+                Error::from(noodles::vcf::header::ParseError::MissingHeader)
             ),
-            <span class="string">&quot;NoodlesHeader { error: MissingHeader }&quot;</span>.<span class="ident">to_string</span>()
+            <span class="string">&quot;NoodlesHeader { error: MissingHeader }&quot;</span>.to_string()
         );
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0 (fe5b13d68 2022-05-18)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
