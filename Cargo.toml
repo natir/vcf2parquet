@@ -32,5 +32,14 @@ bin = ["vcf2parquet-bin"]
 name = "vcf2parquet"
 required-features = ["bin"]
 
+
 [package.metadata.docs.rs]
 all-features = true
+
+[profile.release]
+debug = true # uncomment for profiling
+lto = 'thin'
+opt-level = 3
+overflow-checks = false
+panic = 'abort'
+incremental = false

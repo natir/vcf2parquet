@@ -17,7 +17,10 @@ impl Name2Data {
     /// Create a new Name2Data, vcf header is required to add info and genotype column
     /// length parameter is used to preallocate memory
     pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
-        let mut name2data = rustc_hash::FxHashMap::default();
+        let mut name2data = rustc_hash::FxHashMap::with_capacity_and_hasher(
+            header.infos().len() + header.sample_names().len() * header.formats().len(),
+            std::hash::BuildHasherDefault::<rustc_hash::FxHasher>::default(),
+        );
 
         name2data.insert(
             "chromosome".to_string(),
