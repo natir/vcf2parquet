@@ -91,6 +91,7 @@ impl Name2Data {
         let mut not_changed_key = self
             .0
             .keys()
+            .filter(|&x| x.starts_with("info_") || x.starts_with("format_"))
             .cloned()
             .collect::<rustc_hash::FxHashSet<String>>();
 
@@ -98,13 +99,11 @@ impl Name2Data {
         self.get_mut("chromosome")
             .unwrap()
             .push_string(record.chromosome().to_string());
-        not_changed_key.remove("chromosome");
 
         // Position
         self.get_mut("position")
             .unwrap()
             .push_i32(record.position().try_into().ok());
-        not_changed_key.remove("position");
 
         // ID
         if record.ids().is_empty() {
@@ -116,13 +115,11 @@ impl Name2Data {
         {
             return Err(e);
         }
-        not_changed_key.remove("identifier");
 
         // Ref sequence
         self.get_mut("reference")
             .unwrap()
             .push_string(record.reference_bases().to_string());
-        not_changed_key.remove("reference");
 
         // Alt sequences
         if record.alternate_bases().is_empty() {
@@ -136,7 +133,6 @@ impl Name2Data {
         ) {
             return Err(e);
         }
-        not_changed_key.remove("alternate");
 
         // Quality
         if let Some(quality) = record.quality_score() {
@@ -146,7 +142,6 @@ impl Name2Data {
         } else {
             self.get_mut("quality").unwrap().push_null();
         }
-        not_changed_key.remove("quality");
 
         // Filter
         if let Some(f) = record.filters() {
@@ -173,7 +168,6 @@ impl Name2Data {
         } else {
             self.get_mut("filter").unwrap().push_null();
         }
-        not_changed_key.remove("filter");
 
         // Info
         for value in record.info().values() {
