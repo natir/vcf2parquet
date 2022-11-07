@@ -4,7 +4,7 @@ version = "0.2.0"
 edition = "2021"
 
 [dependencies]
-vcf2parquet-lib = { path = "../vcf2parquet-lib", version = "0.1.0" }
+vcf2parquet-lib = { path = "../vcf2parquet-lib", version = "0.2.0" }
 niffler         = { version = "2" }
 arrow2          = { version = "0.11", features = ["io_parquet", "io_parquet_compression"] }
 
