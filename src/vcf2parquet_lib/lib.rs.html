@@ -356,8 +356,6 @@
 <span id="356">356</span>
 <span id="357">357</span>
 <span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
 </pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet library
 
 </span><span class="comment">/* std use */
@@ -418,7 +416,6 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>writer = arrow2::io::parquet::write::FileWriter::try_new(output, schema, options)<span class="question-mark">?</span>;
 
-    writer.start()<span class="question-mark">?</span>;
     <span class="kw">for </span>group <span class="kw">in </span>row_groups {
         writer.write(group<span class="question-mark">?</span>)<span class="question-mark">?</span>;
     }
@@ -476,7 +473,6 @@
         <span class="kw">let </span><span class="kw-2">mut </span>writer =
             arrow2::io::parquet::write::FileWriter::try_new(output, schema.clone(), options)<span class="question-mark">?</span>;
 
-        writer.start()<span class="question-mark">?</span>;
         writer.write(group<span class="question-mark">?</span>)<span class="question-mark">?</span>;
         writer.end(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
     }
@@ -522,7 +518,7 @@
         <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>, <span class="number">3</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">8</span>, <span class="number">25</span>, <span class="number">37</span>, <span class="number">0</span>, <span class="number">6</span>, <span class="number">25</span>, <span class="number">24</span>, <span class="number">7</span>, <span class="number">113</span>, <span class="number">117</span>,
         <span class="number">97</span>, <span class="number">108</span>, <span class="number">105</span>, <span class="number">116</span>, <span class="number">121</span>, <span class="number">21</span>, <span class="number">4</span>, <span class="number">22</span>, <span class="number">2</span>, <span class="number">22</span>, <span class="number">56</span>, <span class="number">22</span>, <span class="number">96</span>, <span class="number">38</span>, <span class="number">228</span>, <span class="number">8</span>, <span class="number">60</span>, <span class="number">54</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">6</span>,
         <span class="number">21</span>, <span class="number">16</span>, <span class="number">21</span>, <span class="number">56</span>, <span class="number">92</span>, <span class="number">21</span>, <span class="number">2</span>, <span class="number">21</span>, <span class="number">2</span>, <span class="number">21</span>, <span class="number">2</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">4</span>, <span class="number">21</span>, <span class="number">4</span>, <span class="number">17</span>, <span class="number">28</span>, <span class="number">54</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">0</span>,
-        <span class="number">3</span>, <span class="number">2</span>, <span class="number">31</span>, <span class="number">139</span>, <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>, <span class="number">99</span>, <span class="number">96</span>, <span class="number">96</span>, <span class="number">96</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">28</span>, <span class="number">223</span>, <span class="number">68</span>, <span class="number">33</span>, <span class="number">4</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
+        <span class="number">3</span>, <span class="number">1</span>, <span class="number">31</span>, <span class="number">139</span>, <span class="number">8</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">255</span>, <span class="number">99</span>, <span class="number">96</span>, <span class="number">96</span>, <span class="number">96</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">28</span>, <span class="number">223</span>, <span class="number">68</span>, <span class="number">33</span>, <span class="number">4</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
         <span class="number">21</span>, <span class="number">12</span>, <span class="number">25</span>, <span class="number">37</span>, <span class="number">0</span>, <span class="number">6</span>, <span class="number">25</span>, <span class="number">56</span>, <span class="number">6</span>, <span class="number">102</span>, <span class="number">105</span>, <span class="number">108</span>, <span class="number">116</span>, <span class="number">101</span>, <span class="number">114</span>, <span class="number">4</span>, <span class="number">108</span>, <span class="number">105</span>, <span class="number">115</span>, <span class="number">116</span>, <span class="number">6</span>,
         <span class="number">102</span>, <span class="number">105</span>, <span class="number">108</span>, <span class="number">116</span>, <span class="number">101</span>, <span class="number">114</span>, <span class="number">21</span>, <span class="number">4</span>, <span class="number">22</span>, <span class="number">2</span>, <span class="number">22</span>, <span class="number">68</span>, <span class="number">22</span>, <span class="number">108</span>, <span class="number">38</span>, <span class="number">132</span>, <span class="number">10</span>, <span class="number">60</span>, <span class="number">54</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">0</span>,
         <span class="number">21</span>, <span class="number">6</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">40</span>, <span class="number">92</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">21</span>, <span class="number">0</span>, <span class="number">17</span>, <span class="number">28</span>, <span class="number">54</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>,
@@ -673,7 +669,7 @@
             <span class="kw-2">&amp;mut </span>input,
             <span class="kw-2">&amp;mut </span>output,
             <span class="number">1</span>,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(<span class="prelude-val">None</span>),
         )
         .unwrap();
         <span class="macro">assert_eq!</span>(output, <span class="kw-2">*</span>PARQUET_FILE);
@@ -689,7 +685,7 @@
             <span class="kw-2">&amp;mut </span>input,
             <span class="kw-2">&amp;mut </span>output,
             <span class="number">1</span>,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(<span class="prelude-val">None</span>),
         );
 
         <span class="macro">assert!</span>(result.is_err());
@@ -713,7 +709,7 @@
             <span class="kw-2">&amp;mut </span>input,
             <span class="kw-2">&amp;</span>format,
             <span class="number">1</span>,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(<span class="prelude-val">None</span>),
         )
         .unwrap();
     }

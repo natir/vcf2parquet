@@ -89,7 +89,7 @@
         .map(Box::new)
         .map(|x| niffler::get_reader(x))
         .map_err(error::mapping)<span class="question-mark">?
-        </span>.map(|(file, <span class="kw">_</span>)| std::io::BufReader::new(file))<span class="question-mark">?</span>;
+        </span>.map(|(file, <span class="kw">_</span>)| std::io::BufReader::with_capacity(params.read_buffer(), file))<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>output = std::fs::File::create(subparams.output()).map_err(error::mapping)<span class="question-mark">?</span>;
 
@@ -110,7 +110,7 @@
         .map(Box::new)
         .map(|x| niffler::get_reader(x))
         .map_err(error::mapping)<span class="question-mark">?
-        </span>.map(|(file, <span class="kw">_</span>)| std::io::BufReader::new(file))<span class="question-mark">?</span>;
+        </span>.map(|(file, <span class="kw">_</span>)| std::io::BufReader::with_capacity(params.read_buffer(), file))<span class="question-mark">?</span>;
 
     lib::vcf2multiparquet(
         <span class="kw-2">&amp;mut </span>reader,

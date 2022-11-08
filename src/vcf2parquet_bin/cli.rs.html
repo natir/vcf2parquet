@@ -252,6 +252,17 @@
 <span id="252">252</span>
 <span id="253">253</span>
 <span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
 </pre><pre class="rust"><code><span class="doccomment">//! cli of vcf2parquet-bin
 
 </span><span class="comment">/* std use */
@@ -260,7 +271,7 @@
 
 /* project use */
 
-</span><span class="attribute">#[derive(Debug, clap::ArgEnum, Clone, Copy)]
+</span><span class="attribute">#[derive(Debug, clap::ValueEnum, Clone, Copy)]
 </span><span class="kw">pub enum </span>Compression {
     Uncompressed,
     Snappy,
@@ -268,8 +279,8 @@
     Lzo,
     Brotli,
     Lz4,
-    <span class="comment">// Zstd,
-</span>}
+    Zstd,
+}
 
 <span class="attribute">#[derive(clap::Parser, std::fmt::Debug)]
 </span><span class="kw">pub struct </span>Command {
@@ -282,8 +293,12 @@
     </span>batch_size: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="doccomment">/// Compression method (default snappy)
-    </span><span class="attribute">#[clap(arg_enum, short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;compression&quot;</span>)]
+    </span><span class="attribute">#[clap(value_enum, short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;compression&quot;</span>)]
     </span>compression: <span class="prelude-ty">Option</span>&lt;Compression&gt;,
+
+    <span class="doccomment">/// Read buffer size in bytes (default 8192)
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;r&#39;</span>, long = <span class="string">&quot;read-buffer&quot;</span>)]
+    </span>read_buffer: <span class="prelude-ty">Option</span>&lt;usize&gt;,
 
     <span class="attribute">#[clap(subcommand)]
     </span>subcommand: SubCommand,
@@ -329,13 +344,20 @@
                 arrow2::io::parquet::write::CompressionOptions::Uncompressed
             }
             <span class="prelude-val">Some</span>(Compression::Snappy) =&gt; arrow2::io::parquet::write::CompressionOptions::Snappy,
-            <span class="prelude-val">Some</span>(Compression::Gzip) =&gt; arrow2::io::parquet::write::CompressionOptions::Gzip,
+            <span class="prelude-val">Some</span>(Compression::Gzip) =&gt; arrow2::io::parquet::write::CompressionOptions::Gzip(<span class="prelude-val">None</span>),
             <span class="prelude-val">Some</span>(Compression::Lzo) =&gt; arrow2::io::parquet::write::CompressionOptions::Lzo,
-            <span class="prelude-val">Some</span>(Compression::Brotli) =&gt; arrow2::io::parquet::write::CompressionOptions::Brotli,
+            <span class="prelude-val">Some</span>(Compression::Brotli) =&gt; {
+                arrow2::io::parquet::write::CompressionOptions::Brotli(<span class="prelude-val">None</span>)
+            }
             <span class="prelude-val">Some</span>(Compression::Lz4) =&gt; arrow2::io::parquet::write::CompressionOptions::Lz4,
-            <span class="comment">// Some(Compression::Zstd) =&gt; arrow2::io::parquet::write::CompressionOptions::Zstd,
-            </span><span class="prelude-val">None </span>=&gt; arrow2::io::parquet::write::CompressionOptions::Snappy,
+            <span class="prelude-val">Some</span>(Compression::Zstd) =&gt; arrow2::io::parquet::write::CompressionOptions::Zstd(<span class="prelude-val">None</span>),
+            <span class="prelude-val">None </span>=&gt; arrow2::io::parquet::write::CompressionOptions::Snappy,
         }
+    }
+
+    <span class="doccomment">/// Get read buffer size
+    </span><span class="kw">pub fn </span>read_buffer(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.read_buffer.unwrap_or(<span class="number">8192</span>)
     }
 
     <span class="doccomment">/// Get subcommand

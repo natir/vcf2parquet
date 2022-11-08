@@ -117,8 +117,6 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
-<span id="120">120</span>
-<span id="121">121</span>
 </pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet error
 
 </span><span class="comment">/* std use */
@@ -136,7 +134,7 @@
 
     <span class="doccomment">/// Arrow error
     </span><span class="attribute">#[error(transparent)]
-    </span>Arrow { error: arrow2::error::ArrowError },
+    </span>Arrow { error: arrow2::error::Error },
 
     <span class="doccomment">/// Parquet error
     </span><span class="attribute">#[error(transparent)]
@@ -168,8 +166,8 @@
     }
 }
 
-<span class="kw">impl </span>From&lt;arrow2::error::ArrowError&gt; <span class="kw">for </span>Error {
-    <span class="kw">fn </span>from(error: arrow2::error::ArrowError) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>From&lt;arrow2::error::Error&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(error: arrow2::error::Error) -&gt; <span class="self">Self </span>{
         Error::Arrow { error }
     }
 }
@@ -214,9 +212,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(arrow2::error::ArrowError::NotYetImplemented(
-                    <span class="string">&quot;test&quot;</span>.to_string()
-                ))
+                Error::from(arrow2::error::Error::NotYetImplemented(<span class="string">&quot;test&quot;</span>.to_string()))
             ),
             <span class="string">&quot;Arrow { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.to_string()
         );
@@ -224,11 +220,11 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">format!</span>(
                 <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(arrow2::io::parquet::read::ParquetError::General(
+                Error::from(arrow2::io::parquet::read::ParquetError::OutOfSpec(
                     <span class="string">&quot;test&quot;</span>.to_string()
                 ))
             ),
-            <span class="string">&quot;Parquet { error: General(\&quot;test\&quot;) }&quot;</span>.to_string()
+            <span class="string">&quot;Parquet { error: OutOfSpec(\&quot;test\&quot;) }&quot;</span>.to_string()
         );
 
         <span class="macro">assert_eq!</span>(
