@@ -6,13 +6,13 @@ edition = "2021"
 [dependencies]
 vcf2parquet-lib = { path = "../vcf2parquet-lib", version = "0.2.0" }
 niffler         = { version = "2" }
-arrow2          = { version = "0.11", features = ["io_parquet", "io_parquet_compression"] }
+arrow2          = { version = "0.14", features = ["io_parquet", "io_parquet_compression"] }
 
 # logging management
-simplelog       = { version = "0.11" }
+simplelog       = { version = "0.12" }
 
 # error management
 thiserror       = { version = "1" }
 
 # cli management
-clap            = { version = "3", features = ["derive"] }
+clap            = { version = "4", features = ["derive"] }

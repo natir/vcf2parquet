@@ -58,7 +58,6 @@ where
 
     let mut writer = arrow2::io::parquet::write::FileWriter::try_new(output, schema, options)?;
 
-    writer.start()?;
     for group in row_groups {
         writer.write(group?)?;
     }
@@ -116,7 +115,6 @@ where
         let mut writer =
             arrow2::io::parquet::write::FileWriter::try_new(output, schema.clone(), options)?;
 
-        writer.start()?;
         writer.write(group?)?;
         writer.end(None)?;
     }
@@ -162,7 +160,7 @@ mod tests {
         0, 0, 0, 0, 255, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 21, 8, 25, 37, 0, 6, 25, 24, 7, 113, 117,
         97, 108, 105, 116, 121, 21, 4, 22, 2, 22, 56, 22, 96, 38, 228, 8, 60, 54, 2, 0, 0, 21, 6,
         21, 16, 21, 56, 92, 21, 2, 21, 2, 21, 2, 21, 0, 21, 4, 21, 4, 17, 28, 54, 2, 0, 0, 0, 3, 0,
-        3, 2, 31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 99, 96, 96, 96, 0, 0, 28, 223, 68, 33, 4, 0, 0, 0,
+        3, 1, 31, 139, 8, 0, 0, 0, 0, 0, 0, 255, 99, 96, 96, 96, 0, 0, 28, 223, 68, 33, 4, 0, 0, 0,
         21, 12, 25, 37, 0, 6, 25, 56, 6, 102, 105, 108, 116, 101, 114, 4, 108, 105, 115, 116, 6,
         102, 105, 108, 116, 101, 114, 21, 4, 22, 2, 22, 68, 22, 108, 38, 132, 10, 60, 54, 2, 0, 0,
         21, 6, 21, 0, 21, 40, 92, 21, 0, 21, 0, 21, 0, 21, 0, 21, 0, 21, 0, 17, 28, 54, 0, 0, 0, 0,
@@ -313,7 +311,7 @@ mod tests {
             &mut input,
             &mut output,
             1,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(None),
         )
         .unwrap();
         assert_eq!(output, *PARQUET_FILE);
@@ -329,7 +327,7 @@ mod tests {
             &mut input,
             &mut output,
             1,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(None),
         );
 
         assert!(result.is_err());
@@ -353,7 +351,7 @@ mod tests {
             &mut input,
             &format,
             1,
-            arrow2::io::parquet::write::CompressionOptions::Gzip,
+            arrow2::io::parquet::write::CompressionOptions::Gzip(None),
         )
         .unwrap();
     }

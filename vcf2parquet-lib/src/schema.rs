@@ -132,20 +132,22 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
 mod tests {
     use super::*;
 
-    static VCF_FILE: &[u8] = b"##fileformat=VCFv4.1
-##fileDate=2022-05-28
+    //
+    //
+
+    static VCF_FILE: &[u8] = b"##fileformat=VCFv4.3
+##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##ID=<Description=\"ClinVar Variation ID\">
 ##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
 ##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=DBVARID,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
+##INFO=<ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
 ##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\">
 ##INFO=<ID=CLNVC,Number=2,Type=String,Description=\"Variant type\">
-##FORMAT=<ID=AD,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\">
-##FORMAT=<ID=DP,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\">
-##FORMAT=<ID=GQ,Number=1,Type=Character,Description=\"Genotype Quality\">
-##FORMAT=<ID=GT,Number=3,Type=String,Description=\"Genotype\">
+##FORMAT=<ID=AB,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\">
+##FORMAT=<ID=DC,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\">
+##FORMAT=<ID=GE,Number=1,Type=Character,Description=\"Genotype Quality\">
+##FORMAT=<ID=GC,Number=3,Type=String,Description=\"Genotype\">
 ##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
 ##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
@@ -200,7 +202,7 @@ mod tests {
                 metadata: std::collections::BTreeMap::new()
             },
             arrow2::datatypes::Field {
-                name: "info_DBVARID".to_string(),
+                name: "info_DBVARI".to_string(),
                 data_type: arrow2::datatypes::DataType::Boolean,
                 is_nullable: false,
                 metadata: std::collections::BTreeMap::new()
@@ -228,10 +230,10 @@ mod tests {
 
     static ref FORMAT_COLS: Vec<arrow2::datatypes::Field> = vec![
                 arrow2::datatypes::Field {
-                    name: "format_first_AD".to_string(),
+                    name: "format_first_AB".to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_first_AD".to_string(),
+                            name: "format_first_AB".to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
@@ -241,22 +243,22 @@ mod tests {
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_first_DP".to_string(),
+                    name: "format_first_DC".to_string(),
                     data_type: arrow2::datatypes::DataType::Float32,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_first_GQ".to_string(),
+                    name: "format_first_GE".to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_first_GT".to_string(),
+                    name: "format_first_GC".to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_first_GT".to_string(),
+                            name: "format_first_GC".to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
@@ -266,10 +268,10 @@ mod tests {
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_AD".to_string(),
+                    name: "format_second_AB".to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_second_AD".to_string(),
+                            name: "format_second_AB".to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
@@ -279,22 +281,22 @@ mod tests {
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_DP".to_string(),
+                    name: "format_second_DC".to_string(),
                     data_type: arrow2::datatypes::DataType::Float32,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_GQ".to_string(),
+                    name: "format_second_GE".to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_GT".to_string(),
+                    name: "format_second_GC".to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_second_GT".to_string(),
+                            name: "format_second_GC".to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()

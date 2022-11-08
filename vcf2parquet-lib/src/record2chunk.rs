@@ -37,8 +37,16 @@ where
         }
     }
 
-    pub fn encodings(&self) -> Vec<arrow2::io::parquet::write::Encoding> {
-        vec![arrow2::io::parquet::write::Encoding::Plain; self.schema.fields.len()]
+    pub fn encodings(&self) -> Vec<Vec<arrow2::io::parquet::write::Encoding>> {
+        self.schema
+            .fields
+            .iter()
+            .map(|f| {
+                arrow2::io::parquet::write::transverse(&f.data_type, |_| {
+                    arrow2::io::parquet::write::Encoding::Plain
+                })
+            })
+            .collect()
     }
 }
 
@@ -48,7 +56,7 @@ where
 {
     type Item = Result<
         arrow2::chunk::Chunk<std::sync::Arc<dyn arrow2::array::Array>>,
-        arrow2::error::ArrowError,
+        arrow2::error::Error,
     >;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -65,7 +73,7 @@ where
                         return Some(Err(e));
                     }
                 }
-                Some(Err(e)) => return Some(Err(arrow2::error::ArrowError::Io(e))),
+                Some(Err(e)) => return Some(Err(arrow2::error::Error::Io(e))),
                 None => {
                     self.end = true;
 

@@ -6,7 +6,7 @@
 
 /* project use */
 
-#[derive(Debug, clap::ArgEnum, Clone, Copy)]
+#[derive(Debug, clap::ValueEnum, Clone, Copy)]
 pub enum Compression {
     Uncompressed,
     Snappy,
@@ -14,7 +14,7 @@ pub enum Compression {
     Lzo,
     Brotli,
     Lz4,
-    // Zstd,
+    Zstd,
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
@@ -28,7 +28,7 @@ pub struct Command {
     batch_size: Option<usize>,
 
     /// Compression method (default snappy)
-    #[clap(arg_enum, short = 'c', long = "compression")]
+    #[clap(value_enum, short = 'c', long = "compression")]
     compression: Option<Compression>,
 
     #[clap(subcommand)]
@@ -75,11 +75,13 @@ impl Command {
                 arrow2::io::parquet::write::CompressionOptions::Uncompressed
             }
             Some(Compression::Snappy) => arrow2::io::parquet::write::CompressionOptions::Snappy,
-            Some(Compression::Gzip) => arrow2::io::parquet::write::CompressionOptions::Gzip,
+            Some(Compression::Gzip) => arrow2::io::parquet::write::CompressionOptions::Gzip(None),
             Some(Compression::Lzo) => arrow2::io::parquet::write::CompressionOptions::Lzo,
-            Some(Compression::Brotli) => arrow2::io::parquet::write::CompressionOptions::Brotli,
+            Some(Compression::Brotli) => {
+                arrow2::io::parquet::write::CompressionOptions::Brotli(None)
+            }
             Some(Compression::Lz4) => arrow2::io::parquet::write::CompressionOptions::Lz4,
-            // Some(Compression::Zstd) => arrow2::io::parquet::write::CompressionOptions::Zstd,
+            Some(Compression::Zstd) => arrow2::io::parquet::write::CompressionOptions::Zstd(None),
             None => arrow2::io::parquet::write::CompressionOptions::Snappy,
         }
     }

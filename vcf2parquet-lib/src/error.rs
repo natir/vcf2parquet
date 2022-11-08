@@ -15,7 +15,7 @@ pub enum Error {
 
     /// Arrow error
     #[error(transparent)]
-    Arrow { error: arrow2::error::ArrowError },
+    Arrow { error: arrow2::error::Error },
 
     /// Parquet error
     #[error(transparent)]
@@ -47,8 +47,8 @@ impl From<std::io::Error> for Error {
     }
 }
 
-impl From<arrow2::error::ArrowError> for Error {
-    fn from(error: arrow2::error::ArrowError) -> Self {
+impl From<arrow2::error::Error> for Error {
+    fn from(error: arrow2::error::Error) -> Self {
         Error::Arrow { error }
     }
 }
@@ -93,9 +93,7 @@ mod tests {
         assert_eq!(
             format!(
                 "{:?}",
-                Error::from(arrow2::error::ArrowError::NotYetImplemented(
-                    "test".to_string()
-                ))
+                Error::from(arrow2::error::Error::NotYetImplemented("test".to_string()))
             ),
             "Arrow { error: NotYetImplemented(\"test\") }".to_string()
         );
@@ -103,11 +101,11 @@ mod tests {
         assert_eq!(
             format!(
                 "{:?}",
-                Error::from(arrow2::io::parquet::read::ParquetError::General(
+                Error::from(arrow2::io::parquet::read::ParquetError::OutOfSpec(
                     "test".to_string()
                 ))
             ),
-            "Parquet { error: General(\"test\") }".to_string()
+            "Parquet { error: OutOfSpec(\"test\") }".to_string()
         );
 
         assert_eq!(
