@@ -31,6 +31,10 @@ pub struct Command {
     #[clap(value_enum, short = 'c', long = "compression")]
     compression: Option<Compression>,
 
+    /// Read buffer size in bytes (default 8192)
+    #[clap(short = 'r', long = "read-buffer")]
+    read_buffer: Option<usize>,
+
     #[clap(subcommand)]
     subcommand: SubCommand,
 }
@@ -84,6 +88,11 @@ impl Command {
             Some(Compression::Zstd) => arrow2::io::parquet::write::CompressionOptions::Zstd(None),
             None => arrow2::io::parquet::write::CompressionOptions::Snappy,
         }
+    }
+
+    /// Get read buffer size
+    pub fn read_buffer(&self) -> usize {
+        self.read_buffer.unwrap_or(8192)
     }
 
     /// Get subcommand

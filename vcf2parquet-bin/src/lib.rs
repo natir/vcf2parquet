@@ -27,7 +27,7 @@ fn convert(params: &cli::Command, subparams: &cli::Convert) -> error::Result<()>
         .map(Box::new)
         .map(|x| niffler::get_reader(x))
         .map_err(error::mapping)?
-        .map(|(file, _)| std::io::BufReader::new(file))?;
+        .map(|(file, _)| std::io::BufReader::with_capacity(params.read_buffer(), file))?;
 
     let mut output = std::fs::File::create(subparams.output()).map_err(error::mapping)?;
 
@@ -48,7 +48,7 @@ fn split(params: &cli::Command, subparams: &cli::Split) -> error::Result<()> {
         .map(Box::new)
         .map(|x| niffler::get_reader(x))
         .map_err(error::mapping)?
-        .map(|(file, _)| std::io::BufReader::new(file))?;
+        .map(|(file, _)| std::io::BufReader::with_capacity(params.read_buffer(), file))?;
 
     lib::vcf2multiparquet(
         &mut reader,
