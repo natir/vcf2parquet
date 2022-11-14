@@ -263,6 +263,12 @@
 <span id="263">263</span>
 <span id="264">264</span>
 <span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
 </pre><pre class="rust"><code><span class="doccomment">//! cli of vcf2parquet-bin
 
 </span><span class="comment">/* std use */
@@ -283,6 +289,12 @@
 }
 
 <span class="attribute">#[derive(clap::Parser, std::fmt::Debug)]
+#[command(
+    name = <span class="string">&quot;vcf2parquet&quot;</span>,
+    author = <span class="string">&quot;Pierre Marijon &lt;pierre.marijon-ext@aphp.fr&gt;&quot;</span>,
+    version = <span class="string">&quot;0.3.0&quot;</span>,
+    about = <span class="string">&quot;Convert a vcf in parquet&quot;
+</span>)]
 </span><span class="kw">pub struct </span>Command {
     <span class="doccomment">/// Input path
     </span><span class="attribute">#[clap(short = <span class="string">&#39;i&#39;</span>, long = <span class="string">&quot;input&quot;</span>)]
