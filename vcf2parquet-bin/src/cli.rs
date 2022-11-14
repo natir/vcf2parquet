@@ -131,6 +131,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Snappy),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -150,17 +151,20 @@ mod tests {
         }
 
         assert_eq!(params.batch_size(), 100_000);
+        assert_eq!(params.read_buffer(), 8192);
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: Some(100),
             compression: Some(Compression::Snappy),
+            read_buffer: Some(8194),
             subcommand: SubCommand::Split(Split {
                 format: "test_{}.parquet".to_string(),
             }),
         };
 
         assert_eq!(params.batch_size(), 100);
+        assert_eq!(params.read_buffer(), 8194);
 
         match params.subcommand.clone() {
             SubCommand::Split(s) => assert_eq!(s.format(), "test_{}.parquet"),
@@ -174,6 +178,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: None,
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -188,6 +193,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Uncompressed),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -202,6 +208,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Snappy),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -216,6 +223,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Gzip),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -223,13 +231,14 @@ mod tests {
 
         assert_eq!(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Gzip
+            arrow2::io::parquet::write::CompressionOptions::Gzip(None)
         );
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Lzo),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -244,6 +253,7 @@ mod tests {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Brotli),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
@@ -251,13 +261,14 @@ mod tests {
 
         assert_eq!(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Brotli
+            arrow2::io::parquet::write::CompressionOptions::Brotli(None)
         );
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
             batch_size: None,
             compression: Some(Compression::Lz4),
+            read_buffer: None,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
