@@ -269,6 +269,17 @@
 <span id="269">269</span>
 <span id="270">270</span>
 <span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
 </pre><pre class="rust"><code><span class="doccomment">//! cli of vcf2parquet-bin
 
 </span><span class="comment">/* std use */
@@ -402,6 +413,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -421,17 +433,20 @@
         }
 
         <span class="macro">assert_eq!</span>(params.batch_size(), <span class="number">100_000</span>);
+        <span class="macro">assert_eq!</span>(params.read_buffer(), <span class="number">8192</span>);
 
         params = Command {
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">Some</span>(<span class="number">100</span>),
             compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            read_buffer: <span class="prelude-val">Some</span>(<span class="number">8194</span>),
             subcommand: SubCommand::Split(Split {
                 format: <span class="string">&quot;test_{}.parquet&quot;</span>.to_string(),
             }),
         };
 
         <span class="macro">assert_eq!</span>(params.batch_size(), <span class="number">100</span>);
+        <span class="macro">assert_eq!</span>(params.read_buffer(), <span class="number">8194</span>);
 
         <span class="kw">match </span>params.subcommand.clone() {
             SubCommand::Split(s) =&gt; <span class="macro">assert_eq!</span>(s.format(), <span class="string">&quot;test_{}.parquet&quot;</span>),
@@ -445,6 +460,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">None</span>,
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -459,6 +475,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Uncompressed),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -473,6 +490,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Snappy),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -487,6 +505,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Gzip),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -494,13 +513,14 @@
 
         <span class="macro">assert_eq!</span>(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Gzip
+            arrow2::io::parquet::write::CompressionOptions::Gzip(<span class="prelude-val">None</span>)
         );
 
         params = Command {
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Lzo),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -515,6 +535,7 @@
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Brotli),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
@@ -522,13 +543,14 @@
 
         <span class="macro">assert_eq!</span>(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Brotli
+            arrow2::io::parquet::write::CompressionOptions::Brotli(<span class="prelude-val">None</span>)
         );
 
         params = Command {
             input: std::path::Path::new(<span class="string">&quot;test/input.vcf&quot;</span>).to_path_buf(),
             batch_size: <span class="prelude-val">None</span>,
             compression: <span class="prelude-val">Some</span>(Compression::Lz4),
+            read_buffer: <span class="prelude-val">None</span>,
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new(<span class="string">&quot;test/output.parquet&quot;</span>).to_path_buf(),
             }),
