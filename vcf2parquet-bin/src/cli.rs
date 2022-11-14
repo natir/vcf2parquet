@@ -18,6 +18,12 @@ pub enum Compression {
 }
 
 #[derive(clap::Parser, std::fmt::Debug)]
+#[command(
+    name = "vcf2parquet",
+    author = "Pierre Marijon <pierre.marijon-ext@aphp.fr>",
+    version = "0.3.0",
+    about = "Convert a vcf in parquet"
+)]
 pub struct Command {
     /// Input path
     #[clap(short = 'i', long = "input")]
