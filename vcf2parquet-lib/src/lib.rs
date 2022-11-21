@@ -31,8 +31,9 @@ where
     // Parquet section
     let schema = schema::from_header(&vcf_header)?;
 
+    let mut iterator = reader.records(&vcf_header);
     let chunk_iterator = record2chunk::Record2Chunk::new(
-        reader.records(&vcf_header),
+        &mut iterator,
         batch_size,
         vcf_header.clone(),
         schema.clone(),
@@ -80,8 +81,9 @@ where
     // Parquet section
     let schema = schema::from_header(&vcf_header)?;
 
+    let mut iterator = reader.records(&vcf_header);
     let chunk_iterator = record2chunk::Record2Chunk::new(
-        reader.records(&vcf_header),
+        &mut iterator,
         batch_size,
         vcf_header.clone(),
         schema.clone(),

@@ -7,23 +7,17 @@
 /* project use */
 use crate::name2data::*;
 
-pub struct Record2Chunk<'a, R>
-where
-    R: std::io::BufRead,
-{
-    inner: noodles::vcf::reader::Records<'a, 'a, R>,
+pub struct Record2Chunk<'a> {
+    inner: &'a mut dyn Iterator<Item = std::io::Result<noodles::vcf::Record>>,
     length: usize,
-    end: bool,
     header: noodles::vcf::Header,
     schema: arrow2::datatypes::Schema,
+    end: bool,
 }
 
-impl<'a, R> Record2Chunk<'a, R>
-where
-    R: std::io::BufRead,
-{
+impl<'a> Record2Chunk<'a> {
     pub fn new(
-        inner: noodles::vcf::reader::Records<'a, 'a, R>,
+        inner: &'a mut dyn Iterator<Item = std::io::Result<noodles::vcf::Record>>,
         length: usize,
         header: noodles::vcf::Header,
         schema: arrow2::datatypes::Schema,
@@ -31,9 +25,9 @@ where
         Self {
             inner,
             length,
-            end: false,
             header,
             schema,
+            end: false,
         }
     }
 
@@ -50,10 +44,7 @@ where
     }
 }
 
-impl<'a, R> Iterator for Record2Chunk<'a, R>
-where
-    R: std::io::BufRead,
-{
+impl<'a> Iterator for Record2Chunk<'a> {
     type Item = Result<
         arrow2::chunk::Chunk<std::sync::Arc<dyn arrow2::array::Array>>,
         arrow2::error::Error,
