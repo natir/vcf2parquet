@@ -26,11 +26,7 @@ where
     // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
-    let vcf_header: noodles::vcf::Header = reader
-        .read_header()
-        .map_err(error::mapping)?
-        .parse()
-        .map_err(error::mapping)?;
+    let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
 
     // Parquet section
     let schema = schema::from_header(&vcf_header)?;
@@ -79,11 +75,7 @@ where
     // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
-    let vcf_header: noodles::vcf::Header = reader
-        .read_header()
-        .map_err(error::mapping)?
-        .parse()
-        .map_err(error::mapping)?;
+    let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
 
     // Parquet section
     let schema = schema::from_header(&vcf_header)?;
@@ -110,8 +102,7 @@ where
     )?;
 
     for (index, group) in row_groups.enumerate() {
-        let output = std::fs::File::create(template.replace("{}", &index.to_string()))
-            .map_err(error::mapping)?;
+        let output = std::fs::File::create(template.replace("{}", &index.to_string()))?;
         let mut writer =
             arrow2::io::parquet::write::FileWriter::try_new(output, schema.clone(), options)?;
 
