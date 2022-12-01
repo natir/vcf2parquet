@@ -31,92 +31,6 @@
 <span id="31">31</span>
 <span id="32">32</span>
 <span id="33">33</span>
-<span id="34">34</span>
-<span id="35">35</span>
-<span id="36">36</span>
-<span id="37">37</span>
-<span id="38">38</span>
-<span id="39">39</span>
-<span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
-<span id="64">64</span>
-<span id="65">65</span>
-<span id="66">66</span>
-<span id="67">67</span>
-<span id="68">68</span>
-<span id="69">69</span>
-<span id="70">70</span>
-<span id="71">71</span>
-<span id="72">72</span>
-<span id="73">73</span>
-<span id="74">74</span>
-<span id="75">75</span>
-<span id="76">76</span>
-<span id="77">77</span>
-<span id="78">78</span>
-<span id="79">79</span>
-<span id="80">80</span>
-<span id="81">81</span>
-<span id="82">82</span>
-<span id="83">83</span>
-<span id="84">84</span>
-<span id="85">85</span>
-<span id="86">86</span>
-<span id="87">87</span>
-<span id="88">88</span>
-<span id="89">89</span>
-<span id="90">90</span>
-<span id="91">91</span>
-<span id="92">92</span>
-<span id="93">93</span>
-<span id="94">94</span>
-<span id="95">95</span>
-<span id="96">96</span>
-<span id="97">97</span>
-<span id="98">98</span>
-<span id="99">99</span>
-<span id="100">100</span>
-<span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
-<span id="112">112</span>
-<span id="113">113</span>
-<span id="114">114</span>
-<span id="115">115</span>
-<span id="116">116</span>
-<span id="117">117</span>
-<span id="118">118</span>
-<span id="119">119</span>
 </pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet error
 
 </span><span class="comment">/* std use */
@@ -134,107 +48,21 @@
 
     <span class="doccomment">/// Arrow error
     </span><span class="attribute">#[error(transparent)]
-    </span>Arrow { error: arrow2::error::Error },
+    </span>Arrow(<span class="attribute">#[from] </span>arrow2::error::Error),
 
     <span class="doccomment">/// Parquet error
     </span><span class="attribute">#[error(transparent)]
-    </span>Parquet {
-        error: arrow2::io::parquet::read::ParquetError,
-    },
+    </span>Parquet(<span class="attribute">#[from] </span>arrow2::io::parquet::read::ParquetError),
 
     <span class="doccomment">/// Io error
     </span><span class="attribute">#[error(transparent)]
-    </span>Io { error: std::io::Error },
+    </span>Io(<span class="attribute">#[from] </span>std::io::Error),
 
     <span class="doccomment">/// Noodles header vcf error
     </span><span class="attribute">#[error(transparent)]
-    </span>NoodlesHeader {
-        error: noodles::vcf::header::ParseError,
-    },
-}
-
-<span class="kw">pub fn </span>mapping&lt;E&gt;(error: E) -&gt; Error
-<span class="kw">where
-    </span>E: std::convert::Into&lt;Error&gt;,
-{
-    error.into()
-}
-
-<span class="kw">impl </span>From&lt;std::io::Error&gt; <span class="kw">for </span>Error {
-    <span class="kw">fn </span>from(error: std::io::Error) -&gt; <span class="self">Self </span>{
-        Error::Io { error }
-    }
-}
-
-<span class="kw">impl </span>From&lt;arrow2::error::Error&gt; <span class="kw">for </span>Error {
-    <span class="kw">fn </span>from(error: arrow2::error::Error) -&gt; <span class="self">Self </span>{
-        Error::Arrow { error }
-    }
-}
-
-<span class="kw">impl </span>From&lt;arrow2::io::parquet::read::ParquetError&gt; <span class="kw">for </span>Error {
-    <span class="kw">fn </span>from(error: arrow2::io::parquet::read::ParquetError) -&gt; <span class="self">Self </span>{
-        Error::Parquet { error }
-    }
-}
-
-<span class="kw">impl </span>From&lt;noodles::vcf::header::ParseError&gt; <span class="kw">for </span>Error {
-    <span class="kw">fn </span>from(error: noodles::vcf::header::ParseError) -&gt; <span class="self">Self </span>{
-        Error::NoodlesHeader { error }
-    }
+    </span>NoodlesHeader(<span class="attribute">#[from] </span>noodles::vcf::header::ParseError),
 }
 
 <span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T&gt; = std::result::Result&lt;T, Error&gt;;
-
-<span class="attribute">#[cfg(test)]
-</span><span class="kw">mod </span>tests {
-    <span class="kw">use super</span>::<span class="kw-2">*</span>;
-
-    <span class="attribute">#[test]
-    </span><span class="kw">fn </span>error_conversion() {
-        <span class="kw">let </span>error: std::io::Error = std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>);
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, mapping(error)),
-            <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>))
-            )
-        );
-
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(std::io::Error::new(std::io::ErrorKind::NotFound, <span class="string">&quot;test&quot;</span>))
-            ),
-            <span class="string">&quot;Io { error: Custom { kind: NotFound, error: \&quot;test\&quot; } }&quot;</span>.to_string()
-        );
-
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(arrow2::error::Error::NotYetImplemented(<span class="string">&quot;test&quot;</span>.to_string()))
-            ),
-            <span class="string">&quot;Arrow { error: NotYetImplemented(\&quot;test\&quot;) }&quot;</span>.to_string()
-        );
-
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(arrow2::io::parquet::read::ParquetError::OutOfSpec(
-                    <span class="string">&quot;test&quot;</span>.to_string()
-                ))
-            ),
-            <span class="string">&quot;Parquet { error: OutOfSpec(\&quot;test\&quot;) }&quot;</span>.to_string()
-        );
-
-        <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
-                Error::from(noodles::vcf::header::ParseError::MissingHeader)
-            ),
-            <span class="string">&quot;NoodlesHeader { error: MissingHeader }&quot;</span>.to_string()
-        );
-    }
-}
 </code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="vcf2parquet_lib" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

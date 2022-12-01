@@ -349,13 +349,6 @@
 <span id="349">349</span>
 <span id="350">350</span>
 <span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
 </pre><pre class="rust"><code><span class="doccomment">//! vcf2parquet library
 
 </span><span class="comment">/* std use */
@@ -384,17 +377,14 @@
     <span class="comment">// VCF section
     </span><span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(input);
 
-    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader
-        .read_header()
-        .map_err(error::mapping)<span class="question-mark">?
-        </span>.parse()
-        .map_err(error::mapping)<span class="question-mark">?</span>;
+    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
 
     <span class="comment">// Parquet section
     </span><span class="kw">let </span>schema = schema::from_header(<span class="kw-2">&amp;</span>vcf_header)<span class="question-mark">?</span>;
 
+    <span class="kw">let </span><span class="kw-2">mut </span>iterator = reader.records(<span class="kw-2">&amp;</span>vcf_header);
     <span class="kw">let </span>chunk_iterator = record2chunk::Record2Chunk::new(
-        reader.records(<span class="kw-2">&amp;</span>vcf_header),
+        <span class="kw-2">&amp;mut </span>iterator,
         batch_size,
         vcf_header.clone(),
         schema.clone(),
@@ -437,17 +427,14 @@
     <span class="comment">// VCF section
     </span><span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(input);
 
-    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader
-        .read_header()
-        .map_err(error::mapping)<span class="question-mark">?
-        </span>.parse()
-        .map_err(error::mapping)<span class="question-mark">?</span>;
+    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
 
     <span class="comment">// Parquet section
     </span><span class="kw">let </span>schema = schema::from_header(<span class="kw-2">&amp;</span>vcf_header)<span class="question-mark">?</span>;
 
+    <span class="kw">let </span><span class="kw-2">mut </span>iterator = reader.records(<span class="kw-2">&amp;</span>vcf_header);
     <span class="kw">let </span>chunk_iterator = record2chunk::Record2Chunk::new(
-        reader.records(<span class="kw-2">&amp;</span>vcf_header),
+        <span class="kw-2">&amp;mut </span>iterator,
         batch_size,
         vcf_header.clone(),
         schema.clone(),
@@ -468,8 +455,7 @@
     )<span class="question-mark">?</span>;
 
     <span class="kw">for </span>(index, group) <span class="kw">in </span>row_groups.enumerate() {
-        <span class="kw">let </span>output = std::fs::File::create(template.replace(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span>index.to_string()))
-            .map_err(error::mapping)<span class="question-mark">?</span>;
+        <span class="kw">let </span>output = std::fs::File::create(template.replace(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span>index.to_string()))<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>writer =
             arrow2::io::parquet::write::FileWriter::try_new(output, schema.clone(), options)<span class="question-mark">?</span>;
 
