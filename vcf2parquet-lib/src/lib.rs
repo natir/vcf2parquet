@@ -43,6 +43,7 @@ where
         write_statistics: true,
         compression,
         version: arrow2::io::parquet::write::Version::V2,
+        data_pagesize_limit: Some(batch_size),
     };
 
     let encodings = chunk_iterator.encodings();
@@ -93,6 +94,7 @@ where
         write_statistics: true,
         compression,
         version: arrow2::io::parquet::write::Version::V2,
+        data_pagesize_limit: Some(batch_size),
     };
 
     let encodings = chunk_iterator.encodings();

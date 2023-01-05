@@ -6,8 +6,8 @@ edition = "2021"
 [dependencies]
 # input output management
 niffler     = { version = "2" }
-noodles     = { version = "0.29", features = ["vcf"] }
-arrow2      = { version = "0.14", features = ["io_parquet", "io_parquet_compression"] }
+noodles     = { version = "0.31", features = ["vcf"] }
+arrow2      = { version = "0.15", features = ["io_parquet", "io_parquet_compression"] }
 rustc-hash  = { version = "1" }
 
 # logging and error management
