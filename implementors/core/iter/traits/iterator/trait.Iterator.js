@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"vcf2parquet_lib":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"vcf2parquet_lib/record2chunk/struct.Record2Chunk.html\" title=\"struct vcf2parquet_lib::record2chunk::Record2Chunk\">Record2Chunk</a>&lt;'a&gt;"]]
+"vcf2parquet_lib":[["impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.0/core/iter/traits/iterator/trait.Iterator.html\" title=\"trait core::iter::traits::iterator::Iterator\">Iterator</a> for <a class=\"struct\" href=\"vcf2parquet_lib/record2chunk/struct.Record2Chunk.html\" title=\"struct vcf2parquet_lib::record2chunk::Record2Chunk\">Record2Chunk</a>&lt;'a&gt;"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
