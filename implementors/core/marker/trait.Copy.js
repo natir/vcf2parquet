@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"vcf2parquet_bin":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.66.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"vcf2parquet_bin/cli/enum.Compression.html\" title=\"enum vcf2parquet_bin::cli::Compression\">Compression</a>"]]
+"vcf2parquet_bin":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.67.0/core/marker/trait.Copy.html\" title=\"trait core::marker::Copy\">Copy</a> for <a class=\"enum\" href=\"vcf2parquet_bin/cli/enum.Compression.html\" title=\"enum vcf2parquet_bin::cli::Compression\">Compression</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
