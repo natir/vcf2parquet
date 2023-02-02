@@ -201,7 +201,7 @@ impl Name2Data {
         // format
         for (genotypes, sample) in record.genotypes().iter().zip(header.sample_names()) {
             for (key, value) in genotypes.iter() {
-                let key = format!("format_{}_{}", sample, key);
+                let key = format!("format_{sample}_{key}");
                 not_changed_key.remove(&key);
 
                 match value.value() {
@@ -271,59 +271,59 @@ impl Name2Data {
                     noodles::vcf::header::info::Type::Integer,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Integer, _) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Float,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Float, _) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Flag,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Flag, _) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Character,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Character, _) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::String,
                     noodles::vcf::header::Number::Count(0 | 1),
                 ) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::String, _) => data.insert(
-                    format!("info_{}", key),
+                    format!("info_{key}"),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
@@ -337,7 +337,7 @@ impl Name2Data {
     ) {
         for sample in header.sample_names() {
             for (key, value) in header.formats() {
-                let key = format!("format_{}_{}", sample, key);
+                let key = format!("format_{sample}_{key}");
 
                 match (value.ty(), value.number()) {
                     (
@@ -425,7 +425,7 @@ impl ColumnData {
             ColumnData::ListFloat(a) => a.push_null(),
             ColumnData::ListString(_a) => {
                 if let Err(e) = self.push_vecstring(vec![None]) {
-                    panic!("ListString {:?}", e);
+                    panic!("ListString {e:?}");
                 }
             }
         }

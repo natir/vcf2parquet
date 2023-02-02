@@ -16,8 +16,8 @@ pub fn main() -> error::Result<()> {
     let params = cli::Command::parse();
 
     match params.subcommand() {
-        cli::SubCommand::Convert(subparams) => convert(&params, &subparams),
-        cli::SubCommand::Split(subparams) => split(&params, &subparams),
+        cli::SubCommand::Convert(subparams) => convert(&params, subparams),
+        cli::SubCommand::Split(subparams) => split(&params, subparams),
     }
 }
 

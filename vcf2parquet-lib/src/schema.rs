@@ -63,7 +63,7 @@ fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
     let mut fields = Vec::new();
 
     for (name, value) in header.infos() {
-        let key = format!("info_{}", name);
+        let key = format!("info_{name}");
 
         let arrow_type = match value.ty() {
             noodles::vcf::header::info::Type::Integer => arrow2::datatypes::DataType::Int32,
@@ -98,7 +98,7 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
 
     for sample in header.sample_names() {
         for (name, value) in header.formats() {
-            let key = format!("format_{}_{}", sample, name);
+            let key = format!("format_{sample}_{name}");
 
             let arrow_type = match value.ty() {
                 noodles::vcf::header::format::Type::Integer => arrow2::datatypes::DataType::Int32,

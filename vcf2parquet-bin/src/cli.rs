@@ -21,7 +21,7 @@ pub enum Compression {
 #[command(
     name = "vcf2parquet",
     author = "Pierre Marijon <pierre.marijon-ext@aphp.fr>",
-    version = "0.3.0",
+    version = "0.3.1",
     about = "Convert a vcf in parquet"
 )]
 pub struct Command {
