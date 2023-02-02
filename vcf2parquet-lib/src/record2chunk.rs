@@ -7,17 +7,20 @@
 /* project use */
 use crate::name2data::*;
 
-pub struct Record2Chunk<'a> {
-    inner: &'a mut dyn Iterator<Item = std::io::Result<noodles::vcf::Record>>,
+pub struct Record2Chunk<T> {
+    inner: T,
     length: usize,
     header: noodles::vcf::Header,
     schema: arrow2::datatypes::Schema,
     end: bool,
 }
 
-impl<'a> Record2Chunk<'a> {
+impl<T> Record2Chunk<T>
+where
+    T: Iterator<Item = std::io::Result<noodles::vcf::Record>>,
+{
     pub fn new(
-        inner: &'a mut dyn Iterator<Item = std::io::Result<noodles::vcf::Record>>,
+        inner: T,
         length: usize,
         header: noodles::vcf::Header,
         schema: arrow2::datatypes::Schema,
@@ -44,7 +47,10 @@ impl<'a> Record2Chunk<'a> {
     }
 }
 
-impl<'a> Iterator for Record2Chunk<'a> {
+impl<T> Iterator for Record2Chunk<T>
+where
+    T: Iterator<Item = std::io::Result<noodles::vcf::Record>>,
+{
     type Item = Result<
         arrow2::chunk::Chunk<std::sync::Arc<dyn arrow2::array::Array>>,
         arrow2::error::Error,

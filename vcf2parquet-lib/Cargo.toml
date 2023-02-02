@@ -4,6 +4,8 @@ version = "0.3.0"
 edition = "2021"
 
 [dependencies]
+rayon      = { version = "1" }
+
 # input output management
 niffler     = { version = "2" }
 noodles     = { version = "0.31", features = ["vcf"] }
