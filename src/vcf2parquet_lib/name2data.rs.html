@@ -887,7 +887,7 @@
         <span class="comment">// format
         </span><span class="kw">for </span>(genotypes, sample) <span class="kw">in </span>record.genotypes().iter().zip(header.sample_names()) {
             <span class="kw">for </span>(key, value) <span class="kw">in </span>genotypes.iter() {
-                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, sample, key);
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{key}&quot;</span>);
                 not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
                 <span class="kw">match </span>value.value() {
@@ -957,59 +957,59 @@
                     noodles::vcf::header::info::Type::Integer,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::Int(arrow2::array::MutablePrimitiveArray::&lt;i32&gt;::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Float,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::Float(arrow2::array::MutablePrimitiveArray::&lt;f32&gt;::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::info::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Flag,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Flag, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::Character,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::Character, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::info::Type::String,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::info::Type::String, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, key),
+                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
@@ -1023,7 +1023,7 @@
     ) {
         <span class="kw">for </span>sample <span class="kw">in </span>header.sample_names() {
             <span class="kw">for </span>(key, value) <span class="kw">in </span>header.formats() {
-                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{}_{}&quot;</span>, sample, key);
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{key}&quot;</span>);
 
                 <span class="kw">match </span>(value.ty(), value.number()) {
                     (
@@ -1111,7 +1111,7 @@
             ColumnData::ListFloat(a) =&gt; a.push_null(),
             ColumnData::ListString(_a) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">None</span>]) {
-                    <span class="macro">panic!</span>(<span class="string">&quot;ListString {:?}&quot;</span>, e);
+                    <span class="macro">panic!</span>(<span class="string">&quot;ListString {e:?}&quot;</span>);
                 }
             }
         }
