@@ -348,6 +348,15 @@
 <a href="#348" id="348">348</a>
 <a href="#349" id="349">349</a>
 <a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Construct parquet schema corresponding to vcf
 
 </span><span class="comment">/* std use */
@@ -358,14 +367,17 @@
 </span><span class="kw">use crate</span>::<span class="kw-2">*</span>;
 
 <span class="doccomment">/// Generate a parquet schema corresponding to vcf header
-</span><span class="kw">pub fn </span>from_header(header: <span class="kw-2">&amp;</span>noodles::vcf::Header) -&gt; error::Result&lt;arrow2::datatypes::Schema&gt; {
+</span><span class="kw">pub fn </span>from_header(
+    header: <span class="kw-2">&amp;</span>noodles::vcf::Header,
+    info_optional: bool,
+) -&gt; error::Result&lt;arrow2::datatypes::Schema&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>columns = Vec::new();
 
     <span class="comment">// required column
     </span>columns.extend(required_column());
 
     <span class="comment">// info field
-    </span>columns.extend(info(header));
+    </span>columns.extend(info(header, info_optional));
 
     <span class="comment">// genotype field
     </span>columns.extend(genotype(header));
@@ -409,7 +421,7 @@
     ]
 }
 
-<span class="kw">fn </span>info(header: <span class="kw-2">&amp;</span>noodles::vcf::Header) -&gt; Vec&lt;arrow2::datatypes::Field&gt; {
+<span class="kw">fn </span>info(header: <span class="kw-2">&amp;</span>noodles::vcf::Header, info_optional: bool) -&gt; Vec&lt;arrow2::datatypes::Field&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>fields = Vec::new();
 
     <span class="kw">for </span>(name, value) <span class="kw">in </span>header.infos() {
@@ -424,16 +436,22 @@
         };
 
         <span class="kw">match </span>value.number() {
-            noodles::vcf::header::Number::Count(<span class="number">0</span>) =&gt; {
-                fields.push(arrow2::datatypes::Field::new(<span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>))
-            }
-            noodles::vcf::header::Number::Count(<span class="number">1</span>) =&gt; {
-                fields.push(arrow2::datatypes::Field::new(<span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>))
-            }
+            noodles::vcf::header::Number::Count(<span class="number">0</span>) =&gt; fields.push(arrow2::datatypes::Field::new(
+                <span class="kw-2">&amp;</span>key,
+                arrow_type,
+                info_optional,
+            )),
+            noodles::vcf::header::Number::Count(<span class="number">1</span>) =&gt; fields.push(arrow2::datatypes::Field::new(
+                <span class="kw-2">&amp;</span>key,
+                arrow_type,
+                info_optional,
+            )),
             <span class="kw">_ </span>=&gt; fields.push(arrow2::datatypes::Field::new(
                 <span class="kw-2">&amp;</span>key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    <span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>,
+                    <span class="kw-2">&amp;</span>key,
+                    arrow_type,
+                    info_optional,
                 ))),
                 <span class="bool-val">false</span>,
             )),
@@ -669,7 +687,7 @@
 
         <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
 
-        <span class="macro">assert_eq!</span>(info(<span class="kw-2">&amp;</span>header), <span class="kw-2">*</span>INFO_COLS);
+        <span class="macro">assert_eq!</span>(info(<span class="kw-2">&amp;</span>header, <span class="bool-val">false</span>), <span class="kw-2">*</span>INFO_COLS);
     }
 
     <span class="attr">#[test]
@@ -693,10 +711,10 @@
         data.extend_from_slice(<span class="kw-2">&amp;*</span>FORMAT_COLS);
 
         <span class="macro">assert_eq!</span>(
-            from_header(<span class="kw-2">&amp;</span>header).unwrap(),
+            from_header(<span class="kw-2">&amp;</span>header, <span class="bool-val">false</span>).unwrap(),
             arrow2::datatypes::Schema::from(data)
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.1 (d5a82bbd2 2023-02-07)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
