@@ -36,6 +36,7 @@ fn convert(params: &cli::Command, subparams: &cli::Convert) -> error::Result<()>
         &mut output,
         params.batch_size(),
         params.compression(),
+        params.info_optional(),
     )
     .map_err(error::mapping)?;
 
@@ -55,6 +56,7 @@ fn split(params: &cli::Command, subparams: &cli::Split) -> error::Result<()> {
         subparams.format(),
         params.batch_size(),
         params.compression(),
+        params.info_optional(),
     )
     .map_err(error::mapping)?;
 

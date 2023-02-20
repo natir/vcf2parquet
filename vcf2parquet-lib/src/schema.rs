@@ -8,14 +8,17 @@
 use crate::*;
 
 /// Generate a parquet schema corresponding to vcf header
-pub fn from_header(header: &noodles::vcf::Header) -> error::Result<arrow2::datatypes::Schema> {
+pub fn from_header(
+    header: &noodles::vcf::Header,
+    info_optional: bool,
+) -> error::Result<arrow2::datatypes::Schema> {
     let mut columns = Vec::new();
 
     // required column
     columns.extend(required_column());
 
     // info field
-    columns.extend(info(header));
+    columns.extend(info(header, info_optional));
 
     // genotype field
     columns.extend(genotype(header));
@@ -59,7 +62,7 @@ fn required_column() -> Vec<arrow2::datatypes::Field> {
     ]
 }
 
-fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
+fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datatypes::Field> {
     let mut fields = Vec::new();
 
     for (name, value) in header.infos() {
@@ -74,16 +77,22 @@ fn info(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
         };
 
         match value.number() {
-            noodles::vcf::header::Number::Count(0) => {
-                fields.push(arrow2::datatypes::Field::new(&key, arrow_type, false))
-            }
-            noodles::vcf::header::Number::Count(1) => {
-                fields.push(arrow2::datatypes::Field::new(&key, arrow_type, false))
-            }
+            noodles::vcf::header::Number::Count(0) => fields.push(arrow2::datatypes::Field::new(
+                &key,
+                arrow_type,
+                info_optional,
+            )),
+            noodles::vcf::header::Number::Count(1) => fields.push(arrow2::datatypes::Field::new(
+                &key,
+                arrow_type,
+                info_optional,
+            )),
             _ => fields.push(arrow2::datatypes::Field::new(
                 &key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    &key, arrow_type, false,
+                    &key,
+                    arrow_type,
+                    info_optional,
                 ))),
                 false,
             )),
@@ -319,7 +328,7 @@ mod tests {
 
         let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
 
-        assert_eq!(info(&header), *INFO_COLS);
+        assert_eq!(info(&header, false), *INFO_COLS);
     }
 
     #[test]
@@ -343,7 +352,7 @@ mod tests {
         data.extend_from_slice(&*FORMAT_COLS);
 
         assert_eq!(
-            from_header(&header).unwrap(),
+            from_header(&header, false).unwrap(),
             arrow2::datatypes::Schema::from(data)
         );
     }

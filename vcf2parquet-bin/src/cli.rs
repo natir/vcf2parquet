@@ -41,6 +41,10 @@ pub struct Command {
     #[clap(short = 'r', long = "read-buffer")]
     read_buffer: Option<usize>,
 
+    /// All information fields are optional
+    #[clap(short = 'I', long = "info-optional")]
+    info_optional: bool,
+
     #[clap(subcommand)]
     subcommand: SubCommand,
 }
@@ -101,6 +105,11 @@ impl Command {
         self.read_buffer.unwrap_or(8192)
     }
 
+    /// Get info optional
+    pub fn info_optional(&self) -> bool {
+        self.info_optional
+    }
+
     /// Get subcommand
     pub fn subcommand(&self) -> &SubCommand {
         &self.subcommand
@@ -135,6 +144,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -161,6 +171,7 @@ mod tests {
             subcommand: SubCommand::Split(Split {
                 format: "test_{}.parquet".to_string(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(params.batch_size(), 100);
@@ -182,6 +193,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -197,6 +209,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -212,6 +225,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -227,6 +241,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -242,6 +257,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -257,6 +273,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
@@ -272,6 +289,7 @@ mod tests {
             subcommand: SubCommand::Convert(Convert {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
+            info_optional: false,
         };
 
         assert_eq!(
