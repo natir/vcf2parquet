@@ -18,6 +18,7 @@ pub fn vcf2parquet<R, W>(
     output: &mut W,
     batch_size: usize,
     compression: arrow2::io::parquet::write::CompressionOptions,
+    info_optional: bool,
 ) -> error::Result<()>
 where
     R: std::io::BufRead,
@@ -29,7 +30,7 @@ where
     let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
 
     // Parquet section
-    let schema = schema::from_header(&vcf_header)?;
+    let schema = schema::from_header(&vcf_header, info_optional)?;
 
     let mut iterator = reader.records(&vcf_header);
     let chunk_iterator = record2chunk::Record2Chunk::new(
@@ -70,6 +71,7 @@ pub fn vcf2multiparquet<R>(
     template: &str,
     batch_size: usize,
     compression: arrow2::io::parquet::write::CompressionOptions,
+    info_optional: bool,
 ) -> error::Result<()>
 where
     R: std::io::BufRead,
@@ -80,7 +82,7 @@ where
     let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
 
     // Parquet section
-    let schema = schema::from_header(&vcf_header)?;
+    let schema = schema::from_header(&vcf_header, info_optional)?;
 
     let mut iterator = reader.records(&vcf_header);
     let chunk_iterator = record2chunk::Record2Chunk::new(
@@ -307,6 +309,7 @@ mod tests {
             &mut output,
             1,
             arrow2::io::parquet::write::CompressionOptions::Gzip(None),
+            false,
         )
         .unwrap();
         assert_eq!(output, *PARQUET_FILE);
@@ -323,6 +326,7 @@ mod tests {
             &mut output,
             1,
             arrow2::io::parquet::write::CompressionOptions::Gzip(None),
+            false,
         );
 
         assert!(result.is_err());
@@ -347,6 +351,7 @@ mod tests {
             &format,
             1,
             arrow2::io::parquet::write::CompressionOptions::Gzip(None),
+            false,
         )
         .unwrap();
     }
