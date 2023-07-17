@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["Record2Chunk",""]]};
+window.SIDEBAR_ITEMS = {"struct":["Record2Chunk"]};

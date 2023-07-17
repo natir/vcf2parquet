@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["Compression",""],["SubCommand",""]],"struct":[["Command",""],["Convert","Convert a vcf in a parquet"],["Split","Convert a vcf in multiple parquet file each file contains `batch_size` record"]]};
+window.SIDEBAR_ITEMS = {"enum":["Compression","SubCommand"],"struct":["Command","Convert","Split"]};
