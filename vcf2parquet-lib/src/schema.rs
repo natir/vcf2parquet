@@ -69,11 +69,21 @@ fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datat
         let key = format!("info_{name}");
 
         let arrow_type = match value.ty() {
-            noodles::vcf::header::info::Type::Integer => arrow2::datatypes::DataType::Int32,
-            noodles::vcf::header::info::Type::Float => arrow2::datatypes::DataType::Float32,
-            noodles::vcf::header::info::Type::Flag => arrow2::datatypes::DataType::Boolean,
-            noodles::vcf::header::info::Type::Character => arrow2::datatypes::DataType::Utf8,
-            noodles::vcf::header::info::Type::String => arrow2::datatypes::DataType::Utf8,
+            noodles::vcf::header::record::value::map::info::Type::Integer => {
+                arrow2::datatypes::DataType::Int32
+            }
+            noodles::vcf::header::record::value::map::info::Type::Float => {
+                arrow2::datatypes::DataType::Float32
+            }
+            noodles::vcf::header::record::value::map::info::Type::Flag => {
+                arrow2::datatypes::DataType::Boolean
+            }
+            noodles::vcf::header::record::value::map::info::Type::Character => {
+                arrow2::datatypes::DataType::Utf8
+            }
+            noodles::vcf::header::record::value::map::info::Type::String => {
+                arrow2::datatypes::DataType::Utf8
+            }
         };
 
         match value.number() {
@@ -110,10 +120,18 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
             let key = format!("format_{sample}_{name}");
 
             let arrow_type = match value.ty() {
-                noodles::vcf::header::format::Type::Integer => arrow2::datatypes::DataType::Int32,
-                noodles::vcf::header::format::Type::Float => arrow2::datatypes::DataType::Float32,
-                noodles::vcf::header::format::Type::Character => arrow2::datatypes::DataType::Utf8,
-                noodles::vcf::header::format::Type::String => arrow2::datatypes::DataType::Utf8,
+                noodles::vcf::header::record::value::map::format::Type::Integer => {
+                    arrow2::datatypes::DataType::Int32
+                }
+                noodles::vcf::header::record::value::map::format::Type::Float => {
+                    arrow2::datatypes::DataType::Float32
+                }
+                noodles::vcf::header::record::value::map::format::Type::Character => {
+                    arrow2::datatypes::DataType::Utf8
+                }
+                noodles::vcf::header::record::value::map::format::Type::String => {
+                    arrow2::datatypes::DataType::Utf8
+                }
             };
 
             match value.number() {
@@ -326,7 +344,7 @@ mod tests {
     fn info_cols() {
         let mut reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        let header: noodles::vcf::Header = reader.read_header().unwrap();
 
         assert_eq!(info(&header, false), *INFO_COLS);
     }
@@ -335,7 +353,7 @@ mod tests {
     fn genotype_cols() {
         let mut reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        let header: noodles::vcf::Header = reader.read_header().unwrap();
 
         assert_eq!(genotype(&header), *FORMAT_COLS);
     }
@@ -344,7 +362,7 @@ mod tests {
     fn all_cols() {
         let mut reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        let header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        let header: noodles::vcf::Header = reader.read_header().unwrap();
 
         let mut data: Vec<arrow2::datatypes::Field> = Vec::new();
         data.extend_from_slice(&*MINI_COLS);

@@ -27,7 +27,7 @@ where
     // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
-    let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
+    let vcf_header: noodles::vcf::Header = reader.read_header()?;
 
     // Parquet section
     let schema = schema::from_header(&vcf_header, info_optional)?;
@@ -79,7 +79,7 @@ where
     // VCF section
     let mut reader = noodles::vcf::Reader::new(input);
 
-    let vcf_header: noodles::vcf::Header = reader.read_header()?.parse()?;
+    let vcf_header: noodles::vcf::Header = reader.read_header()?;
 
     // Parquet section
     let schema = schema::from_header(&vcf_header, info_optional)?;
