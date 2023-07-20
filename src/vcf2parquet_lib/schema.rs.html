@@ -357,6 +357,24 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Construct parquet schema corresponding to vcf
 
 </span><span class="comment">/* std use */
@@ -428,11 +446,21 @@
         <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{name}&quot;</span>);
 
         <span class="kw">let </span>arrow_type = <span class="kw">match </span>value.ty() {
-            noodles::vcf::header::info::Type::Integer =&gt; arrow2::datatypes::DataType::Int32,
-            noodles::vcf::header::info::Type::Float =&gt; arrow2::datatypes::DataType::Float32,
-            noodles::vcf::header::info::Type::Flag =&gt; arrow2::datatypes::DataType::Boolean,
-            noodles::vcf::header::info::Type::Character =&gt; arrow2::datatypes::DataType::Utf8,
-            noodles::vcf::header::info::Type::String =&gt; arrow2::datatypes::DataType::Utf8,
+            noodles::vcf::header::record::value::map::info::Type::Integer =&gt; {
+                arrow2::datatypes::DataType::Int32
+            }
+            noodles::vcf::header::record::value::map::info::Type::Float =&gt; {
+                arrow2::datatypes::DataType::Float32
+            }
+            noodles::vcf::header::record::value::map::info::Type::Flag =&gt; {
+                arrow2::datatypes::DataType::Boolean
+            }
+            noodles::vcf::header::record::value::map::info::Type::Character =&gt; {
+                arrow2::datatypes::DataType::Utf8
+            }
+            noodles::vcf::header::record::value::map::info::Type::String =&gt; {
+                arrow2::datatypes::DataType::Utf8
+            }
         };
 
         <span class="kw">match </span>value.number() {
@@ -469,10 +497,18 @@
             <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{name}&quot;</span>);
 
             <span class="kw">let </span>arrow_type = <span class="kw">match </span>value.ty() {
-                noodles::vcf::header::format::Type::Integer =&gt; arrow2::datatypes::DataType::Int32,
-                noodles::vcf::header::format::Type::Float =&gt; arrow2::datatypes::DataType::Float32,
-                noodles::vcf::header::format::Type::Character =&gt; arrow2::datatypes::DataType::Utf8,
-                noodles::vcf::header::format::Type::String =&gt; arrow2::datatypes::DataType::Utf8,
+                noodles::vcf::header::record::value::map::format::Type::Integer =&gt; {
+                    arrow2::datatypes::DataType::Int32
+                }
+                noodles::vcf::header::record::value::map::format::Type::Float =&gt; {
+                    arrow2::datatypes::DataType::Float32
+                }
+                noodles::vcf::header::record::value::map::format::Type::Character =&gt; {
+                    arrow2::datatypes::DataType::Utf8
+                }
+                noodles::vcf::header::record::value::map::format::Type::String =&gt; {
+                    arrow2::datatypes::DataType::Utf8
+                }
             };
 
             <span class="kw">match </span>value.number() {
@@ -685,7 +721,7 @@
     </span><span class="kw">fn </span>info_cols() {
         <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap();
 
         <span class="macro">assert_eq!</span>(info(<span class="kw-2">&amp;</span>header, <span class="bool-val">false</span>), <span class="kw-2">*</span>INFO_COLS);
     }
@@ -694,7 +730,7 @@
     </span><span class="kw">fn </span>genotype_cols() {
         <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap();
 
         <span class="macro">assert_eq!</span>(genotype(<span class="kw-2">&amp;</span>header), <span class="kw-2">*</span>FORMAT_COLS);
     }
@@ -703,7 +739,7 @@
     </span><span class="kw">fn </span>all_cols() {
         <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>data: Vec&lt;arrow2::datatypes::Field&gt; = Vec::new();
         data.extend_from_slice(<span class="kw-2">&amp;*</span>MINI_COLS);

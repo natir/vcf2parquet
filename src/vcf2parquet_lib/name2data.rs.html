@@ -684,6 +684,19 @@
 <a href="#684" id="684">684</a>
 <a href="#685" id="685">685</a>
 <a href="#686" id="686">686</a>
+<a href="#687" id="687">687</a>
+<a href="#688" id="688">688</a>
+<a href="#689" id="689">689</a>
+<a href="#690" id="690">690</a>
+<a href="#691" id="691">691</a>
+<a href="#692" id="692">692</a>
+<a href="#693" id="693">693</a>
+<a href="#694" id="694">694</a>
+<a href="#695" id="695">695</a>
+<a href="#696" id="696">696</a>
+<a href="#697" id="697">697</a>
+<a href="#698" id="698">698</a>
+<a href="#699" id="699">699</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Struct to link name and data
 
 </span><span class="comment">/* std use */
@@ -846,11 +859,11 @@
         }
 
         <span class="comment">// Info
-        </span><span class="kw">for </span>value <span class="kw">in </span>record.info().values() {
-            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{}&quot;</span>, value.key());
+        </span><span class="kw">for </span>(key, value) <span class="kw">in </span>record.info().keys().zip(record.info().values()) {
+            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>);
             not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
-            <span class="kw">match </span>value.value() {
+            <span class="kw">match </span>value {
                 <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Integer(val)) =&gt; {
                     <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_i32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                 }
@@ -867,58 +880,62 @@
                 <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::String(val)) =&gt; {
                     <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
                 }
-                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::IntegerArray(vals)) =&gt; {
-                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec())<span class="question-mark">?
-                </span>}
-                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::FloatArray(vals)) =&gt; {
-                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecf32(vals.to_vec())<span class="question-mark">?
-                </span>}
-                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::CharacterArray(vals)) =&gt; <span class="self">self
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Array(
+                    noodles::vcf::record::info::field::value::Array::Integer(vals),
+                )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec())<span class="question-mark">?</span>,
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Array(
+                    noodles::vcf::record::info::field::value::Array::Float(vals),
+                )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecf32(vals.to_vec())<span class="question-mark">?</span>,
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Array(
+                    noodles::vcf::record::info::field::value::Array::Character(vals),
+                )) =&gt; <span class="self">self
                     </span>.get_mut(<span class="kw-2">&amp;</span>key)
                     .unwrap()
                     .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())<span class="question-mark">?</span>,
-                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::StringArray(vals)) =&gt; {
-                    <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecstring(vals.to_vec())<span class="question-mark">?
-                </span>}
+                <span class="prelude-val">Some</span>(noodles::vcf::record::info::field::Value::Array(
+                    noodles::vcf::record::info::field::value::Array::String(vals),
+                )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecstring(vals.to_vec())<span class="question-mark">?</span>,
                 <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_null(),
             }
         }
 
         <span class="comment">// format
-        </span><span class="kw">for </span>(genotypes, sample) <span class="kw">in </span>record.genotypes().iter().zip(header.sample_names()) {
-            <span class="kw">for </span>(key, value) <span class="kw">in </span>genotypes.iter() {
-                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{key}&quot;</span>);
+        </span><span class="kw">for </span>(name, sample) <span class="kw">in </span>header
+            .sample_names()
+            .iter()
+            .zip(record.genotypes().values())
+        {
+            <span class="kw">for </span>(key_name, value) <span class="kw">in </span>sample.keys().iter().zip(sample.values()) {
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{name}_{key_name}&quot;</span>);
                 not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
-                <span class="kw">match </span>value.value() {
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Integer(val)) =&gt; {
+                <span class="kw">match </span>value {
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Integer(val)) =&gt; {
                         <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_i32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                     }
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Float(val)) =&gt; {
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Float(val)) =&gt; {
                         <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_f32(<span class="prelude-val">Some</span>(<span class="kw-2">*</span>val))
                     }
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::Character(
-                        val,
-                    )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string()),
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::String(val)) =&gt; {
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Character(val)) =&gt; {
                         <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
                     }
-                    <span class="prelude-val">Some</span>(
-                        noodles::vcf::record::genotypes::genotype::field::Value::IntegerArray(vals),
-                    ) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec())<span class="question-mark">?</span>,
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::FloatArray(
-                        vals,
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::String(val)) =&gt; {
+                        <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_string(val.to_string())
+                    }
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Array(
+                        noodles::vcf::record::genotypes::sample::value::Array::Integer(vals),
+                    )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_veci32(vals.to_vec())<span class="question-mark">?</span>,
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Array(
+                        noodles::vcf::record::genotypes::sample::value::Array::Float(vals),
                     )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecf32(vals.to_vec())<span class="question-mark">?</span>,
-                    <span class="prelude-val">Some</span>(
-                        noodles::vcf::record::genotypes::genotype::field::Value::CharacterArray(
-                            vals,
-                        ),
-                    ) =&gt; <span class="self">self
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Array(
+                        noodles::vcf::record::genotypes::sample::value::Array::Character(vals),
+                    )) =&gt; <span class="self">self
                         </span>.get_mut(<span class="kw-2">&amp;</span>key)
                         .unwrap()
                         .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())<span class="question-mark">?</span>,
-                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::genotype::field::Value::StringArray(
-                        vals,
+                    <span class="prelude-val">Some</span>(noodles::vcf::record::genotypes::sample::Value::Array(
+                        noodles::vcf::record::genotypes::sample::value::Array::String(vals),
                     )) =&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_vecstring(vals.to_vec())<span class="question-mark">?</span>,
                     <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.get_mut(<span class="kw-2">&amp;</span>key).unwrap().push_null(),
                 }
@@ -954,7 +971,7 @@
         <span class="kw">for </span>(key, value) <span class="kw">in </span>header.infos() {
             <span class="kw">match </span>(value.ty(), value.number()) {
                 (
-                    noodles::vcf::header::info::Type::Integer,
+                    noodles::vcf::header::record::value::map::info::Type::Integer,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
@@ -962,12 +979,12 @@
                         length,
                     )),
                 ),
-                (noodles::vcf::header::info::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
+                (noodles::vcf::header::record::value::map::info::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    noodles::vcf::header::info::Type::Float,
+                    noodles::vcf::header::record::value::map::info::Type::Float,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
@@ -975,40 +992,43 @@
                         length,
                     )),
                 ),
-                (noodles::vcf::header::info::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
+                (noodles::vcf::header::record::value::map::info::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    noodles::vcf::header::info::Type::Flag,
+                    noodles::vcf::header::record::value::map::info::Type::Flag,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
-                (noodles::vcf::header::info::Type::Flag, <span class="kw">_</span>) =&gt; data.insert(
+                (noodles::vcf::header::record::value::map::info::Type::Flag, <span class="kw">_</span>) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
-                    noodles::vcf::header::info::Type::Character,
+                    noodles::vcf::header::record::value::map::info::Type::Character,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
-                (noodles::vcf::header::info::Type::Character, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
-                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
+                (noodles::vcf::header::record::value::map::info::Type::Character, <span class="kw">_</span>) =&gt; data
+                    .insert(
+                        <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
+                            length,
+                        )),
+                    ),
                 (
-                    noodles::vcf::header::info::Type::String,
+                    noodles::vcf::header::record::value::map::info::Type::String,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
-                (noodles::vcf::header::info::Type::String, <span class="kw">_</span>) =&gt; data.insert(
+                (noodles::vcf::header::record::value::map::info::Type::String, <span class="kw">_</span>) =&gt; data.insert(
                     <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
@@ -1027,7 +1047,7 @@
 
                 <span class="kw">match </span>(value.ty(), value.number()) {
                     (
-                        noodles::vcf::header::format::Type::Integer,
+                        noodles::vcf::header::record::value::map::format::Type::Integer,
                         noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                     ) =&gt; data.insert(
                         key,
@@ -1035,12 +1055,15 @@
                             arrow2::array::MutablePrimitiveArray::&lt;i32&gt;::with_capacity(length),
                         ),
                     ),
-                    (noodles::vcf::header::format::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
-                        key,
-                        ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
-                    ),
+                    (noodles::vcf::header::record::value::map::format::Type::Integer, <span class="kw">_</span>) =&gt; data
+                        .insert(
+                            key,
+                            ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(
+                                length,
+                            )),
+                        ),
                     (
-                        noodles::vcf::header::format::Type::Float,
+                        noodles::vcf::header::record::value::map::format::Type::Float,
                         noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                     ) =&gt; data.insert(
                         key,
@@ -1048,38 +1071,41 @@
                             arrow2::array::MutablePrimitiveArray::&lt;f32&gt;::with_capacity(length),
                         ),
                     ),
-                    (noodles::vcf::header::format::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
-                        key,
-                        ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(
-                            length,
-                        )),
-                    ),
+                    (noodles::vcf::header::record::value::map::format::Type::Float, <span class="kw">_</span>) =&gt; data
+                        .insert(
+                            key,
+                            ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(
+                                length,
+                            )),
+                        ),
                     (
-                        noodles::vcf::header::format::Type::Character,
+                        noodles::vcf::header::record::value::map::format::Type::Character,
                         noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                     ) =&gt; data.insert(
                         key,
                         ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                     ),
-                    (noodles::vcf::header::format::Type::Character, <span class="kw">_</span>) =&gt; data.insert(
-                        key,
-                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                            length,
-                        )),
-                    ),
+                    (noodles::vcf::header::record::value::map::format::Type::Character, <span class="kw">_</span>) =&gt; data
+                        .insert(
+                            key,
+                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
+                                length,
+                            )),
+                        ),
                     (
-                        noodles::vcf::header::format::Type::String,
+                        noodles::vcf::header::record::value::map::format::Type::String,
                         noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                     ) =&gt; data.insert(
                         key,
                         ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                     ),
-                    (noodles::vcf::header::format::Type::String, <span class="kw">_</span>) =&gt; data.insert(
-                        key,
-                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                            length,
-                        )),
-                    ),
+                    (noodles::vcf::header::record::value::map::format::Type::String, <span class="kw">_</span>) =&gt; data
+                        .insert(
+                            key,
+                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
+                                length,
+                            )),
+                        ),
                 };
             }
         }
@@ -1230,7 +1256,7 @@
     </span><span class="kw">fn </span>init() {
         <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
         <span class="kw">let </span><span class="kw-2">mut </span>col_names = data.<span class="number">0</span>.keys().cloned().collect::&lt;Vec&lt;String&gt;&gt;();
@@ -1291,7 +1317,7 @@
     </span><span class="kw">fn </span>add_record() {
         <span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(VCF_FILE);
 
-        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap().parse().unwrap();
+        <span class="kw">let </span>header: noodles::vcf::Header = reader.read_header().unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
 

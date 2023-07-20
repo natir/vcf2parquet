@@ -363,7 +363,7 @@
     <span class="comment">// VCF section
     </span><span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(input);
 
-    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
+    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>;
 
     <span class="comment">// Parquet section
     </span><span class="kw">let </span>schema = schema::from_header(<span class="kw-2">&amp;</span>vcf_header, info_optional)<span class="question-mark">?</span>;
@@ -415,7 +415,7 @@
     <span class="comment">// VCF section
     </span><span class="kw">let </span><span class="kw-2">mut </span>reader = noodles::vcf::Reader::new(input);
 
-    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>.parse()<span class="question-mark">?</span>;
+    <span class="kw">let </span>vcf_header: noodles::vcf::Header = reader.read_header()<span class="question-mark">?</span>;
 
     <span class="comment">// Parquet section
     </span><span class="kw">let </span>schema = schema::from_header(<span class="kw-2">&amp;</span>vcf_header, info_optional)<span class="question-mark">?</span>;
