@@ -10,7 +10,7 @@
 #[derive(thiserror::Error, std::fmt::Debug)]
 pub enum Error {
     /// Not support type conversion
-    #[error("Conversion of arrow type in noodles type isn't support.")]
+    #[error("Conversion of arrow type in noodles type isn't supported.")]
     NoConversion,
 
     /// Arrow error
