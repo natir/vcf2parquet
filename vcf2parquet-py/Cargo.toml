@@ -1,0 +1,17 @@
+[package]
+name = "vcf2parquet-py"
+version = "0.4.1"
+edition = "2021"
+
+[lib]
+name = "pyvcf2parquet"
+
+crate-type=["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.20.2", features = ["extension-module"] }
+vcf2parquet-lib = { version = "0.4.1", path = "../vcf2parquet-lib" }
+thiserror = "1"
+niffler = { version = "2" }
+arrow2  = { version = "0.17", features = ["io_parquet", "io_parquet_compression"] }
+
