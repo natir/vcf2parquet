@@ -4,7 +4,7 @@ description = "Convert a vcf in parquet"
 version = "0.4.1"
 authors = ["Pierre Marijon <pierre@marijon.fr>"]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.70"
 
 readme = "Readme.md"
 license-file = "LICENSE"
