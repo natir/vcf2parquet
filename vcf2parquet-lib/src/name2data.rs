@@ -135,6 +135,7 @@ impl Name2Data {
         }
 
         // Quality
+        #[allow(clippy::unnecessary_fallible_conversions)]
         if let Some(quality) = record.quality_score() {
             self.get_mut("quality")
                 .unwrap()
