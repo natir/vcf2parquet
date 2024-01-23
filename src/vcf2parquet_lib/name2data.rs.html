@@ -697,6 +697,7 @@
 <a href="#697" id="697">697</a>
 <a href="#698" id="698">698</a>
 <a href="#699" id="699">699</a>
+<a href="#700" id="700">700</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Struct to link name and data
 
 </span><span class="comment">/* std use */
@@ -834,6 +835,7 @@
         }
 
         <span class="comment">// Quality
+        </span><span class="attr">#[allow(clippy::unnecessary_fallible_conversions)]
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(quality) = record.quality_score() {
             <span class="self">self</span>.get_mut(<span class="string">&quot;quality&quot;</span>)
                 .unwrap()
