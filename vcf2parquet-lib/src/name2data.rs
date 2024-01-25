@@ -138,7 +138,7 @@ impl Name2Data {
         if let Some(quality) = record.quality_score() {
             self.get_mut("quality")
                 .unwrap()
-                .push_f32(quality.try_into().ok());
+                .push_f32(Some(f32::from(quality)));
         } else {
             self.get_mut("quality").unwrap().push_null();
         }
