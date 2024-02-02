@@ -17,7 +17,7 @@ pub enum Compression {
 }
 
 #[pyfunction]
-#[pyo3(signature = (input,output,read_buffer,batch_size=100_000,compression=Compression::Snappy,info_optional=false))]
+#[pyo3(signature = (input,output,read_buffer=8192,batch_size=100_000,compression=Compression::Snappy,info_optional=false))]
 fn convert_vcf(
     input: std::path::PathBuf,
     output: std::path::PathBuf,
