@@ -78,7 +78,7 @@ jobs:
           use-tool-cache: true
 
       - name: Run cargo-tarpaulin
-        run: cargo tarpaulin --workspace --all-features --timeout 600 --out Xml -- --test-threads 1
+        run: cargo tarpaulin --workspace --engine llvm --no-dead-code --all-features --timeout 600 --out Xml -- --test-threads 1
 
       - name: Upload coverage to codecov
         uses: codecov/codecov-action@v3

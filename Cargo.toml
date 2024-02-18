@@ -18,7 +18,7 @@ vcf2parquet-bin = { path = "vcf2parquet-bin", version = "0.4.1", optional = true
 
 
 [workspace]
-members = ["vcf2parquet-lib", "vcf2parquet-bin"]
+members = ["vcf2parquet-lib", "vcf2parquet-bin", "vcf2parquet-py"]
 
 
 [features]

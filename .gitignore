@@ -1,1 +1,3 @@
 /target
+**/__pycache__/test_vcf2parquet.cpython-310-pytest-8.0.0.pyc
+vcf2parquet-py/.coverage
