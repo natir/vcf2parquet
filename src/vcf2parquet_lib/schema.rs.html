@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/schema.rs`."><title>schema.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/schema.rs`."><title>schema.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -405,32 +406,32 @@
 
 <span class="kw">fn </span>required_column() -&gt; Vec&lt;arrow2::datatypes::Field&gt; {
     <span class="macro">vec!</span>[
-        arrow2::datatypes::Field::new(<span class="string">&quot;chromosome&quot;</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
-        arrow2::datatypes::Field::new(<span class="string">&quot;position&quot;</span>, arrow2::datatypes::DataType::Int32, <span class="bool-val">false</span>),
+        arrow2::datatypes::Field::new(<span class="string">"chromosome"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
+        arrow2::datatypes::Field::new(<span class="string">"position"</span>, arrow2::datatypes::DataType::Int32, <span class="bool-val">false</span>),
         arrow2::datatypes::Field::new(
-            <span class="string">&quot;identifier&quot;</span>,
+            <span class="string">"identifier"</span>,
             arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                <span class="string">&quot;id&quot;</span>,
+                <span class="string">"id"</span>,
                 arrow2::datatypes::DataType::Utf8,
                 <span class="bool-val">false</span>,
             ))),
             <span class="bool-val">false</span>,
         ),
-        arrow2::datatypes::Field::new(<span class="string">&quot;reference&quot;</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
+        arrow2::datatypes::Field::new(<span class="string">"reference"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
         arrow2::datatypes::Field::new(
-            <span class="string">&quot;alternate&quot;</span>,
+            <span class="string">"alternate"</span>,
             arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                <span class="string">&quot;alternate&quot;</span>,
+                <span class="string">"alternate"</span>,
                 arrow2::datatypes::DataType::Utf8,
                 <span class="bool-val">false</span>,
             ))),
             <span class="bool-val">false</span>,
         ),
-        arrow2::datatypes::Field::new(<span class="string">&quot;quality&quot;</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
+        arrow2::datatypes::Field::new(<span class="string">"quality"</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
         arrow2::datatypes::Field::new(
-            <span class="string">&quot;filter&quot;</span>,
+            <span class="string">"filter"</span>,
             arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                <span class="string">&quot;filter&quot;</span>,
+                <span class="string">"filter"</span>,
                 arrow2::datatypes::DataType::Utf8,
                 <span class="bool-val">false</span>,
             ))),
@@ -443,7 +444,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>fields = Vec::new();
 
     <span class="kw">for </span>(name, value) <span class="kw">in </span>header.infos() {
-        <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{name}&quot;</span>);
+        <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"info_{name}"</span>);
 
         <span class="kw">let </span>arrow_type = <span class="kw">match </span>value.ty() {
             noodles::vcf::header::record::value::map::info::Type::Integer =&gt; {
@@ -494,7 +495,7 @@
 
     <span class="kw">for </span>sample <span class="kw">in </span>header.sample_names() {
         <span class="kw">for </span>(name, value) <span class="kw">in </span>header.formats() {
-            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{name}&quot;</span>);
+            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"format_{sample}_{name}"</span>);
 
             <span class="kw">let </span>arrow_type = <span class="kw">match </span>value.ty() {
                 noodles::vcf::header::record::value::map::format::Type::Integer =&gt; {
@@ -539,52 +540,52 @@
     <span class="comment">//
     //
 
-    </span><span class="kw">static </span>VCF_FILE: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;##fileformat=VCFv4.3
+    </span><span class="kw">static </span>VCF_FILE: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"##fileformat=VCFv4.3
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=&lt;ID=ALLELEID,Number=1,Type=Integer,Description=\&quot;the ClinVar Allele ID\&quot;&gt;
-##INFO=&lt;ID=AF_ESP,Number=1,Type=Float,Description=\&quot;allele frequencies from GO-ESP\&quot;&gt;
-##INFO=&lt;ID=DBVARI,Number=0,Type=Flag,Description=\&quot;nsv accessions from dbVar for the variant\&quot;&gt;
-##INFO=&lt;ID=GENEINFO,Number=1,Type=Character,Description=\&quot;Gene(s) for the variant reported as gene symbol:gene id.\&quot;&gt;
-##INFO=&lt;ID=CLNVC,Number=2,Type=String,Description=\&quot;Variant type\&quot;&gt;
-##FORMAT=&lt;ID=AB,Number=R,Type=Integer,Description=\&quot;Allelic depths for the ref and alt alleles in the order listed\&quot;&gt;
-##FORMAT=&lt;ID=DC,Number=0,Type=Float,Description=\&quot;Approximate read depth (reads with MQ=255 or with bad mates are filtered)\&quot;&gt;
-##FORMAT=&lt;ID=GE,Number=1,Type=Character,Description=\&quot;Genotype Quality\&quot;&gt;
-##FORMAT=&lt;ID=GC,Number=3,Type=String,Description=\&quot;Genotype\&quot;&gt;
-##SAMPLE=&lt;ID=first,Genomes=Germline,Mixture=1.,Description=\&quot;first\&quot;&gt;
-##SAMPLE=&lt;ID=second,Genomes=Germline,Mixture=1.,Description=\&quot;second\&quot;&gt;
+##INFO=&lt;ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\"&gt;
+##INFO=&lt;ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\"&gt;
+##INFO=&lt;ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\"&gt;
+##INFO=&lt;ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\"&gt;
+##INFO=&lt;ID=CLNVC,Number=2,Type=String,Description=\"Variant type\"&gt;
+##FORMAT=&lt;ID=AB,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\"&gt;
+##FORMAT=&lt;ID=DC,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\"&gt;
+##FORMAT=&lt;ID=GE,Number=1,Type=Character,Description=\"Genotype Quality\"&gt;
+##FORMAT=&lt;ID=GC,Number=3,Type=String,Description=\"Genotype\"&gt;
+##SAMPLE=&lt;ID=first,Genomes=Germline,Mixture=1.,Description=\"first\"&gt;
+##SAMPLE=&lt;ID=second,Genomes=Germline,Mixture=1.,Description=\"second\"&gt;
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
-&quot;</span>;
+"</span>;
 
     <span class="macro">lazy_static::lazy_static! </span>{
         <span class="kw">static </span><span class="kw-2">ref </span>MINI_COLS: Vec&lt;arrow2::datatypes::Field&gt; = <span class="macro">vec!</span>[
-            arrow2::datatypes::Field::new(<span class="string">&quot;chromosome&quot;</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
-            arrow2::datatypes::Field::new(<span class="string">&quot;position&quot;</span>, arrow2::datatypes::DataType::Int32, <span class="bool-val">false</span>),
+            arrow2::datatypes::Field::new(<span class="string">"chromosome"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
+            arrow2::datatypes::Field::new(<span class="string">"position"</span>, arrow2::datatypes::DataType::Int32, <span class="bool-val">false</span>),
             arrow2::datatypes::Field::new(
-                <span class="string">&quot;identifier&quot;</span>,
+                <span class="string">"identifier"</span>,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    <span class="string">&quot;id&quot;</span>,
+                    <span class="string">"id"</span>,
                     arrow2::datatypes::DataType::Utf8,
                     <span class="bool-val">false</span>,
                 ))),
                 <span class="bool-val">false</span>,
             ),
-            arrow2::datatypes::Field::new(<span class="string">&quot;reference&quot;</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
+            arrow2::datatypes::Field::new(<span class="string">"reference"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
             arrow2::datatypes::Field::new(
-                <span class="string">&quot;alternate&quot;</span>,
+                <span class="string">"alternate"</span>,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    <span class="string">&quot;alternate&quot;</span>,
+                    <span class="string">"alternate"</span>,
                     arrow2::datatypes::DataType::Utf8,
                     <span class="bool-val">false</span>,
                 ))),
                 <span class="bool-val">false</span>,
             ),
-            arrow2::datatypes::Field::new(<span class="string">&quot;quality&quot;</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
+            arrow2::datatypes::Field::new(<span class="string">"quality"</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
             arrow2::datatypes::Field::new(
-                <span class="string">&quot;filter&quot;</span>,
+                <span class="string">"filter"</span>,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    <span class="string">&quot;filter&quot;</span>,
+                    <span class="string">"filter"</span>,
                     arrow2::datatypes::DataType::Utf8,
                     <span class="bool-val">false</span>,
                 ))),
@@ -594,34 +595,34 @@
 
     <span class="kw">static </span><span class="kw-2">ref </span>INFO_COLS: Vec&lt;arrow2::datatypes::Field&gt; = <span class="macro">vec!</span>[
             arrow2::datatypes::Field {
-                name: <span class="string">&quot;info_ALLELEID&quot;</span>.to_string(),
+                name: <span class="string">"info_ALLELEID"</span>.to_string(),
                 data_type: arrow2::datatypes::DataType::Int32,
                 is_nullable: <span class="bool-val">false</span>,
                 metadata: std::collections::BTreeMap::new()
             },
             arrow2::datatypes::Field {
-                name: <span class="string">&quot;info_AF_ESP&quot;</span>.to_string(),
+                name: <span class="string">"info_AF_ESP"</span>.to_string(),
                 data_type: arrow2::datatypes::DataType::Float32,
                 is_nullable: <span class="bool-val">false</span>,
                 metadata: std::collections::BTreeMap::new()
             },
             arrow2::datatypes::Field {
-                name: <span class="string">&quot;info_DBVARI&quot;</span>.to_string(),
+                name: <span class="string">"info_DBVARI"</span>.to_string(),
                 data_type: arrow2::datatypes::DataType::Boolean,
                 is_nullable: <span class="bool-val">false</span>,
                 metadata: std::collections::BTreeMap::new()
             },
             arrow2::datatypes::Field {
-                name: <span class="string">&quot;info_GENEINFO&quot;</span>.to_string(),
+                name: <span class="string">"info_GENEINFO"</span>.to_string(),
                 data_type: arrow2::datatypes::DataType::Utf8,
                 is_nullable: <span class="bool-val">false</span>,
                 metadata: std::collections::BTreeMap::new()
             },
             arrow2::datatypes::Field {
-                name: <span class="string">&quot;info_CLNVC&quot;</span>.to_string(),
+                name: <span class="string">"info_CLNVC"</span>.to_string(),
                 data_type: arrow2::datatypes::DataType::List(Box::new(
                     arrow2::datatypes::Field {
-                        name: <span class="string">&quot;info_CLNVC&quot;</span>.to_string(),
+                        name: <span class="string">"info_CLNVC"</span>.to_string(),
                         data_type: arrow2::datatypes::DataType::Utf8,
                         is_nullable: <span class="bool-val">false</span>,
                         metadata: std::collections::BTreeMap::new()
@@ -634,10 +635,10 @@
 
     <span class="kw">static </span><span class="kw-2">ref </span>FORMAT_COLS: Vec&lt;arrow2::datatypes::Field&gt; = <span class="macro">vec!</span>[
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_first_AB&quot;</span>.to_string(),
+                    name: <span class="string">"format_first_AB"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">&quot;format_first_AB&quot;</span>.to_string(),
+                            name: <span class="string">"format_first_AB"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
@@ -647,22 +648,22 @@
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_first_DC&quot;</span>.to_string(),
+                    name: <span class="string">"format_first_DC"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Float32,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_first_GE&quot;</span>.to_string(),
+                    name: <span class="string">"format_first_GE"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_first_GC&quot;</span>.to_string(),
+                    name: <span class="string">"format_first_GC"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">&quot;format_first_GC&quot;</span>.to_string(),
+                            name: <span class="string">"format_first_GC"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
@@ -672,10 +673,10 @@
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_second_AB&quot;</span>.to_string(),
+                    name: <span class="string">"format_second_AB"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">&quot;format_second_AB&quot;</span>.to_string(),
+                            name: <span class="string">"format_second_AB"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
@@ -685,22 +686,22 @@
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_second_DC&quot;</span>.to_string(),
+                    name: <span class="string">"format_second_DC"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Float32,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_second_GE&quot;</span>.to_string(),
+                    name: <span class="string">"format_second_GE"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">&quot;format_second_GC&quot;</span>.to_string(),
+                    name: <span class="string">"format_second_GC"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::List(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">&quot;format_second_GC&quot;</span>.to_string(),
+                            name: <span class="string">"format_second_GC"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()

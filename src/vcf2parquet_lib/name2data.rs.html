@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/name2data.rs`."><title>name2data.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9ee3a5e31a2afa3e.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.75.0 (82e1608df 2023-12-21)" data-channel="1.75.0" data-search-js="search-8fbf244ebcf71464.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-9dd44ab47b99a0fb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vcf2parquet-lib/src/name2data.rs`."><title>name2data.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ac92e1bbe349e143.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="vcf2parquet_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.76.0 (07dca489a 2024-02-04)" data-channel="1.76.0" data-search-js="search-2b6ce74ff89ae146.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-f2adc0d6ca4d09fb.js"></script><script defer src="../../static.files/src-script-39ed315d46fb705f.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-305769736d49e732.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-feafe1bb7466e4bd.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><div class="sidebar-resizer"></div>
+    <main><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" tabindex="-1"><a href="../../help.html" title="help">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -723,18 +724,18 @@
         );
 
         name2data.insert(
-            <span class="string">&quot;chromosome&quot;</span>.to_string(),
+            <span class="string">"chromosome"</span>.to_string(),
             ColumnData::String(arrow2::array::MutableUtf8Array::&lt;i32&gt;::with_capacity(
                 length,
             )),
         );
         name2data.insert(
-            <span class="string">&quot;position&quot;</span>.to_string(),
+            <span class="string">"position"</span>.to_string(),
             ColumnData::Int(MutablePrimitiveArray::&lt;i32&gt;::with_capacity(length)),
         );
 
         name2data.insert(
-            <span class="string">&quot;identifier&quot;</span>.to_string(),
+            <span class="string">"identifier"</span>.to_string(),
             ColumnData::ListString(arrow2::array::MutableListArray::&lt;
                 i32,
                 arrow2::array::MutableUtf8Array&lt;i32&gt;,
@@ -742,24 +743,24 @@
         );
 
         name2data.insert(
-            <span class="string">&quot;reference&quot;</span>.to_string(),
+            <span class="string">"reference"</span>.to_string(),
             ColumnData::String(arrow2::array::MutableUtf8Array::&lt;i32&gt;::with_capacity(
                 length,
             )),
         );
 
         name2data.insert(
-            <span class="string">&quot;alternate&quot;</span>.to_string(),
+            <span class="string">"alternate"</span>.to_string(),
             ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
         );
 
         name2data.insert(
-            <span class="string">&quot;quality&quot;</span>.to_string(),
+            <span class="string">"quality"</span>.to_string(),
             ColumnData::Float(MutablePrimitiveArray::&lt;f32&gt;::with_capacity(length)),
         );
 
         name2data.insert(
-            <span class="string">&quot;filter&quot;</span>.to_string(),
+            <span class="string">"filter"</span>.to_string(),
             ColumnData::ListString(arrow2::array::MutableListArray::&lt;
                 i32,
                 arrow2::array::MutableUtf8Array&lt;i32&gt;,
@@ -791,25 +792,25 @@
         <span class="kw">let </span><span class="kw-2">mut </span>not_changed_key = <span class="self">self
             </span>.<span class="number">0
             </span>.keys()
-            .filter(|<span class="kw-2">&amp;</span>x| x.starts_with(<span class="string">&quot;info_&quot;</span>) || x.starts_with(<span class="string">&quot;format_&quot;</span>))
+            .filter(|<span class="kw-2">&amp;</span>x| x.starts_with(<span class="string">"info_"</span>) || x.starts_with(<span class="string">"format_"</span>))
             .cloned()
             .collect::&lt;rustc_hash::FxHashSet&lt;String&gt;&gt;();
 
         <span class="comment">// Chromosome name
-        </span><span class="self">self</span>.get_mut(<span class="string">&quot;chromosome&quot;</span>)
+        </span><span class="self">self</span>.get_mut(<span class="string">"chromosome"</span>)
             .unwrap()
             .push_string(record.chromosome().to_string());
 
         <span class="comment">// Position
-        </span><span class="self">self</span>.get_mut(<span class="string">&quot;position&quot;</span>)
+        </span><span class="self">self</span>.get_mut(<span class="string">"position"</span>)
             .unwrap()
             .push_i32(<span class="prelude-val">Some</span>(usize::from(record.position()) <span class="kw">as </span>i32));
 
         <span class="comment">// ID
         </span><span class="kw">if </span>record.ids().is_empty() {
-            <span class="self">self</span>.get_mut(<span class="string">&quot;identifier&quot;</span>).unwrap().push_null();
+            <span class="self">self</span>.get_mut(<span class="string">"identifier"</span>).unwrap().push_null();
         } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self
-            </span>.get_mut(<span class="string">&quot;identifier&quot;</span>)
+            </span>.get_mut(<span class="string">"identifier"</span>)
             .unwrap()
             .push_vecstring(record.ids().iter().map(|x| <span class="prelude-val">Some</span>(x.to_string())).collect())
         {
@@ -817,14 +818,14 @@
         }
 
         <span class="comment">// Ref sequence
-        </span><span class="self">self</span>.get_mut(<span class="string">&quot;reference&quot;</span>)
+        </span><span class="self">self</span>.get_mut(<span class="string">"reference"</span>)
             .unwrap()
             .push_string(record.reference_bases().to_string());
 
         <span class="comment">// Alt sequences
         </span><span class="kw">if </span>record.alternate_bases().is_empty() {
-            <span class="self">self</span>.get_mut(<span class="string">&quot;alternate&quot;</span>).unwrap().push_null();
-        } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="string">&quot;alternate&quot;</span>).unwrap().push_vecstring(
+            <span class="self">self</span>.get_mut(<span class="string">"alternate"</span>).unwrap().push_null();
+        } <span class="kw">else if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.get_mut(<span class="string">"alternate"</span>).unwrap().push_vecstring(
             record
                 .alternate_bases()
                 .iter()
@@ -837,32 +838,32 @@
         <span class="comment">// Quality
         </span><span class="attr">#[allow(clippy::unnecessary_fallible_conversions)]
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(quality) = record.quality_score() {
-            <span class="self">self</span>.get_mut(<span class="string">&quot;quality&quot;</span>)
+            <span class="self">self</span>.get_mut(<span class="string">"quality"</span>)
                 .unwrap()
-                .push_f32(quality.try_into().ok());
+                .push_f32(<span class="prelude-val">Some</span>(f32::from(quality)));
         } <span class="kw">else </span>{
-            <span class="self">self</span>.get_mut(<span class="string">&quot;quality&quot;</span>).unwrap().push_null();
+            <span class="self">self</span>.get_mut(<span class="string">"quality"</span>).unwrap().push_null();
         }
 
         <span class="comment">// Filter
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(f) = record.filters() {
             <span class="kw">match </span>f {
                 noodles::vcf::record::Filters::Pass =&gt; <span class="self">self
-                    </span>.get_mut(<span class="string">&quot;filter&quot;</span>)
+                    </span>.get_mut(<span class="string">"filter"</span>)
                     .unwrap()
-                    .push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">Some</span>(<span class="string">&quot;PASS&quot;</span>.to_string())])<span class="question-mark">?</span>,
+                    .push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">Some</span>(<span class="string">"PASS"</span>.to_string())])<span class="question-mark">?</span>,
                 noodles::vcf::record::Filters::Fail(fs) =&gt; <span class="self">self
-                    </span>.get_mut(<span class="string">&quot;filter&quot;</span>)
+                    </span>.get_mut(<span class="string">"filter"</span>)
                     .unwrap()
                     .push_vecstring(fs.iter().map(|x| <span class="prelude-val">Some</span>(x.to_string())).collect())<span class="question-mark">?</span>,
             }
         } <span class="kw">else </span>{
-            <span class="self">self</span>.get_mut(<span class="string">&quot;filter&quot;</span>).unwrap().push_null();
+            <span class="self">self</span>.get_mut(<span class="string">"filter"</span>).unwrap().push_null();
         }
 
         <span class="comment">// Info
         </span><span class="kw">for </span>(key, value) <span class="kw">in </span>record.info().keys().zip(record.info().values()) {
-            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>);
+            <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"info_{key}"</span>);
             not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
             <span class="kw">match </span>value {
@@ -908,7 +909,7 @@
             .zip(record.genotypes().values())
         {
             <span class="kw">for </span>(key_name, value) <span class="kw">in </span>sample.keys().iter().zip(sample.values()) {
-                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{name}_{key_name}&quot;</span>);
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"format_{name}_{key_name}"</span>);
                 not_changed_key.remove(<span class="kw-2">&amp;</span>key);
 
                 <span class="kw">match </span>value {
@@ -976,49 +977,49 @@
                     noodles::vcf::header::record::value::map::info::Type::Integer,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::Int(arrow2::array::MutablePrimitiveArray::&lt;i32&gt;::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::record::value::map::info::Type::Integer, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::record::value::map::info::Type::Float,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::Float(arrow2::array::MutablePrimitiveArray::&lt;f32&gt;::with_capacity(
                         length,
                     )),
                 ),
                 (noodles::vcf::header::record::value::map::info::Type::Float, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::record::value::map::info::Type::Flag,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
                 ),
                 (noodles::vcf::header::record::value::map::info::Type::Flag, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
                 (
                     noodles::vcf::header::record::value::map::info::Type::Character,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::record::value::map::info::Type::Character, <span class="kw">_</span>) =&gt; data
                     .insert(
-                        <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                        <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                         ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
                             length,
                         )),
@@ -1027,11 +1028,11 @@
                     noodles::vcf::header::record::value::map::info::Type::String,
                     noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>),
                 ) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
                 ),
                 (noodles::vcf::header::record::value::map::info::Type::String, <span class="kw">_</span>) =&gt; data.insert(
-                    <span class="macro">format!</span>(<span class="string">&quot;info_{key}&quot;</span>),
+                    <span class="macro">format!</span>(<span class="string">"info_{key}"</span>),
                     ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
                 ),
             };
@@ -1045,7 +1046,7 @@
     ) {
         <span class="kw">for </span>sample <span class="kw">in </span>header.sample_names() {
             <span class="kw">for </span>(key, value) <span class="kw">in </span>header.formats() {
-                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">&quot;format_{sample}_{key}&quot;</span>);
+                <span class="kw">let </span>key = <span class="macro">format!</span>(<span class="string">"format_{sample}_{key}"</span>);
 
                 <span class="kw">match </span>(value.ty(), value.number()) {
                     (
@@ -1139,13 +1140,13 @@
             ColumnData::ListFloat(a) =&gt; a.push_null(),
             ColumnData::ListString(_a) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = <span class="self">self</span>.push_vecstring(<span class="macro">vec!</span>[<span class="prelude-val">None</span>]) {
-                    <span class="macro">panic!</span>(<span class="string">&quot;ListString {e:?}&quot;</span>);
+                    <span class="macro">panic!</span>(<span class="string">"ListString {e:?}"</span>);
                 }
             }
         }
     }
 
-    <span class="doccomment">/// Add a boolean value in array, if it&#39;s not a boolean array failled
+    <span class="doccomment">/// Add a boolean value in array, if it's not a boolean array failled
     </span><span class="kw">pub fn </span>push_bool(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;bool&gt;) {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::Bool(a) =&gt; a.push(value),
@@ -1153,7 +1154,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a i32 value in array, if it&#39;s not a integer array failled
+    <span class="doccomment">/// Add a i32 value in array, if it's not a integer array failled
     </span><span class="kw">pub fn </span>push_i32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;i32&gt;) {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::Int(a) =&gt; a.push(value),
@@ -1161,7 +1162,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a f32 value in array, if it&#39;s not a float array failled
+    <span class="doccomment">/// Add a f32 value in array, if it's not a float array failled
     </span><span class="kw">pub fn </span>push_f32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: <span class="prelude-ty">Option</span>&lt;f32&gt;) {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::Float(a) =&gt; a.push(value),
@@ -1169,7 +1170,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a string value in array, if it&#39;s not a string array failled
+    <span class="doccomment">/// Add a string value in array, if it's not a string array failled
     </span><span class="kw">pub fn </span>push_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: String) {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::String(a) =&gt; a.push(<span class="prelude-val">Some</span>(value)),
@@ -1177,7 +1178,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a vector of bool value in array, if it&#39;s not a vector of bool array failled
+    <span class="doccomment">/// Add a vector of bool value in array, if it's not a vector of bool array failled
     </span><span class="kw">pub fn </span>push_vecbool(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;bool&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::ListBool(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
@@ -1185,7 +1186,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a vector of integer value in array, if it&#39;s not a vector of integer array failled
+    <span class="doccomment">/// Add a vector of integer value in array, if it's not a vector of integer array failled
     </span><span class="kw">pub fn </span>push_veci32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;i32&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::ListInt(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
@@ -1193,7 +1194,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a vector of float value in array, if it&#39;s not a vector of float array failled
+    <span class="doccomment">/// Add a vector of float value in array, if it's not a vector of float array failled
     </span><span class="kw">pub fn </span>push_vecf32(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;f32&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::ListFloat(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
@@ -1201,7 +1202,7 @@
         }
     }
 
-    <span class="doccomment">/// Add a vector of string value in array, if it&#39;s not a vector of string array failled
+    <span class="doccomment">/// Add a vector of string value in array, if it's not a vector of string array failled
     </span><span class="kw">pub fn </span>push_vecstring(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: Vec&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt;) -&gt; arrow2::error::Result&lt;()&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             ColumnData::ListString(a) =&gt; a.try_push(<span class="prelude-val">Some</span>(value)),
@@ -1228,31 +1229,31 @@
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">static </span>VCF_FILE: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;##fileformat=VCFv4.3
+    <span class="kw">static </span>VCF_FILE: <span class="kw-2">&amp;</span>[u8] = <span class="string">b"##fileformat=VCFv4.3
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=&lt;ID=ALLELEID,Number=1,Type=Integer,Description=\&quot;the ClinVar Allele ID\&quot;&gt;
-##INFO=&lt;ID=ALLELEIDS,Number=2,Type=Integer,Description=\&quot;the ClinVar Allele ID\&quot;&gt;
-##INFO=&lt;ID=AF_ESP,Number=1,Type=Float,Description=\&quot;allele frequencies from GO-ESP\&quot;&gt;
-##INFO=&lt;ID=AF_ESPS,Number=2,Type=Float,Description=\&quot;allele frequencies from GO-ESP\&quot;&gt;
-##INFO=&lt;ID=DBVARI,Number=0,Type=Flag,Description=\&quot;nsv accessions from dbVar for the variant\&quot;&gt;
-##INFO=&lt;ID=GENEINFO,Number=1,Type=Character,Description=\&quot;Gene(s) \&quot;&gt;
-##INFO=&lt;ID=GENEINFOS,Number=2,Type=Character,Description=\&quot;Gene(s) \&quot;&gt;
-##INFO=&lt;ID=CLNVC,Number=1,Type=String,Description=\&quot;Variant type\&quot;&gt;
-##INFO=&lt;ID=CLNVCS,Number=2,Type=String,Description=\&quot;Variant type\&quot;&gt;
-##FORMAT=&lt;ID=AB,Number=1,Type=Integer,Description=\&quot;Allelic \&quot;&gt;
-##FORMAT=&lt;ID=ABS,Number=2,Type=Integer,Description=\&quot;Allelic \&quot;&gt;
-##FORMAT=&lt;ID=DC,Number=1,Type=Float,Description=\&quot;Approximate read \&quot;&gt;
-##FORMAT=&lt;ID=DCS,Number=2,Type=Float,Description=\&quot;Approximate read \&quot;&gt;
-##FORMAT=&lt;ID=GF,Number=1,Type=Character,Description=\&quot;Genotype Quality\&quot;&gt;
-##FORMAT=&lt;ID=GFS,Number=2,Type=Character,Description=\&quot;Genotype Quality\&quot;&gt;
-##SAMPLE=&lt;ID=first,Genomes=Germline,Mixture=1.,Description=\&quot;first\&quot;&gt;
-##SAMPLE=&lt;ID=second,Genomes=Germline,Mixture=1.,Description=\&quot;second\&quot;&gt;
+##INFO=&lt;ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\"&gt;
+##INFO=&lt;ID=ALLELEIDS,Number=2,Type=Integer,Description=\"the ClinVar Allele ID\"&gt;
+##INFO=&lt;ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\"&gt;
+##INFO=&lt;ID=AF_ESPS,Number=2,Type=Float,Description=\"allele frequencies from GO-ESP\"&gt;
+##INFO=&lt;ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\"&gt;
+##INFO=&lt;ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) \"&gt;
+##INFO=&lt;ID=GENEINFOS,Number=2,Type=Character,Description=\"Gene(s) \"&gt;
+##INFO=&lt;ID=CLNVC,Number=1,Type=String,Description=\"Variant type\"&gt;
+##INFO=&lt;ID=CLNVCS,Number=2,Type=String,Description=\"Variant type\"&gt;
+##FORMAT=&lt;ID=AB,Number=1,Type=Integer,Description=\"Allelic \"&gt;
+##FORMAT=&lt;ID=ABS,Number=2,Type=Integer,Description=\"Allelic \"&gt;
+##FORMAT=&lt;ID=DC,Number=1,Type=Float,Description=\"Approximate read \"&gt;
+##FORMAT=&lt;ID=DCS,Number=2,Type=Float,Description=\"Approximate read \"&gt;
+##FORMAT=&lt;ID=GF,Number=1,Type=Character,Description=\"Genotype Quality\"&gt;
+##FORMAT=&lt;ID=GFS,Number=2,Type=Character,Description=\"Genotype Quality\"&gt;
+##SAMPLE=&lt;ID=first,Genomes=Germline,Mixture=1.,Description=\"first\"&gt;
+##SAMPLE=&lt;ID=second,Genomes=Germline,Mixture=1.,Description=\"second\"&gt;
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
 1\t10\t.\tA\tC,T\t23\tPASS\tALLELEID=14;ALLELEIDS=14,15;AF_ESP=1.2;AF_ESPS=1.2,1.5;DBVARI;GENEINFO=c;GENEINFOS=c,d;CLNVC=test1;CLNVCS=test1,test2\tAB:ABS:GF:GFS:DC:DCS\t1:2,3:c:C,D:1.2:1.4,1.6\t1:2,3:c:C,D:1.2:1.4,1.6
 1\t20\t.\tA\tC\t23\tq5,q10\tALLELEID=14;AF_ESP=1.2;DBVARI;GENEINFO=c;CLNVC=test1;CLNVCS=test1,test2\tAB:GF:DC\t1:c:1.2\t2:a:4.5
-&quot;</span>;
+"</span>;
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>init() {
@@ -1267,49 +1268,49 @@
         <span class="macro">assert_eq!</span>(
             col_names,
             <span class="macro">vec!</span>[
-                <span class="string">&quot;alternate&quot;</span>.to_string(),
-                <span class="string">&quot;chromosome&quot;</span>.to_string(),
-                <span class="string">&quot;filter&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_AB&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_ABS&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_DC&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_DCS&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_GF&quot;</span>.to_string(),
-                <span class="string">&quot;format_first_GFS&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_AB&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_ABS&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_DC&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_DCS&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_GF&quot;</span>.to_string(),
-                <span class="string">&quot;format_second_GFS&quot;</span>.to_string(),
-                <span class="string">&quot;identifier&quot;</span>.to_string(),
-                <span class="string">&quot;info_AF_ESP&quot;</span>.to_string(),
-                <span class="string">&quot;info_AF_ESPS&quot;</span>.to_string(),
-                <span class="string">&quot;info_ALLELEID&quot;</span>.to_string(),
-                <span class="string">&quot;info_ALLELEIDS&quot;</span>.to_string(),
-                <span class="string">&quot;info_CLNVC&quot;</span>.to_string(),
-                <span class="string">&quot;info_CLNVCS&quot;</span>.to_string(),
-                <span class="string">&quot;info_DBVARI&quot;</span>.to_string(),
-                <span class="string">&quot;info_GENEINFO&quot;</span>.to_string(),
-                <span class="string">&quot;info_GENEINFOS&quot;</span>.to_string(),
-                <span class="string">&quot;position&quot;</span>.to_string(),
-                <span class="string">&quot;quality&quot;</span>.to_string(),
-                <span class="string">&quot;reference&quot;</span>.to_string()
+                <span class="string">"alternate"</span>.to_string(),
+                <span class="string">"chromosome"</span>.to_string(),
+                <span class="string">"filter"</span>.to_string(),
+                <span class="string">"format_first_AB"</span>.to_string(),
+                <span class="string">"format_first_ABS"</span>.to_string(),
+                <span class="string">"format_first_DC"</span>.to_string(),
+                <span class="string">"format_first_DCS"</span>.to_string(),
+                <span class="string">"format_first_GF"</span>.to_string(),
+                <span class="string">"format_first_GFS"</span>.to_string(),
+                <span class="string">"format_second_AB"</span>.to_string(),
+                <span class="string">"format_second_ABS"</span>.to_string(),
+                <span class="string">"format_second_DC"</span>.to_string(),
+                <span class="string">"format_second_DCS"</span>.to_string(),
+                <span class="string">"format_second_GF"</span>.to_string(),
+                <span class="string">"format_second_GFS"</span>.to_string(),
+                <span class="string">"identifier"</span>.to_string(),
+                <span class="string">"info_AF_ESP"</span>.to_string(),
+                <span class="string">"info_AF_ESPS"</span>.to_string(),
+                <span class="string">"info_ALLELEID"</span>.to_string(),
+                <span class="string">"info_ALLELEIDS"</span>.to_string(),
+                <span class="string">"info_CLNVC"</span>.to_string(),
+                <span class="string">"info_CLNVCS"</span>.to_string(),
+                <span class="string">"info_DBVARI"</span>.to_string(),
+                <span class="string">"info_GENEINFO"</span>.to_string(),
+                <span class="string">"info_GENEINFOS"</span>.to_string(),
+                <span class="string">"position"</span>.to_string(),
+                <span class="string">"quality"</span>.to_string(),
+                <span class="string">"reference"</span>.to_string()
             ]
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;chromosome&quot;</span>)),
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"chromosome"</span>)),
             <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
+                <span class="string">"{:?}"</span>,
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ColumnData::String(arrow2::array::MutableUtf8Array::new()))
             )
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get_mut(<span class="string">&quot;chromosome&quot;</span>)),
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get_mut(<span class="string">"chromosome"</span>)),
             <span class="macro">format!</span>(
-                <span class="string">&quot;{:?}&quot;</span>,
+                <span class="string">"{:?}"</span>,
                 <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>ColumnData::String(arrow2::array::MutableUtf8Array::new()))
             )
         );
@@ -1327,75 +1328,75 @@
         <span class="kw">let </span>record = iterator.next().unwrap().unwrap();
 
         data.add_record(record, <span class="kw-2">&amp;</span>header).unwrap();
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 84] }, validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"alternate"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 84] }, validity: None }, validity: None }))"</span>.to_string());
 
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;chromosome&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [49] }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [80, 65, 83, 83] }, validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"chromosome"</span>)), <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [49] }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"filter"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [80, 65, 83, 83] }, validity: None }, validity: None }))"</span>.to_string());
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_AB&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_AB"</span>)),
+            <span class="string">"Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))"
                 </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_ABS&quot;</span>)),
-            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [2, 3], validity: None }, validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_ABS"</span>)),
+            <span class="string">"Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [2, 3], validity: None }, validity: None }))"
                 </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_DC&quot;</span>)),
-            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string()
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_DC"</span>)),
+            <span class="string">"Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))"</span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_DCS&quot;</span>)),
-            <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6], validity: None }, validity: None }))&quot;</span>.to_string()
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_DCS"</span>)),
+            <span class="string">"Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6], validity: None }, validity: None }))"</span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GF&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_first_GFS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 68] }, validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_GF"</span>)), <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_first_GFS"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 68] }, validity: None }, validity: None }))"</span>.to_string());
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_AB&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_second_AB"</span>)),
+            <span class="string">"Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))"
                 </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_DC&quot;</span>)),
-            <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string()
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_second_DC"</span>)),
+            <span class="string">"Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))"</span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;format_second_GF&quot;</span>)),
-            <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))&quot;</span>.to_string()
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"format_second_GF"</span>)),
+            <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))"</span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;identifier&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 0]), values: [] }, validity: Some([0b_______0]) }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_AF_ESP&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_AF_ESPS&quot;</span>)), <span class="string">&quot;Some(ListFloat(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5], validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"identifier"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 0]), values: [] }, validity: Some([0b_______0]) }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_AF_ESP"</span>)), <span class="string">"Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_AF_ESPS"</span>)), <span class="string">"Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5], validity: None }, validity: None }))"</span>.to_string());
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_ALLELEID&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_ALLELEID"</span>)),
+            <span class="string">"Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))"
                 </span>.to_string()
         );
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_ALLELEIDS&quot;</span>)),
-            <span class="string">&quot;Some(ListInt(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [14, 15], validity: None }, validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_ALLELEIDS"</span>)),
+            <span class="string">"Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [14, 15], validity: None }, validity: None }))"
                 </span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_CLNVC&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 49] }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_CLNVCS&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5, 10]), values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50] }, validity: None }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_DBVARI&quot;</span>)), <span class="string">&quot;Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;info_GENEINFO&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_CLNVC"</span>)), <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 49] }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_CLNVCS"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5, 10]), values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50] }, validity: None }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_DBVARI"</span>)), <span class="string">"Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"info_GENEINFO"</span>)), <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))"</span>.to_string());
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;position&quot;</span>)),
-            <span class="string">&quot;Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))&quot;
+            <span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"position"</span>)),
+            <span class="string">"Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))"
                 </span>.to_string()
         );
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;quality&quot;</span>)), <span class="string">&quot;Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;reference&quot;</span>)), <span class="string">&quot;Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [65] }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"quality"</span>)), <span class="string">"Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"reference"</span>)), <span class="string">"Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [65] }, validity: None }))"</span>.to_string());
 
         <span class="kw">let </span>record = iterator.next().unwrap().unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>data = Name2Data::new(<span class="number">10</span>, <span class="kw-2">&amp;</span>header);
         data.add_record(record, <span class="kw-2">&amp;</span>header).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;alternate&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }, validity: None }))&quot;</span>.to_string());
-        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, data.get(<span class="string">&quot;filter&quot;</span>)), <span class="string">&quot;Some(ListString(MutableListArray { data_type: List(Field { name: \&quot;item\&quot;, data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 6]), values: [113, 53, 44, 113, 49, 48] }, validity: None }, validity: None }))&quot;</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"alternate"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }, validity: None }))"</span>.to_string());
+        <span class="macro">assert_eq!</span>(<span class="macro">format!</span>(<span class="string">"{:?}"</span>, data.get(<span class="string">"filter"</span>)), <span class="string">"Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 6]), values: [113, 53, 44, 113, 49, 48] }, validity: None }, validity: None }))"</span>.to_string());
     }
 }
 </code></pre></div></section></main></body></html>
