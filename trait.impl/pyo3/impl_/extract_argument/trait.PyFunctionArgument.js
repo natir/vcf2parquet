@@ -1,3 +1,3 @@
 (function() {var implementors = {
-"pyvcf2parquet":[["impl&lt;'a, 'py&gt; PyFunctionArgument&lt;'a, 'py&gt; for &amp;'a mut <a class=\"enum\" href=\"pyvcf2parquet/enum.Compression.html\" title=\"enum pyvcf2parquet::Compression\">Compression</a>"],["impl&lt;'a, 'py&gt; PyFunctionArgument&lt;'a, 'py&gt; for &amp;'a <a class=\"enum\" href=\"pyvcf2parquet/enum.Compression.html\" title=\"enum pyvcf2parquet::Compression\">Compression</a>"]]
+"pyvcf2parquet":[["impl&lt;'a, 'py&gt; PyFunctionArgument&lt;'a, 'py&gt; for &amp;'a <a class=\"enum\" href=\"pyvcf2parquet/enum.Compression.html\" title=\"enum pyvcf2parquet::Compression\">Compression</a>"],["impl&lt;'a, 'py&gt; PyFunctionArgument&lt;'a, 'py&gt; for &amp;'a mut <a class=\"enum\" href=\"pyvcf2parquet/enum.Compression.html\" title=\"enum pyvcf2parquet::Compression\">Compression</a>"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
