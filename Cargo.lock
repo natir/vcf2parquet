@@ -1291,7 +1291,7 @@ checksum = "711b9620af191e0cdc7468a8d14e709c3dcdb115b36f838e601583af800a370a"
 
 [[package]]
 name = "vcf2parquet"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "vcf2parquet-bin",
  "vcf2parquet-lib",
@@ -1299,7 +1299,7 @@ dependencies = [
 
 [[package]]
 name = "vcf2parquet-bin"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "arrow2 0.18.0",
  "clap",
@@ -1311,7 +1311,7 @@ dependencies = [
 
 [[package]]
 name = "vcf2parquet-lib"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "arrow2 0.18.0",
  "lazy_static",
@@ -1326,7 +1326,7 @@ dependencies = [
 
 [[package]]
 name = "vcf2parquet-py"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "arrow2 0.17.4",
  "niffler",
