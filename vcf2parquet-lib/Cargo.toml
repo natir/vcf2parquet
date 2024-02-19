@@ -8,7 +8,7 @@ rayon      = { version = "1" }
 
 # input output management
 niffler     = { version = "2" }
-noodles     = { version = "0.60", features = ["vcf"] }
+noodles     = { version = "0.64", features = ["vcf"] }
 arrow2      = { version = "0.18", features = ["io_parquet", "io_parquet_compression"] }
 rustc-hash  = { version = "1" }
 
