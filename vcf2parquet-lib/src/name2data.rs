@@ -50,7 +50,9 @@ impl Name2Data {
 
         name2data.insert(
             "alternate".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
+            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
+                length,
+            )),
         );
 
         name2data.insert(
@@ -251,6 +253,7 @@ impl Name2Data {
         Ok(())
     }
 
+    
     ///Convert Name2Data in vector of arrow2 array
     pub fn into_arc(
         mut self,
