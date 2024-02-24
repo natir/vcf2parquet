@@ -2,6 +2,8 @@
 
 /* std use */
 
+use std::str::FromStr;
+
 /* crate use */
 use arrow2::array::MutableArray;
 use arrow2::array::MutablePrimitiveArray;
@@ -16,61 +18,14 @@ pub struct Name2Data(rustc_hash::FxHashMap<String, ColumnData>);
 impl Name2Data {
     /// Create a new Name2Data, vcf header is required to add info and genotype column
     /// length parameter is used to preallocate memory
-    pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
-        let mut name2data = rustc_hash::FxHashMap::with_capacity_and_hasher(
-            header.infos().len() + header.sample_names().len() * header.formats().len(),
-            std::hash::BuildHasherDefault::<rustc_hash::FxHasher>::default(),
-        );
-
-        name2data.insert(
-            "chromosome".to_string(),
-            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
-                length,
-            )),
-        );
-        name2data.insert(
-            "position".to_string(),
-            ColumnData::Int(MutablePrimitiveArray::<i32>::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "identifier".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::<
-                i32,
-                arrow2::array::MutableUtf8Array<i32>,
-            >::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "reference".to_string(),
-            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
-                length,
-            )),
-        );
-
-        name2data.insert(
-            "alternate".to_string(),
-            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
-                length,
-            )),
-        );
-
-        name2data.insert(
-            "quality".to_string(),
-            ColumnData::Float(MutablePrimitiveArray::<f32>::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "filter".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::<
-                i32,
-                arrow2::array::MutableUtf8Array<i32>,
-            >::with_capacity(length)),
-        );
-
-        Self::add_info(&mut name2data, header, length);
-        Self::add_genotype(&mut name2data, header, length);
-
+    pub fn new(length: usize, schema: &arrow2::datatypes::Schema) -> Self {
+        let mut name2data = rustc_hash::FxHashMap::default();
+        for field in schema.fields.iter() {
+            name2data.insert(
+                field.name.clone(),
+                ColumnData::new(&field.data_type, length),
+            );
+        }
         Name2Data(name2data)
     }
 
@@ -90,170 +45,194 @@ impl Name2Data {
         record: noodles::vcf::Record,
         header: &noodles::vcf::Header,
     ) -> std::result::Result<(), arrow2::error::Error> {
-        let mut not_changed_key = self
-            .0
-            .keys()
-            .filter(|&x| x.starts_with("info_") || x.starts_with("format_"))
-            .cloned()
-            .collect::<rustc_hash::FxHashSet<String>>();
+        let info = record.info();
+        for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
+            for (key, column) in self.0.iter_mut() {
+                if key == "chromosome" {
+                    column.push_string(record.chromosome().to_string());
+                } else if key == "position" {
+                    column.push_i32(Some(usize::from(record.position()) as i32));
+                } else if key == "identifier" {
+                    column.push_vecstring(
+                        record.ids().iter().map(|s| Some(s.to_string())).collect(),
+                    )?;
+                } else if key == "reference" {
+                    column.push_string(record.reference_bases().to_string());
+                } else if key == "alternate" {
+                    column.push_string(allele.to_string());
+                } else if key == "quality" {
+                    column.push_f32(record.quality_score().map(|v| v.into()));
+                } else if key == "filter" {
+                    column.push_vecstring(
+                        record
+                            .filters()
+                            .iter()
+                            .map(|s| Some(s.to_string()))
+                            .collect(),
+                    )?;
+                }
+                if key.starts_with("info_") {
+                    let info_field = header
+                        .infos()
+                        .get(&noodles::vcf::record::info::field::Key::from_str(&key[5..]).unwrap())
+                        .unwrap();
 
-        // Chromosome name
-        self.get_mut("chromosome")
-            .unwrap()
-            .push_string(record.chromosome().to_string());
-
-        // Position
-        self.get_mut("position")
-            .unwrap()
-            .push_i32(Some(usize::from(record.position()) as i32));
-
-        // ID
-        if record.ids().is_empty() {
-            self.get_mut("identifier").unwrap().push_null();
-        } else if let Err(e) = self
-            .get_mut("identifier")
-            .unwrap()
-            .push_vecstring(record.ids().iter().map(|x| Some(x.to_string())).collect())
-        {
-            return Err(e);
-        }
-
-        // Ref sequence
-        self.get_mut("reference")
-            .unwrap()
-            .push_string(record.reference_bases().to_string());
-
-        // Alt sequences
-        if record.alternate_bases().is_empty() {
-            self.get_mut("alternate").unwrap().push_null();
-        } else if let Err(e) = self.get_mut("alternate").unwrap().push_vecstring(
-            record
-                .alternate_bases()
-                .iter()
-                .map(|x| Some(x.to_string()))
-                .collect(),
-        ) {
-            return Err(e);
-        }
-
-        // Quality
-        #[allow(clippy::unnecessary_fallible_conversions)]
-        if let Some(quality) = record.quality_score() {
-            self.get_mut("quality")
-                .unwrap()
-                .push_f32(Some(f32::from(quality)));
-        } else {
-            self.get_mut("quality").unwrap().push_null();
-        }
-
-        // Filter
-        if let Some(f) = record.filters() {
-            match f {
-                noodles::vcf::record::Filters::Pass => self
-                    .get_mut("filter")
-                    .unwrap()
-                    .push_vecstring(vec![Some("PASS".to_string())])?,
-                noodles::vcf::record::Filters::Fail(fs) => self
-                    .get_mut("filter")
-                    .unwrap()
-                    .push_vecstring(fs.iter().map(|x| Some(x.to_string())).collect())?,
+                    match info
+                        .get(&noodles::vcf::record::info::field::Key::from_str(&key[5..]).unwrap())
+                    {
+                        Some(value) => match value {
+                            Some(noodles::vcf::record::info::field::Value::Flag) => {
+                                column.push_bool(Some(true));
+                            }
+                            Some(noodles::vcf::record::info::field::Value::Integer(value)) => {
+                                column.push_i32(Some(*value));
+                            }
+                            Some(noodles::vcf::record::info::field::Value::Float(value)) => {
+                                column.push_f32(Some(*value));
+                            }
+                            Some(noodles::vcf::record::info::field::Value::String(value)) => {
+                                column.push_string(value.to_string());
+                            }
+                            Some(noodles::vcf::record::info::field::Value::Character(value)) => {
+                                column.push_string(value.to_string());
+                            }
+                            Some(noodles::vcf::record::info::field::Value::Array(arr)) => match arr
+                                .clone()//Please tell me why I had to clone here...
+                            {
+                                noodles::vcf::record::info::field::value::Array::Integer(
+                                    array_val,
+                                ) => match info_field.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            &key[5..]
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_veci32(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_i32(*array_val.get(alt_id).unwrap());
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_veci32(vec![
+                                            *array_val.get(0).unwrap(),
+                                            *array_val.get(alt_id).unwrap(),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        column.push_veci32(array_val)?;
+                                    }
+                                    _ => {
+                                        column.push_veci32(array_val)?;
+                                    }
+                                },
+                                noodles::vcf::record::info::field::value::Array::Float(
+                                    array_val,
+                                ) => match info_field.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            &key[5..]
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_vecf32(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_f32(*array_val.get(alt_id).unwrap());
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_vecf32(vec![
+                                            *array_val.get(0).unwrap(),
+                                            *array_val.get(alt_id).unwrap(),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        column.push_vecf32(array_val)?;
+                                    }
+                                    _ => {
+                                        column.push_vecf32(array_val)?;
+                                    }
+                                },
+                                noodles::vcf::record::info::field::value::Array::String(
+                                    array_val,
+                                ) => match info_field.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            &key[5..]
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_string(array_val.get(alt_id).unwrap().clone().unwrap());//Clone, clone, clone... Why?
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.get(0).unwrap().clone().unwrap()),//Clone, clone, clone... Why?
+                                            Some(
+                                                array_val.get(alt_id).unwrap().clone().unwrap(),//Clone, clone, clone... Why?
+                                            ),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::Unknown => {
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                },
+                                noodles::vcf::record::info::field::value::Array::Character(
+                                    array_val,
+                                ) => match info_field.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            &key[5..]
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_)
+                                    | noodles::vcf::header::Number::G
+                                    | noodles::vcf::header::Number::Unknown => {
+                                        column.push_vecstring(
+                                            array_val
+                                                .iter()
+                                                .map(|s| match s {
+                                                    Some(s) => Some(s.to_string()),
+                                                    None => None,
+                                                })
+                                                .collect::<Vec<Option<String>>>(),
+                                        )?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_string(
+                                            array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                        );
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                            Some(
+                                                array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                            ),
+                                        ])?;
+                                    }
+                                },
+                            },
+                            None => column.push_null(),
+                        },
+                        None => column.push_null(),
+                    }
+                }
             }
-        } else {
-            self.get_mut("filter").unwrap().push_null();
-        }
-
-        // Info
-        for (key, value) in record.info().keys().zip(record.info().values()) {
-            let key = format!("info_{key}");
-            not_changed_key.remove(&key);
-
-            match value {
-                Some(noodles::vcf::record::info::field::Value::Integer(val)) => {
-                    self.get_mut(&key).unwrap().push_i32(Some(*val))
-                }
-                Some(noodles::vcf::record::info::field::Value::Float(val)) => {
-                    self.get_mut(&key).unwrap().push_f32(Some(*val))
-                }
-                Some(noodles::vcf::record::info::field::Value::Flag) => {
-                    self.get_mut(&key).unwrap().push_bool(Some(true))
-                }
-
-                Some(noodles::vcf::record::info::field::Value::Character(val)) => {
-                    self.get_mut(&key).unwrap().push_string(val.to_string())
-                }
-                Some(noodles::vcf::record::info::field::Value::String(val)) => {
-                    self.get_mut(&key).unwrap().push_string(val.to_string())
-                }
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Integer(vals),
-                )) => self.get_mut(&key).unwrap().push_veci32(vals.to_vec())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Float(vals),
-                )) => self.get_mut(&key).unwrap().push_vecf32(vals.to_vec())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Character(vals),
-                )) => self
-                    .get_mut(&key)
-                    .unwrap()
-                    .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::String(vals),
-                )) => self.get_mut(&key).unwrap().push_vecstring(vals.to_vec())?,
-                None => self.get_mut(&key).unwrap().push_null(),
-            }
-        }
-
-        // format
-        for (name, sample) in header
-            .sample_names()
-            .iter()
-            .zip(record.genotypes().values())
-        {
-            for (key_name, value) in sample.keys().iter().zip(sample.values()) {
-                let key = format!("format_{name}_{key_name}");
-                not_changed_key.remove(&key);
-
-                match value {
-                    Some(noodles::vcf::record::genotypes::sample::Value::Integer(val)) => {
-                        self.get_mut(&key).unwrap().push_i32(Some(*val))
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Float(val)) => {
-                        self.get_mut(&key).unwrap().push_f32(Some(*val))
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Character(val)) => {
-                        self.get_mut(&key).unwrap().push_string(val.to_string())
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::String(val)) => {
-                        self.get_mut(&key).unwrap().push_string(val.to_string())
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Integer(vals),
-                    )) => self.get_mut(&key).unwrap().push_veci32(vals.to_vec())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Float(vals),
-                    )) => self.get_mut(&key).unwrap().push_vecf32(vals.to_vec())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Character(vals),
-                    )) => self
-                        .get_mut(&key)
-                        .unwrap()
-                        .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::String(vals),
-                    )) => self.get_mut(&key).unwrap().push_vecstring(vals.to_vec())?,
-                    None => self.get_mut(&key).unwrap().push_null(),
-                }
-            }
-        }
-
-        for key in not_changed_key {
-            self.get_mut(&key).unwrap().push_null();
         }
 
         Ok(())
     }
 
-    
     ///Convert Name2Data in vector of arrow2 array
     pub fn into_arc(
         mut self,
@@ -266,154 +245,6 @@ impl Name2Data {
             .collect();
 
         s
-    }
-
-    fn add_info(
-        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
-        header: &noodles::vcf::Header,
-        length: usize,
-    ) {
-        for (key, value) in header.infos() {
-            match (value.ty(), value.number()) {
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Integer,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
-                        length,
-                    )),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Integer, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Float,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
-                        length,
-                    )),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Float, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Flag,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Flag, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Character,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Character, _) => data
-                    .insert(
-                        format!("info_{key}"),
-                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                            length,
-                        )),
-                    ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::String,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::String, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-            };
-        }
-    }
-
-    fn add_genotype(
-        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
-        header: &noodles::vcf::Header,
-        length: usize,
-    ) {
-        for sample in header.sample_names() {
-            for (key, value) in header.formats() {
-                let key = format!("format_{sample}_{key}");
-
-                match (value.ty(), value.number()) {
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Integer,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::Int(
-                            arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(length),
-                        ),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Integer, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Float,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::Float(
-                            arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(length),
-                        ),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Float, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Character,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Character, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::String,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::String, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                };
-            }
-        }
     }
 }
 
@@ -430,6 +261,50 @@ pub enum ColumnData {
 }
 
 impl ColumnData {
+    pub fn new(arrow_type: &arrow2::datatypes::DataType, length: usize) -> Self {
+        match arrow_type {
+            arrow2::datatypes::DataType::Boolean => {
+                ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length))
+            }
+            arrow2::datatypes::DataType::Int32 => ColumnData::Int(
+                arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::Float32 => ColumnData::Float(
+                arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::Utf8 => ColumnData::String(
+                arrow2::array::MutableUtf8Array::<i32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::List(field) => match field.data_type() {
+                arrow2::datatypes::DataType::Boolean => {
+                    ColumnData::ListBool(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableBooleanArray,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Int32 => {
+                    ColumnData::ListInt(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<i32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Float32 => {
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<f32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Utf8 => {
+                    ColumnData::ListString(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableUtf8Array<i32>,
+                    >::with_capacity(length))
+                }
+                _ => todo!(),
+            },
+            _ => unreachable!("Unsupported arrow type, please check Schema"),
+        }
+    }
     /// Add a Null value in array
     pub fn push_null(&mut self) {
         match self {
@@ -529,6 +404,8 @@ impl ColumnData {
 
 #[cfg(test)]
 mod tests {
+    use crate::schema;
+
     use super::*;
 
     static VCF_FILE: &[u8] = b"##fileformat=VCFv4.3
@@ -562,8 +439,9 @@ mod tests {
         let mut reader = noodles::vcf::Reader::new(VCF_FILE);
 
         let header: noodles::vcf::Header = reader.read_header().unwrap();
+        let schema = schema::from_header(&header, false).unwrap();
 
-        let mut data = Name2Data::new(10, &header);
+        let mut data = Name2Data::new(10, &schema);
         let mut col_names = data.0.keys().cloned().collect::<Vec<String>>();
         col_names.sort();
 
@@ -624,7 +502,8 @@ mod tests {
 
         let header: noodles::vcf::Header = reader.read_header().unwrap();
 
-        let mut data = Name2Data::new(10, &header);
+        let schema = schema::from_header(&header, false).unwrap();
+        let mut data = Name2Data::new(10, &schema);
 
         let mut iterator = reader.records(&header);
         let record = iterator.next().unwrap().unwrap();
@@ -694,7 +573,7 @@ mod tests {
         assert_eq!(format!("{:?}", data.get("reference")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [65] }, validity: None }))".to_string());
 
         let record = iterator.next().unwrap().unwrap();
-        let mut data = Name2Data::new(10, &header);
+        let mut data = Name2Data::new(10, &schema);
         data.add_record(record, &header).unwrap();
 
         assert_eq!(format!("{:?}", data.get("alternate")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }, validity: None }))".to_string());
