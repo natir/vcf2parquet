@@ -79,32 +79,34 @@ fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datat
         };
 
         match value.number() {
-            noodles::vcf::header::Number::Count(0) => fields.push(arrow2::datatypes::Field::new(
-                &key,
-                arrow_type,
-                info_optional,
-            )),
-            noodles::vcf::header::Number::Count(1) | noodles::vcf::header::Number::A => fields.push(arrow2::datatypes::Field::new(
-                &key,
-                arrow_type,
-                info_optional,
-            )),
-            noodles::vcf::header::Number::R => fields.push(arrow2::datatypes::Field::new(
-                &key,
-                arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::Count(0 | 1) | noodles::vcf::header::Number::A => fields
+                .push(arrow2::datatypes::Field::new(
                     &key,
                     arrow_type,
                     info_optional,
-                )),2),
+                )),
+            noodles::vcf::header::Number::R => fields.push(arrow2::datatypes::Field::new(
+                &key,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    2,
+                ),
                 info_optional,
             )),
             noodles::vcf::header::Number::Count(n) => fields.push(arrow2::datatypes::Field::new(
                 &key,
-                arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field::new(
-                    &key,
-                    arrow_type,
-                    info_optional,
-                )),n),
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    n,
+                ),
                 false,
             )),
             _ => fields.push(arrow2::datatypes::Field::new(
@@ -145,27 +147,27 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
             };
 
             match value.number() {
-                noodles::vcf::header::Number::Count(0 | 1) | noodles::vcf::header::Number::A  => {
+                noodles::vcf::header::Number::Count(0 | 1) | noodles::vcf::header::Number::A => {
                     fields.push(arrow2::datatypes::Field::new(key, arrow_type, false))
                 }
                 noodles::vcf::header::Number::R => fields.push(arrow2::datatypes::Field::new(
                     &key,
-                    arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field::new(
-                        &key,
-                        arrow_type,
-                        false
-                    )),2),
-                    false
-                )),
-                noodles::vcf::header::Number::Count(n) => fields.push(arrow2::datatypes::Field::new(
-                    &key,
-                    arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field::new(
-                        &key,
-                        arrow_type,
-                        false
-                    )),n),
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                        2,
+                    ),
                     false,
                 )),
+                noodles::vcf::header::Number::Count(n) => {
+                    fields.push(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow2::datatypes::DataType::FixedSizeList(
+                            Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                            n,
+                        ),
+                        false,
+                    ))
+                }
                 _ => fields.push(arrow2::datatypes::Field::new(
                     &key,
                     arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
