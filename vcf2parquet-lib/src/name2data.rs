@@ -46,6 +46,7 @@ impl Name2Data {
         header: &noodles::vcf::Header,
     ) -> std::result::Result<(), arrow2::error::Error> {
         let info = record.info();
+        let format = record.format();
         for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
             for (key, column) in self.0.iter_mut() {
                 if key == "chromosome" {
@@ -223,6 +224,32 @@ impl Name2Data {
                                 },
                             },
                             None => column.push_null(),
+                        },
+                        None => column.push_null(),
+                    }
+                }
+
+                if key.starts_with("format_") {
+                    let format_field = header
+                        .formats()
+                        .get(
+                            &noodles::vcf::record::genotypes::keys::Key::from_str(&key[7..])
+                                .unwrap(),
+                        )
+                        .unwrap();
+
+                    match format.get(
+                        &noodles::vcf::record::genotypes::keys::Key::from_str(&key[7..]).unwrap(),
+                    ) {
+                        Some(value) => match value {
+                            noodles::vcf::record::genotypes::keys::Key::Standard(k) => match k {
+                                noodles::vcf::record::genotypes::keys::key::Standard::Genotype => {}
+                                _ => {}
+                            },
+                            noodles::vcf::record::genotypes::keys::Key::Other(k) => {
+                                column.push_null()
+                            }
+                            _ => {}
                         },
                         None => column.push_null(),
                     }
