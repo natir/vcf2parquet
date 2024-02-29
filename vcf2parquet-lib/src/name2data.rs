@@ -2,8 +2,6 @@
 
 /* std use */
 
-use std::str::FromStr;
-
 /* crate use */
 use arrow2::array::MutableArray;
 use arrow2::array::MutablePrimitiveArray;
@@ -45,66 +43,72 @@ impl Name2Data {
         record: noodles::vcf::Record,
         header: &noodles::vcf::Header,
     ) -> std::result::Result<(), arrow2::error::Error> {
-        let info = record.info();
         for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
             for (key, column) in self.0.iter_mut() {
-                if key == "chromosome" {
-                    column.push_string(record.chromosome().to_string());
-                } else if key == "position" {
-                    column.push_i32(Some(usize::from(record.position()) as i32));
-                } else if key == "identifier" {
-                    column.push_vecstring(
+                match key.as_str() {
+                    "chromosome" => column.push_string(record.chromosome().to_string()),
+                    "position" => column.push_i32(Some(usize::from(record.position()) as i32)),
+                    "identifier" => column.push_vecstring(
                         record.ids().iter().map(|s| Some(s.to_string())).collect(),
-                    )?;
-                } else if key == "reference" {
-                    column.push_string(record.reference_bases().to_string());
-                } else if key == "alternate" {
-                    column.push_string(allele.to_string());
-                } else if key == "quality" {
-                    column.push_f32(record.quality_score().map(|v| v.into()));
-                } else if key == "filter" {
-                    column.push_vecstring(
+                    )?,
+                    "reference" => column.push_string(record.reference_bases().to_string()),
+                    "alternate" => column.push_string(allele.to_string()),
+                    "quality" => column.push_f32(record.quality_score().map(|v| v.into())),
+                    "filter" => column.push_vecstring(
                         record
                             .filters()
                             .iter()
                             .map(|s| Some(s.to_string()))
                             .collect(),
-                    )?;
-                } else if key.starts_with("info_") {
-                    let info_field = header
-                        .infos()
-                        .get(&noodles::vcf::record::info::field::Key::from_str(&key[5..]).unwrap())
-                        .unwrap();
+                    )?,
+                    _ => {}
+                }
+            }
 
-                    match info
-                        .get(&noodles::vcf::record::info::field::Key::from_str(&key[5..]).unwrap())
-                    {
-                        Some(value) => match value {
-                            Some(noodles::vcf::record::info::field::Value::Flag) => {
-                                column.push_bool(Some(true));
-                            }
-                            Some(noodles::vcf::record::info::field::Value::Integer(value)) => {
-                                column.push_i32(Some(*value));
-                            }
-                            Some(noodles::vcf::record::info::field::Value::Float(value)) => {
-                                column.push_f32(Some(*value));
-                            }
-                            Some(noodles::vcf::record::info::field::Value::String(value)) => {
-                                column.push_string(value.to_string());
-                            }
-                            Some(noodles::vcf::record::info::field::Value::Character(value)) => {
-                                column.push_string(value.to_string());
-                            }
-                            Some(noodles::vcf::record::info::field::Value::Array(arr)) => match arr
-                                .clone()//Please tell me why I had to clone here...
-                            {
-                                noodles::vcf::record::info::field::value::Array::Integer(
-                                    array_val,
-                                ) => match info_field.number() {
+            self.add_info(&record, header, alt_id)?;
+            self.add_format(&record, header, alt_id)?;
+        }
+        Ok(())
+    }
+
+    fn add_info(
+        &mut self,
+        record: &noodles::vcf::Record,
+        header: &noodles::vcf::Header,
+        alt_id: usize,
+    ) -> std::result::Result<(), arrow2::error::Error> {
+        let info = record.info();
+
+        for key in header.infos().keys() {
+            let key_name = format!("info_{}", key);
+            let info_def = header.infos().get(key).unwrap();
+            if let Some(column) = self.0.get_mut(&key_name) {
+                match info.get(key) {
+                    Some(value) => match value {
+                        Some(noodles::vcf::record::info::field::Value::Flag) => {
+                            column.push_bool(Some(true));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Integer(value)) => {
+                            column.push_i32(Some(*value));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Float(value)) => {
+                            column.push_f32(Some(*value));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::String(value)) => {
+                            column.push_string(value.to_string());
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Character(value)) => {
+                            column.push_string(value.to_string());
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Array(arr)) => match arr
+                            .clone()
+                        {
+                            noodles::vcf::record::info::field::value::Array::Integer(array_val) => {
+                                match info_def.number() {
                                     noodles::vcf::header::Number::Count(0 | 1) => {
                                         unreachable!(
                                             "Field {} declared as single value but found array",
-                                            &key[5..]
+                                            key
                                         )
                                     }
                                     noodles::vcf::header::Number::Count(_) => {
@@ -122,17 +126,17 @@ impl Name2Data {
                                     noodles::vcf::header::Number::G => {
                                         column.push_veci32(array_val)?;
                                     }
-                                    _ => {
+                                    noodles::vcf::header::Number::Unknown => {
                                         column.push_veci32(array_val)?;
                                     }
-                                },
-                                noodles::vcf::record::info::field::value::Array::Float(
-                                    array_val,
-                                ) => match info_field.number() {
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::Float(array_val) => {
+                                match info_def.number() {
                                     noodles::vcf::header::Number::Count(0 | 1) => {
                                         unreachable!(
                                             "Field {} declared as single value but found array",
-                                            &key[5..]
+                                            key
                                         )
                                     }
                                     noodles::vcf::header::Number::Count(_) => {
@@ -150,295 +154,297 @@ impl Name2Data {
                                     noodles::vcf::header::Number::G => {
                                         column.push_vecf32(array_val)?;
                                     }
-                                    _ => {
+                                    noodles::vcf::header::Number::Unknown => {
                                         column.push_vecf32(array_val)?;
                                     }
-                                },
-                                noodles::vcf::record::info::field::value::Array::String(
-                                    array_val,
-                                ) => match info_field.number() {
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::String(array_val) => {
+                                match info_def.number() {
                                     noodles::vcf::header::Number::Count(0 | 1) => {
                                         unreachable!(
                                             "Field {} declared as single value but found array",
-                                            &key[5..]
+                                            key_name
                                         )
                                     }
                                     noodles::vcf::header::Number::Count(_) => {
                                         column.push_vecstring(array_val)?;
-                                    }
-                                    noodles::vcf::header::Number::A => {
-                                        column.push_string(array_val.get(alt_id).unwrap().clone().unwrap());
-                                    }
-                                    noodles::vcf::header::Number::R => {
-                                        column.push_vecstring(vec![
-                                            Some(array_val.get(0).unwrap().clone().unwrap()),
-                                            Some(
-                                                array_val.get(alt_id).unwrap().clone().unwrap(),
-                                            ),
-                                        ])?;
-                                    }
-                                    noodles::vcf::header::Number::G => {
-                                        column.push_vecstring(array_val)?;
-                                    }
-                                    noodles::vcf::header::Number::Unknown => {
-                                        column.push_vecstring(array_val)?;
-                                    }
-                                },
-                                noodles::vcf::record::info::field::value::Array::Character(
-                                    array_val,
-                                ) => match info_field.number() {
-                                    noodles::vcf::header::Number::Count(0 | 1) => {
-                                        unreachable!(
-                                            "Field {} declared as single value but found array",
-                                            &key[5..]
-                                        )
-                                    }
-                                    noodles::vcf::header::Number::Count(_) => {
-                                        column.push_vecstring(
-                                            array_val
-                                                .iter()
-                                                .map(|s| match s {
-                                                    Some(s) => Some(s.to_string()),
-                                                    None => None,
-                                                })
-                                                .collect::<Vec<Option<String>>>(),
-                                        )?;
                                     }
                                     noodles::vcf::header::Number::A => {
                                         column.push_string(
-                                            array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                            array_val.get(alt_id).unwrap().clone().unwrap(),
                                         );
                                     }
                                     noodles::vcf::header::Number::R => {
                                         column.push_vecstring(vec![
-                                            Some(array_val.get(0).unwrap().unwrap().to_string()),
-                                            Some(
-                                                array_val.get(alt_id).unwrap().unwrap().to_string(),
-                                            ),
+                                            Some(array_val.get(0).unwrap().clone().unwrap()),
+                                            Some(array_val.get(alt_id).unwrap().clone().unwrap()),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
-                                        column.push_vecstring(
-                                            array_val
-                                                .iter()
-                                                .map(|s| match s {
-                                                    Some(s) => Some(s.to_string()),
-                                                    None => None,
-                                                })
-                                                .collect::<Vec<Option<String>>>(),
-                                        )?;
-                                    },
+                                        column.push_vecstring(array_val)?;
+                                    }
                                     noodles::vcf::header::Number::Unknown => {
-                                        column.push_vecstring(
-                                            array_val
-                                                .iter()
-                                                .map(|s| match s {
-                                                    Some(s) => Some(s.to_string()),
-                                                    None => None,
-                                                })
-                                                .collect::<Vec<Option<String>>>(),
-                                        )?;
-                                    },
-                                },
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::Character(
+                                array_val,
+                            ) => match info_def.number() {
+                                noodles::vcf::header::Number::Count(0 | 1) => {
+                                    unreachable!(
+                                        "Field {} declared as single value but found array",
+                                        key_name
+                                    )
+                                }
+                                noodles::vcf::header::Number::Count(_) => {
+                                    column.push_vecstring(
+                                        array_val
+                                            .iter()
+                                            .map(|s| match s {
+                                                Some(s) => Some(s.to_string()),
+                                                None => None,
+                                            })
+                                            .collect::<Vec<Option<String>>>(),
+                                    )?;
+                                }
+                                noodles::vcf::header::Number::A => {
+                                    column.push_string(
+                                        array_val.get(alt_id).unwrap().clone().unwrap().to_string(),
+                                    );
+                                }
+                                noodles::vcf::header::Number::R => {
+                                    column.push_vecstring(vec![
+                                        Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                        Some(array_val.get(alt_id).unwrap().unwrap().to_string()),
+                                    ])?;
+                                }
+                                noodles::vcf::header::Number::G => {
+                                    column.push_vecstring(
+                                        array_val
+                                            .iter()
+                                            .map(|s| match s {
+                                                Some(s) => Some(s.to_string()),
+                                                None => None,
+                                            })
+                                            .collect::<Vec<Option<String>>>(),
+                                    )?;
+                                }
+                                noodles::vcf::header::Number::Unknown => {
+                                    column.push_vecstring(
+                                        array_val
+                                            .iter()
+                                            .map(|s| match s {
+                                                Some(s) => Some(s.to_string()),
+                                                None => None,
+                                            })
+                                            .collect::<Vec<Option<String>>>(),
+                                    )?;
+                                }
                             },
-                            None => column.push_null(),
                         },
                         None => column.push_null(),
-                    }
-                } else if key.starts_with("format_") {
-                    ()
+                    },
+                    None => column.push_null(),
                 }
             }
+        }
+        Ok(())
+    }
 
-            //key: GT
-            for key in header.formats().keys() {
-                //sample: samplename
-                for (idx, sample) in header.sample_names().iter().enumerate() {
-                    let key_name = format!("format_{}_{}", sample, key);
-                    let format_def = header.formats().get(key).unwrap();
-                    if let Some(column) = self.0.get_mut(&key_name) {
-                        if let Some(format_field) = record.genotypes().get_index(idx) {
-                            match format_field.get(key) {
-                                Some(value) => match value {
-                                    Some(
-                                        noodles::vcf::record::genotypes::sample::Value::Integer(
-                                            value,
-                                        ),
-                                    ) => {
-                                        column.push_i32(Some(*value));
-                                    }
-                                    Some(
-                                        noodles::vcf::record::genotypes::sample::Value::Float(
-                                            value,
-                                        ),
-                                    ) => {
-                                        column.push_f32(Some(*value));
-                                    }
-                                    Some(
-                                        noodles::vcf::record::genotypes::sample::Value::String(
-                                            value,
-                                        ),
-                                    ) => {
-                                        column.push_string(value.to_string());
-                                    }
-                                    Some(
-                                        noodles::vcf::record::genotypes::sample::Value::Character(
-                                            value,
-                                        ),
-                                    ) => {
-                                        column.push_string(value.to_string());
-                                    }
-                                    Some(
-                                        noodles::vcf::record::genotypes::sample::Value::Array(arr),
-                                    ) => match arr.clone() {
-                                        noodles::vcf::record::genotypes::sample::value::Array::Integer(
-                                            array_val,
-                                        ) => match format_def.number() {
-                                            noodles::vcf::header::Number::Count(0 | 1) => {
-                                                unreachable!(
-                                                    "Field {} declared as single value but found array",
-                                                    key
-                                                )
-                                            }
-                                            noodles::vcf::header::Number::Count(_) => {
-                                                column.push_veci32(array_val)?;
-                                            }
-                                            noodles::vcf::header::Number::A => {
-                                                column.push_i32(*array_val.get(alt_id).unwrap());
-                                            }
-                                            noodles::vcf::header::Number::R => {
-                                                //TODO: Use push_fixed_size_i32
-                                                column.push_veci32(vec![
-                                                    *array_val.get(0).unwrap(),
-                                                    *array_val.get(alt_id).unwrap(),
-                                                ])?;
-                                            }
-                                            noodles::vcf::header::Number::G => {
-                                                column.push_veci32(array_val)?;
-                                            }
-                                            noodles::vcf::header::Number::Unknown => {
-                                                column.push_veci32(array_val)?;
-                                            }
-                                        },
-                                        noodles::vcf::record::genotypes::sample::value::Array::Float(
-                                            array_val,
-                                        ) => match format_def.number() {
-                                            noodles::vcf::header::Number::Count(0 | 1) => {
-                                                unreachable!(
-                                                    "Field {} declared as single value but found array",
-                                                    key
-                                                )
-                                            }
-                                            noodles::vcf::header::Number::Count(_) => {
-                                                column.push_vecf32(array_val)?;
-                                            }
-                                            noodles::vcf::header::Number::A => {
-                                                column.push_f32(*array_val.get(alt_id).unwrap());
-                                            }
-                                            noodles::vcf::header::Number::R => {
-                                                //TODO: Use push_fixed_size_f32
-                                                column.push_vecf32(vec![
-                                                    *array_val.get(0).unwrap(),
-                                                    *array_val.get(alt_id).unwrap(),
-                                                ])?;
-                                            }
-                                            noodles::vcf::header::Number::G => {
-                                                column.push_vecf32(array_val)?;
-                                            }
-                                            noodles::vcf::header::Number::Unknown => {
-                                                column.push_vecf32(array_val)?;
-                                            }
-                                        },
-                                        noodles::vcf::record::genotypes::sample::value::Array::String(
-                                            array_val,
-                                        ) => match format_def.number() {
-                                            noodles::vcf::header::Number::Count(0 | 1) => {
-                                                unreachable!(
-                                                    "Field {} declared as single value but found array",
-                                                    key_name
-                                                )
-                                            },
-                                            noodles::vcf::header::Number::Count(_) => {
-                                                column.push_vecstring(array_val)?;
-                                            },
-                                            noodles::vcf::header::Number::A => {
-                                                column.push_string(
-                                                    array_val.get(alt_id).unwrap().clone().unwrap(),
-                                                );
-                                            },
-                                            noodles::vcf::header::Number::R => {
-                                                //TODO: Use push_fixed_size_string
-                                                column.push_vecstring(vec![
-                                                    Some(array_val.get(0).unwrap().clone().unwrap()),
-                                                    Some(array_val.get(alt_id).unwrap().clone().unwrap()),
-                                                ])?;
-                                            },
-                                            noodles::vcf::header::Number::G => {
-                                                column.push_vecstring(array_val)?;
-                                            }
-                                            noodles::vcf::header::Number::Unknown => {
-                                                column.push_vecstring(array_val)?;
-                                            }
-                                        },
-                                        noodles::vcf::record::genotypes::sample::value::Array::Character(
-                                            array_val,
-                                        ) => match format_def.number() {
-                                            noodles::vcf::header::Number::Count(0 | 1) => {
-                                                unreachable!(
-                                                    "Field {} declared as single value but found array",
-                                                    key_name
-                                                )
-                                            },
-                                            noodles::vcf::header::Number::Count(_) => {
-                                                column.push_vecstring(
-                                                    array_val
-                                                        .iter()
-                                                        .map(|s| match s {
-                                                            Some(s) => Some(s.to_string()),
-                                                            None => None,
-                                                        })
-                                                        .collect::<Vec<Option<String>>>(),
-                                                )?;
-                                            },
-                                            noodles::vcf::header::Number::A => {
-                                                column.push_string(
-                                                    array_val.get(alt_id).unwrap().clone().unwrap().to_string(),
-                                                );
-                                            },
-                                            noodles::vcf::header::Number::R => {
-                                            },
-                                            noodles::vcf::header::Number::G => {
-                                                column.push_vecstring(
-                                                    array_val
-                                                        .iter()
-                                                        .map(|s| match s {
-                                                            Some(s) => Some(s.to_string()),
-                                                            None => None,
-                                                        })
-                                                        .collect::<Vec<Option<String>>>(),
-                                                )?;
-                                            },
-                                            noodles::vcf::header::Number::Unknown => {
-                                                column.push_vecstring(
-                                                    array_val
-                                                        .iter()
-                                                        .map(|s| match s {
-                                                            Some(s) => Some(s.to_string()),
-                                                            None => None,
-                                                        })
-                                                        .collect::<Vec<Option<String>>>(),
-                                                )?;
-                                            },
-                                        },
-
+    fn add_format(
+        &mut self,
+        record: &noodles::vcf::Record,
+        header: &noodles::vcf::Header,
+        alt_id: usize,
+    ) -> std::result::Result<(), arrow2::error::Error> {
+        for key in header.formats().keys() {
+            for (idx, sample) in header.sample_names().iter().enumerate() {
+                let key_name = format!("format_{}_{}", sample, key);
+                let format_def = header.formats().get(key).unwrap();
+                if let Some(column) = self.0.get_mut(&key_name) {
+                    if let Some(format_field) = record.genotypes().get_index(idx) {
+                        match format_field.get(key) {
+                            Some(value) => match value {
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Integer(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_i32(Some(*value));
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Float(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_f32(Some(*value));
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::String(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_string(value.to_string());
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Character(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_string(value.to_string());
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Array(arr),
+                                ) => match arr.clone() {
+                                    noodles::vcf::record::genotypes::sample::value::Array::Integer(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key
+                                            )
+                                        }
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_veci32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_i32(*array_val.get(alt_id).unwrap());
+                                        }
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_i32
+                                            column.push_veci32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                *array_val.get(alt_id).unwrap(),
+                                            ])?;
+                                        }
+                                        noodles::vcf::header::Number::G => {
+                                            column.push_veci32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_veci32(array_val)?;
+                                        }
                                     },
-                                    None => column.push_null(),
+                                    noodles::vcf::record::genotypes::sample::value::Array::Float(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key
+                                            )
+                                        }
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecf32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_f32(*array_val.get(alt_id).unwrap());
+                                        }
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_f32
+                                            column.push_vecf32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                *array_val.get(alt_id).unwrap(),
+                                            ])?;
+                                        }
+                                        noodles::vcf::header::Number::G => {
+                                            column.push_vecf32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecf32(array_val)?;
+                                        }
+                                    },
+                                    noodles::vcf::record::genotypes::sample::value::Array::String(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key_name
+                                            )
+                                        },
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecstring(array_val)?;
+                                        },
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_string(
+                                                array_val.get(alt_id).unwrap().clone().unwrap(),
+                                            );
+                                        },
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_string
+                                            column.push_vecstring(vec![
+                                                Some(array_val.get(0).unwrap().clone().unwrap()),
+                                                Some(array_val.get(alt_id).unwrap().clone().unwrap()),
+                                            ])?;
+                                        },
+                                        noodles::vcf::header::Number::G => {
+                                            column.push_vecstring(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecstring(array_val)?;
+                                        }
+                                    },
+                                    noodles::vcf::record::genotypes::sample::value::Array::Character(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key_name
+                                            )
+                                        },
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecstring(
+                                                array_val
+                                                    .iter()
+                                                    .map(|s| match s {
+                                                        Some(s) => Some(s.to_string()),
+                                                        None => None,
+                                                    })
+                                                    .collect::<Vec<Option<String>>>(),
+                                            )?;
+                                        },
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_string(
+                                                array_val.get(alt_id).unwrap().clone().unwrap().to_string(),
+                                            );
+                                        },
+                                        noodles::vcf::header::Number::R => {
+                                        },
+                                        noodles::vcf::header::Number::G => {
+                                            column.push_vecstring(
+                                                array_val
+                                                    .iter()
+                                                    .map(|s| match s {
+                                                        Some(s) => Some(s.to_string()),
+                                                        None => None,
+                                                    })
+                                                    .collect::<Vec<Option<String>>>(),
+                                            )?;
+                                        },
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecstring(
+                                                array_val
+                                                    .iter()
+                                                    .map(|s| match s {
+                                                        Some(s) => Some(s.to_string()),
+                                                        None => None,
+                                                    })
+                                                    .collect::<Vec<Option<String>>>(),
+                                            )?;
+                                        },
+                                    },
+
                                 },
                                 None => column.push_null(),
-                            }
-                        } else {
-                            column.push_null();
+                            },
+                            None => column.push_null(),
                         }
+                    } else {
+                        column.push_null();
                     }
                 }
             }
