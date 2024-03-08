@@ -246,7 +246,11 @@ impl Name2Data {
                         },
                         None => column.push_null(),
                     },
-                    None => column.push_null(),
+                    None => if info_def.ty() == noodles::vcf::header::record::value::map::info::Type::Flag {
+                        column.push_bool(Some(false));
+                    } else {
+                        column.push_null();
+                    },
                 }
             }
         }
