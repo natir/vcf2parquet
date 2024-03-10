@@ -417,6 +417,10 @@ impl Name2Data {
                                             );
                                         },
                                         noodles::vcf::header::Number::R => {
+                                            column.push_vecstring(vec![
+                                                Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                                Some(array_val.get(alt_id).unwrap().unwrap().to_string()),
+                                            ])?;
                                         },
                                         noodles::vcf::header::Number::G => {
                                             column.push_vecstring(
