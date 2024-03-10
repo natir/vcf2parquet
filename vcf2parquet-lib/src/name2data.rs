@@ -43,6 +43,7 @@ impl Name2Data {
         record: noodles::vcf::Record,
         header: &noodles::vcf::Header,
     ) -> std::result::Result<(), arrow2::error::Error> {
+        let allele_count = record.alternate_bases().len() + 1;
         for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
             for (key, column) in self.0.iter_mut() {
                 match key.as_str() {
@@ -64,9 +65,8 @@ impl Name2Data {
                     _ => {}
                 }
             }
-
-            self.add_info(&record, header, alt_id)?;
-            self.add_format(&record, header, alt_id)?;
+            self.add_info(&record, header, alt_id, allele_count)?;
+            self.add_format(&record, header, alt_id, allele_count)?;
         }
         Ok(())
     }
@@ -76,6 +76,7 @@ impl Name2Data {
         record: &noodles::vcf::Record,
         header: &noodles::vcf::Header,
         alt_id: usize,
+        allele_count: usize,
     ) -> std::result::Result<(), arrow2::error::Error> {
         let info = record.info();
 
@@ -124,7 +125,32 @@ impl Name2Data {
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
-                                        column.push_veci32(array_val)?;
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_veci32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_veci32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                Some(0),
+                                                *array_val.get(alt_id).unwrap(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
                                     }
                                     noodles::vcf::header::Number::Unknown => {
                                         column.push_veci32(array_val)?;
@@ -152,7 +178,32 @@ impl Name2Data {
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
-                                        column.push_vecf32(array_val)?;
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_vecf32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_vecf32(vec![
+                                                *array_val.get(0).unwrap(),
+                                                Some(0.),
+                                                *array_val.get(alt_id).unwrap(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
                                     }
                                     noodles::vcf::header::Number::Unknown => {
                                         column.push_vecf32(array_val)?;
@@ -182,7 +233,34 @@ impl Name2Data {
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
-                                        column.push_vecstring(array_val)?;
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_vecstring(vec![
+                                                array_val.get(0).unwrap().clone(),
+                                                array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap()
+                                                    .clone(),
+                                                array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap()
+                                                    .clone(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_vecstring(vec![
+                                                array_val.get(0).unwrap().clone(),
+                                                Some(".".to_string()),
+                                                array_val.get(alt_id).unwrap().clone(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
                                     }
                                     noodles::vcf::header::Number::Unknown => {
                                         column.push_vecstring(array_val)?;
@@ -221,15 +299,40 @@ impl Name2Data {
                                     ])?;
                                 }
                                 noodles::vcf::header::Number::G => {
-                                    column.push_vecstring(
-                                        array_val
-                                            .iter()
-                                            .map(|s| match s {
-                                                Some(s) => Some(s.to_string()),
-                                                None => None,
-                                            })
-                                            .collect::<Vec<Option<String>>>(),
-                                    )?;
+                                    if array_val.len() == (allele_count * (allele_count + 1) / 2) {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                            Some(
+                                                array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
+                                            ),
+                                            Some(
+                                                array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
+                                            ),
+                                        ])?;
+                                    } else if array_val.len() == allele_count {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                            Some(".".to_string()),
+                                            Some(
+                                                array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                            ),
+                                        ])?;
+                                    } else {
+                                        eprintln!(
+                                            "Field {} declared as G but found array of size {}",
+                                            key,
+                                            array_val.len()
+                                        );
+                                        column.push_null();
+                                    }
                                 }
                                 noodles::vcf::header::Number::Unknown => {
                                     column.push_vecstring(
@@ -246,11 +349,15 @@ impl Name2Data {
                         },
                         None => column.push_null(),
                     },
-                    None => if info_def.ty() == noodles::vcf::header::record::value::map::info::Type::Flag {
-                        column.push_bool(Some(false));
-                    } else {
-                        column.push_null();
-                    },
+                    None => {
+                        if info_def.ty()
+                            == noodles::vcf::header::record::value::map::info::Type::Flag
+                        {
+                            column.push_bool(Some(false));
+                        } else {
+                            column.push_null();
+                        }
+                    }
                 }
             }
         }
@@ -262,6 +369,7 @@ impl Name2Data {
         record: &noodles::vcf::Record,
         header: &noodles::vcf::Header,
         alt_id: usize,
+        allele_count: usize,
     ) -> std::result::Result<(), arrow2::error::Error> {
         for key in header.formats().keys() {
             for (idx, sample) in header.sample_names().iter().enumerate() {
@@ -325,7 +433,32 @@ impl Name2Data {
                                             ])?;
                                         }
                                         noodles::vcf::header::Number::G => {
-                                            column.push_veci32(array_val)?;
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_veci32(vec![
+                                                    *array_val.get(0).unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_veci32(vec![
+                                                    *array_val.get(0).unwrap(),
+                                                    Some(0),
+                                                    *array_val.get(alt_id).unwrap(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
                                         }
                                         noodles::vcf::header::Number::Unknown => {
                                             column.push_veci32(array_val)?;
@@ -354,7 +487,32 @@ impl Name2Data {
                                             ])?;
                                         }
                                         noodles::vcf::header::Number::G => {
-                                            column.push_vecf32(array_val)?;
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_vecf32(vec![
+                                                    *array_val.get(0).unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecf32(vec![
+                                                    *array_val.get(0).unwrap(),
+                                                    Some(0.),
+                                                    *array_val.get(alt_id).unwrap(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
                                         }
                                         noodles::vcf::header::Number::Unknown => {
                                             column.push_vecf32(array_val)?;
@@ -385,7 +543,34 @@ impl Name2Data {
                                             ])?;
                                         },
                                         noodles::vcf::header::Number::G => {
-                                            column.push_vecstring(array_val)?;
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_vecstring(vec![
+                                                    array_val.get(0).unwrap().clone(),
+                                                    array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap()
+                                                        .clone(),
+                                                    array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap()
+                                                        .clone(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecstring(vec![
+                                                    array_val.get(0).unwrap().clone(),
+                                                    Some(".".to_string()),
+                                                    array_val.get(alt_id).unwrap().clone(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
                                         }
                                         noodles::vcf::header::Number::Unknown => {
                                             column.push_vecstring(array_val)?;
@@ -423,16 +608,42 @@ impl Name2Data {
                                             ])?;
                                         },
                                         noodles::vcf::header::Number::G => {
-                                            column.push_vecstring(
-                                                array_val
-                                                    .iter()
-                                                    .map(|s| match s {
-                                                        Some(s) => Some(s.to_string()),
-                                                        None => None,
-                                                    })
-                                                    .collect::<Vec<Option<String>>>(),
-                                            )?;
-                                        },
+                                            if array_val.len() == (allele_count * (allele_count + 1) / 2) {
+                                                column.push_vecstring(vec![
+                                                    Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                                    Some(
+                                                        array_val
+                                                            .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                            .unwrap()
+                                                            .unwrap()
+                                                            .to_string(),
+                                                    ),
+                                                    Some(
+                                                        array_val
+                                                            .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                            .unwrap()
+                                                            .unwrap()
+                                                            .to_string(),
+                                                    ),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecstring(vec![
+                                                    Some(array_val.get(0).unwrap().unwrap().to_string()),
+                                                    Some(".".to_string()),
+                                                    Some(
+                                                        array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                                    ),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
+                                        }
+                                        ,
                                         noodles::vcf::header::Number::Unknown => {
                                             column.push_vecstring(
                                                 array_val

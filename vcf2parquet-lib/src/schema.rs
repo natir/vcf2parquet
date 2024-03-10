@@ -109,7 +109,19 @@ fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datat
                 ),
                 false,
             )),
-            _ => fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::G => fields.push(arrow2::datatypes::Field::new(
+                &key,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    3,
+                ),
+                false,
+            )),
+            noodles::vcf::header::Number::Unknown => fields.push(arrow2::datatypes::Field::new(
                 &key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
                     &key,
@@ -168,13 +180,23 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
                         false,
                     ))
                 }
-                _ => fields.push(arrow2::datatypes::Field::new(
+                noodles::vcf::header::Number::G => fields.push(arrow2::datatypes::Field::new(
                     &key,
-                    arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                        &key, arrow_type, false,
-                    ))),
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                        3,
+                    ),
                     false,
                 )),
+                noodles::vcf::header::Number::Unknown => {
+                    fields.push(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                            &key, arrow_type, false,
+                        ))),
+                        false,
+                    ))
+                }
             }
         }
     }
