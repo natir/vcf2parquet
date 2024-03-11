@@ -359,16 +359,20 @@ impl Name2Data {
                                             ref field_type,
                                             fixed_size,
                                         ) => match &field_type.data_type() {
-                                            arrow2::datatypes::DataType::Boolean => column
-                                                .push_vecbool(vec![None; fixed_size as usize])?,
-                                            arrow2::datatypes::DataType::Int32 => column
-                                                .push_veci32(vec![None; fixed_size as usize])?,
+                                            arrow2::datatypes::DataType::Boolean => {
+                                                column.push_vecbool(vec![None; fixed_size])?
+                                            }
+                                            arrow2::datatypes::DataType::Int32 => {
+                                                column.push_veci32(vec![None; fixed_size])?
+                                            }
 
-                                            arrow2::datatypes::DataType::Float32 => column
-                                                .push_vecf32(vec![None; fixed_size as usize])?,
+                                            arrow2::datatypes::DataType::Float32 => {
+                                                column.push_vecf32(vec![None; fixed_size])?
+                                            }
 
-                                            arrow2::datatypes::DataType::Utf8 => column
-                                                .push_vecstring(vec![None; fixed_size as usize])?,
+                                            arrow2::datatypes::DataType::Utf8 => {
+                                                column.push_vecstring(vec![None; fixed_size])?
+                                            }
 
                                             _ => column.push_null(),
                                         },
@@ -685,22 +689,24 @@ impl Name2Data {
                                     arrow2::datatypes::DataType::FixedSizeList(
                                         ref field_type,
                                         fixed_size,
-                                    ) => {
-                                        match &field_type.data_type() {
-                                            arrow2::datatypes::DataType::Boolean => column
-                                                .push_vecbool(vec![None; fixed_size as usize])?,
-                                            arrow2::datatypes::DataType::Int32 => column
-                                                .push_veci32(vec![None; fixed_size as usize])?,
+                                    ) => match &field_type.data_type() {
+                                        arrow2::datatypes::DataType::Boolean => {
+                                            column.push_vecbool(vec![None; fixed_size])?
+                                        }
+                                        arrow2::datatypes::DataType::Int32 => {
+                                            column.push_veci32(vec![None; fixed_size])?
+                                        }
 
-                                            arrow2::datatypes::DataType::Float32 => column
-                                                .push_vecf32(vec![None; fixed_size as usize])?,
+                                        arrow2::datatypes::DataType::Float32 => {
+                                            column.push_vecf32(vec![None; fixed_size])?
+                                        }
 
-                                            arrow2::datatypes::DataType::Utf8 => column
-                                                .push_vecstring(vec![None; fixed_size as usize])?,
+                                        arrow2::datatypes::DataType::Utf8 => {
+                                            column.push_vecstring(vec![None; fixed_size])?
+                                        }
 
                                             _ => column.push_null(),
-                                        }
-                                    }
+                                    },
                                     _ => column.push_null(),
                                 }
                             }
