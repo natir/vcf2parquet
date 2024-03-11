@@ -42,6 +42,7 @@ impl Name2Data {
         &mut self,
         record: noodles::vcf::Record,
         header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
     ) -> std::result::Result<(), arrow2::error::Error> {
         let allele_count = record.alternate_bases().len() + 1;
         for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
@@ -65,8 +66,8 @@ impl Name2Data {
                     _ => {}
                 }
             }
-            self.add_info(&record, header, alt_id, allele_count)?;
-            self.add_format(&record, header, alt_id, allele_count)?;
+            self.add_info(&record, header, schema, alt_id, allele_count)?;
+            self.add_format(&record, header, schema, alt_id, allele_count)?;
         }
         Ok(())
     }
@@ -75,6 +76,7 @@ impl Name2Data {
         &mut self,
         record: &noodles::vcf::Record,
         header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
         alt_id: usize,
         allele_count: usize,
     ) -> std::result::Result<(), arrow2::error::Error> {
@@ -349,7 +351,31 @@ impl Name2Data {
                         {
                             column.push_bool(Some(false));
                         } else {
-                            column.push_null();
+                            //Handle missing info field, only matters for FixedSizeList
+                            for field in schema.fields.iter() {
+                                if field.name == key_name {
+                                    match field.data_type {
+                                        arrow2::datatypes::DataType::FixedSizeList(
+                                            ref field_type,
+                                            fixed_size,
+                                        ) => match &field_type.data_type() {
+                                            arrow2::datatypes::DataType::Boolean => column
+                                                .push_vecbool(vec![None; fixed_size as usize])?,
+                                            arrow2::datatypes::DataType::Int32 => column
+                                                .push_veci32(vec![None; fixed_size as usize])?,
+
+                                            arrow2::datatypes::DataType::Float32 => column
+                                                .push_vecf32(vec![None; fixed_size as usize])?,
+
+                                            arrow2::datatypes::DataType::Utf8 => column
+                                                .push_vecstring(vec![None; fixed_size as usize])?,
+
+                                            _ => column.push_null(),
+                                        },
+                                        _ => column.push_null(), //Otherwise, just push null
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -362,6 +388,7 @@ impl Name2Data {
         &mut self,
         record: &noodles::vcf::Record,
         header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
         alt_id: usize,
         allele_count: usize,
     ) -> std::result::Result<(), arrow2::error::Error> {
@@ -651,7 +678,33 @@ impl Name2Data {
                             None => column.push_null(),
                         }
                     } else {
-                        column.push_null();
+                        //Handle missing format field, only matters for FixedSizeList
+                        for field in schema.fields.iter() {
+                            if field.name == key_name {
+                                match field.data_type {
+                                    arrow2::datatypes::DataType::FixedSizeList(
+                                        ref field_type,
+                                        fixed_size,
+                                    ) => {
+                                        match &field_type.data_type() {
+                                            arrow2::datatypes::DataType::Boolean => column
+                                                .push_vecbool(vec![None; fixed_size as usize])?,
+                                            arrow2::datatypes::DataType::Int32 => column
+                                                .push_veci32(vec![None; fixed_size as usize])?,
+
+                                            arrow2::datatypes::DataType::Float32 => column
+                                                .push_vecf32(vec![None; fixed_size as usize])?,
+
+                                            arrow2::datatypes::DataType::Utf8 => column
+                                                .push_vecstring(vec![None; fixed_size as usize])?,
+
+                                            _ => column.push_null(),
+                                        }
+                                    }
+                                    _ => column.push_null(),
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -978,7 +1031,7 @@ mod tests {
         let mut iterator = reader.records(&header);
         let record = iterator.next().unwrap().unwrap();
 
-        data.add_record(record, &header).unwrap();
+        data.add_record(record, &header, &schema).unwrap();
         assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 84] }, validity: None }))".to_string());
 
         assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [49, 49] }, validity: None }))".to_string());
@@ -1044,7 +1097,7 @@ mod tests {
 
         let record = iterator.next().unwrap().unwrap();
         let mut data = Name2Data::new(10, &schema);
-        data.add_record(record, &header).unwrap();
+        data.add_record(record, &header, &schema).unwrap();
 
         assert_eq!(format!("{:?}", data.get("alternate")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }, validity: None }))".to_string());
         assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 6]), values: [113, 53, 44, 113, 49, 48] }, validity: None }, validity: None }))".to_string());

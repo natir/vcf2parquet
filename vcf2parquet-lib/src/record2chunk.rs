@@ -66,7 +66,7 @@ where
         for _ in 0..self.length {
             match self.inner.next() {
                 Some(Ok(record)) => {
-                    if let Err(e) = name2data.add_record(record, &self.header) {
+                    if let Err(e) = name2data.add_record(record, &self.header, &self.schema) {
                         return Some(Err(e));
                     }
                 }
