@@ -789,9 +789,8 @@ impl ColumnData {
         }
     }
 
-    pub fn is_empty(&self) -> bool
-    {
-        self.len()==0
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// Add a boolean value in array, if it's not a boolean array failled
