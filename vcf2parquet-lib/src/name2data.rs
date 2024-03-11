@@ -6,6 +6,7 @@
 use arrow2::array::MutableArray;
 use arrow2::array::MutablePrimitiveArray;
 use arrow2::array::TryPush;
+use noodles::vcf::record::genotypes::sample::value::genotype::allele::Phasing;
 
 /* project use */
 
@@ -423,7 +424,42 @@ impl Name2Data {
                                         value,
                                     ),
                                 ) => {
-                                    column.push_string(value.to_string());
+                                    if key.to_string()=="GT" {
+                                        let mut gt_str="".to_string();
+                                        if let Some(Ok(gt)) = format_field.genotype()
+                                        {
+                                            for (i,allele) in gt.iter().enumerate() {
+                                                let (position, phasing) = (allele.position(), allele.phasing());
+                                                match position {
+                                                    Some(a) if a == alt_id+1 =>{
+                                                        gt_str.push('1');
+                                                    }
+                                                    Some(0)=>{
+                                                        gt_str.push('0');
+                                                    }
+                                                    Some(_) =>{
+                                                        gt_str.push('.');
+                                                    }
+                                                    None=>{
+                                                        gt_str.push('.');
+                                                    }
+                                                }
+                                                if i < gt.len() - 1 {
+                                                    gt_str.push(match phasing {
+                                                        Phasing::Phased => '|',
+                                                        Phasing::Unphased => '/',
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            eprintln!("Should be unreachable");
+                                            gt_str.push_str("./.");
+                                        }
+                                        column.push_string(gt_str);
+                                    } else {
+                                        column.push_string(value.to_string());
+                                    }
                                 }
                                 Some(
                                     noodles::vcf::record::genotypes::sample::Value::Character(
@@ -705,7 +741,7 @@ impl Name2Data {
                                             column.push_vecstring(vec![None; fixed_size])?
                                         }
 
-                                            _ => column.push_null(),
+                                        _ => column.push_null(),
                                     },
                                     _ => column.push_null(),
                                 }
