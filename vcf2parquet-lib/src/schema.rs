@@ -121,6 +121,7 @@ fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datat
                 ),
                 false,
             )),
+
             noodles::vcf::header::Number::Unknown => fields.push(arrow2::datatypes::Field::new(
                 &key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
@@ -188,6 +189,7 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
                     ),
                     false,
                 )),
+
                 noodles::vcf::header::Number::Unknown => {
                     fields.push(arrow2::datatypes::Field::new(
                         &key,
@@ -262,90 +264,7 @@ mod tests {
         ];
 
     static ref INFO_COLS: Vec<arrow2::datatypes::Field> = vec![
-            arrow2::datatypes::Field {
-                name: "info_Flag".to_string(),
-                data_type: arrow2::datatypes::DataType::Boolean,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info1".to_string(),
-                data_type: arrow2::datatypes::DataType::Float32,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_fixed".to_string(),
-                data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_Info_fixed".to_string(),
-                        data_type: arrow2::datatypes::DataType::Int32,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                ),3),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_A".to_string(),
-                data_type: arrow2::datatypes::DataType::Int32,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_RString".to_string(),
-                data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_Info_RString".to_string(),
-                        data_type: arrow2::datatypes::DataType::Utf8,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                ),2),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_RChar".to_string(),
-                data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_Info_RChar".to_string(),
-                        data_type: arrow2::datatypes::DataType::Utf8,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                ),2),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_G".to_string(),
-                data_type: arrow2::datatypes::DataType::List(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_Info_G".to_string(),
-                        data_type: arrow2::datatypes::DataType::Int32,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                )),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_Info_.".to_string(),
-                data_type: arrow2::datatypes::DataType::List(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_Info_.".to_string(),
-                        data_type: arrow2::datatypes::DataType::Int32,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                )),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            }
-    ];
+        arrow2::datatypes::Field { name: "info_Flag".to_string(), data_type: arrow2::datatypes::DataType::Boolean, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info1".to_string(), data_type: arrow2::datatypes::DataType::Float32, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_fixed".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_fixed".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 3), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_A".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_RString".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_RString".to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 2), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_RChar".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_RChar".to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 2), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_G".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_G".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 3), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_.".to_string(), data_type: arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field { name: "info_Info_.".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() })), is_nullable: false, metadata: std::collections::BTreeMap::new() }];
 
     static ref FORMAT_COLS: Vec<arrow2::datatypes::Field> = vec![
                 arrow2::datatypes::Field {
@@ -388,14 +307,14 @@ mod tests {
                 },
                 arrow2::datatypes::Field {
                     name: "format_first_Format_G".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
                             name: "format_first_Format_G".to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),3),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
@@ -445,14 +364,14 @@ mod tests {
                 },
                 arrow2::datatypes::Field {
                     name: "format_second_Format_G".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
                             name: "format_second_Format_G".to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),3),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
