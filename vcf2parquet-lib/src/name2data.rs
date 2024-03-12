@@ -428,7 +428,7 @@ impl Name2Data {
                                         let mut gt_str = String::with_capacity(format_field.get(key).unwrap().unwrap().to_string().len());
                                         if let Some(Ok(gt)) = format_field.genotype()
                                         {
-                                            gt.iter().for_each(|allele| {
+                                            gt.iter().enumerate().for_each(|(i,allele)| {
                                                 let (position, phasing) = (allele.position(), allele.phasing());
                                                 match position {
                                                     Some(a) if a == alt_id + 1 => {
@@ -444,10 +444,12 @@ impl Name2Data {
                                                         gt_str.push('.');
                                                     }
                                                 }
+                                                if i < gt.len() - 1 {
                                                 gt_str.push(match phasing {
                                                     Phasing::Phased => '|',
                                                     Phasing::Unphased => '/',
                                                 });
+                                                }
                                             });
                                         }
                                         else {
