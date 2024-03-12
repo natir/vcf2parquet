@@ -124,7 +124,7 @@ impl Name2Data {
                                     noodles::vcf::header::Number::R => {
                                         column.push_veci32(vec![
                                             *array_val.first().unwrap(),
-                                            *array_val.get(alt_id).unwrap(),
+                                            *array_val.get(alt_id + 1).unwrap(),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
@@ -144,7 +144,7 @@ impl Name2Data {
                                             column.push_veci32(vec![
                                                 *array_val.first().unwrap(),
                                                 Some(0),
-                                                *array_val.get(alt_id).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         } else {
                                             eprintln!(
@@ -177,7 +177,7 @@ impl Name2Data {
                                     noodles::vcf::header::Number::R => {
                                         column.push_vecf32(vec![
                                             *array_val.first().unwrap(),
-                                            *array_val.get(alt_id).unwrap(),
+                                            *array_val.get(alt_id + 1).unwrap(),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
@@ -197,7 +197,7 @@ impl Name2Data {
                                             column.push_vecf32(vec![
                                                 *array_val.first().unwrap(),
                                                 Some(0.),
-                                                *array_val.get(alt_id).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         } else {
                                             eprintln!(
@@ -232,7 +232,9 @@ impl Name2Data {
                                     noodles::vcf::header::Number::R => {
                                         column.push_vecstring(vec![
                                             Some(array_val.first().unwrap().clone().unwrap()),
-                                            Some(array_val.get(alt_id).unwrap().clone().unwrap()),
+                                            Some(
+                                                array_val.get(alt_id + 1).unwrap().clone().unwrap(),
+                                            ),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
@@ -254,7 +256,7 @@ impl Name2Data {
                                             column.push_vecstring(vec![
                                                 array_val.first().unwrap().clone(),
                                                 Some(".".to_string()),
-                                                array_val.get(alt_id).unwrap().clone(),
+                                                array_val.get(alt_id + 1).unwrap().clone(),
                                             ])?;
                                         } else {
                                             eprintln!(
@@ -295,7 +297,9 @@ impl Name2Data {
                                 noodles::vcf::header::Number::R => {
                                     column.push_vecstring(vec![
                                         Some(array_val.first().unwrap().unwrap().to_string()),
-                                        Some(array_val.get(alt_id).unwrap().unwrap().to_string()),
+                                        Some(
+                                            array_val.get(alt_id + 1).unwrap().unwrap().to_string(),
+                                        ),
                                     ])?;
                                 }
                                 noodles::vcf::header::Number::G => {
@@ -322,7 +326,11 @@ impl Name2Data {
                                             Some(array_val.first().unwrap().unwrap().to_string()),
                                             Some(".".to_string()),
                                             Some(
-                                                array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                                array_val
+                                                    .get(alt_id + 1)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
                                             ),
                                         ])?;
                                     } else {
@@ -490,7 +498,7 @@ impl Name2Data {
                                             //TODO: Use push_fixed_size_i32
                                             column.push_veci32(vec![
                                                 *array_val.first().unwrap(),
-                                                *array_val.get(alt_id).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         }
                                         noodles::vcf::header::Number::G => {
@@ -510,7 +518,7 @@ impl Name2Data {
                                                 column.push_veci32(vec![
                                                     *array_val.first().unwrap(),
                                                     Some(0),
-                                                    *array_val.get(alt_id).unwrap(),
+                                                    *array_val.get(alt_id + 1).unwrap(),
                                                 ])?;
                                             } else {
                                                 eprintln!(
@@ -544,7 +552,7 @@ impl Name2Data {
                                             //TODO: Use push_fixed_size_f32
                                             column.push_vecf32(vec![
                                                 *array_val.first().unwrap(),
-                                                *array_val.get(alt_id).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         }
                                         noodles::vcf::header::Number::G => {
@@ -564,7 +572,7 @@ impl Name2Data {
                                                 column.push_vecf32(vec![
                                                     *array_val.first().unwrap(),
                                                     Some(0.),
-                                                    *array_val.get(alt_id).unwrap(),
+                                                    *array_val.get(alt_id + 1).unwrap(),
                                                 ])?;
                                             } else {
                                                 eprintln!(
@@ -600,7 +608,7 @@ impl Name2Data {
                                             //TODO: Use push_fixed_size_string
                                             column.push_vecstring(vec![
                                                 Some(array_val.first().unwrap().clone().unwrap()),
-                                                Some(array_val.get(alt_id).unwrap().clone().unwrap()),
+                                                Some(array_val.get(alt_id + 1).unwrap().clone().unwrap()),
                                             ])?;
                                         },
                                         noodles::vcf::header::Number::G => {
@@ -622,7 +630,7 @@ impl Name2Data {
                                                 column.push_vecstring(vec![
                                                     array_val.first().unwrap().clone(),
                                                     Some(".".to_string()),
-                                                    array_val.get(alt_id).unwrap().clone(),
+                                                    array_val.get(alt_id + 1).unwrap().clone(),
                                                 ])?;
                                             } else {
                                                 eprintln!(
@@ -662,7 +670,7 @@ impl Name2Data {
                                         noodles::vcf::header::Number::R => {
                                             column.push_vecstring(vec![
                                                 Some(array_val.first().unwrap().unwrap().to_string()),
-                                                Some(array_val.get(alt_id).unwrap().unwrap().to_string()),
+                                                Some(array_val.get(alt_id + 1).unwrap().unwrap().to_string()),
                                             ])?;
                                         },
                                         noodles::vcf::header::Number::G => {
@@ -689,7 +697,7 @@ impl Name2Data {
                                                     Some(array_val.first().unwrap().unwrap().to_string()),
                                                     Some(".".to_string()),
                                                     Some(
-                                                        array_val.get(alt_id).unwrap().unwrap().to_string(),
+                                                        array_val.get(alt_id + 1).unwrap().unwrap().to_string(),
                                                     ),
                                                 ])?;
                                             } else {
