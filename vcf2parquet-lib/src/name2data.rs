@@ -368,9 +368,6 @@ impl Name2Data {
                                             ref field_type,
                                             fixed_size,
                                         ) => match &field_type.data_type() {
-                                            arrow2::datatypes::DataType::Boolean => {
-                                                column.push_vecbool(vec![None; fixed_size])?
-                                            }
                                             arrow2::datatypes::DataType::Int32 => {
                                                 column.push_veci32(vec![None; fixed_size])?
                                             }
@@ -734,9 +731,6 @@ impl Name2Data {
                                         ref field_type,
                                         fixed_size,
                                     ) => match &field_type.data_type() {
-                                        arrow2::datatypes::DataType::Boolean => {
-                                            column.push_vecbool(vec![None; fixed_size])?
-                                        }
                                         arrow2::datatypes::DataType::Int32 => {
                                             column.push_veci32(vec![None; fixed_size])?
                                         }
