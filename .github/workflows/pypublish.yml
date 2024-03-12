@@ -34,6 +34,7 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
+          working-directory: vcf2parquet-py
           manylinux: auto
       - name: Upload wheels
         uses: actions/upload-artifact@v3
@@ -58,6 +59,7 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
+          working-directory: vcf2parquet-py
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
@@ -80,6 +82,7 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
+          working-directory: vcf2parquet-py
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:
