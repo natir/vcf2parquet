@@ -425,13 +425,13 @@ impl Name2Data {
                                     ),
                                 ) => {
                                     if key.to_string()=="GT" {
-                                        let mut gt_str="".to_string();
+                                        let mut gt_str = String::with_capacity(format_field.get(key).unwrap().unwrap().to_string().len());
                                         if let Some(Ok(gt)) = format_field.genotype()
                                         {
-                                            for (i,allele) in gt.iter().enumerate() {
+                                            gt.iter().for_each(|allele| {
                                                 let (position, phasing) = (allele.position(), allele.phasing());
                                                 match position {
-                                                    Some(a) if a == alt_id+1 =>{
+                                                    Some(a) if a == alt_id + 1 => {
                                                         gt_str.push('1');
                                                     }
                                                     Some(0)=>{
@@ -444,13 +444,11 @@ impl Name2Data {
                                                         gt_str.push('.');
                                                     }
                                                 }
-                                                if i < gt.len() - 1 {
-                                                    gt_str.push(match phasing {
-                                                        Phasing::Phased => '|',
-                                                        Phasing::Unphased => '/',
-                                                    });
-                                                }
-                                            }
+                                                gt_str.push(match phasing {
+                                                    Phasing::Phased => '|',
+                                                    Phasing::Unphased => '/',
+                                                });
+                                            });
                                         }
                                         else {
                                             eprintln!("Should be unreachable");
