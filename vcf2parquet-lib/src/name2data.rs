@@ -430,7 +430,7 @@ impl Name2Data {
                                     ),
                                 ) => {
                                     if key.to_string()=="GT" {
-                                        let mut gt_str = String::with_capacity(format_field.get(key).unwrap().unwrap().to_string().len());
+                                        let mut gt_str = String::with_capacity(32);//Arbitrary capacity
                                         if let Some(Ok(gt)) = format_field.genotype()
                                         {
                                             gt.iter().enumerate().for_each(|(i,allele)| {
