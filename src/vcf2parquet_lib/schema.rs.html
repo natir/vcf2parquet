@@ -376,6 +376,56 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Construct parquet schema corresponding to vcf
 
 </span><span class="comment">/* std use */
@@ -418,15 +468,7 @@
             <span class="bool-val">false</span>,
         ),
         arrow2::datatypes::Field::new(<span class="string">"reference"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
-        arrow2::datatypes::Field::new(
-            <span class="string">"alternate"</span>,
-            arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                <span class="string">"alternate"</span>,
-                arrow2::datatypes::DataType::Utf8,
-                <span class="bool-val">false</span>,
-            ))),
-            <span class="bool-val">false</span>,
-        ),
+        arrow2::datatypes::Field::new(<span class="string">"alternate"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
         arrow2::datatypes::Field::new(<span class="string">"quality"</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
         arrow2::datatypes::Field::new(
             <span class="string">"filter"</span>,
@@ -465,17 +507,50 @@
         };
 
         <span class="kw">match </span>value.number() {
-            noodles::vcf::header::Number::Count(<span class="number">0</span>) =&gt; fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>) | noodles::vcf::header::Number::A =&gt; fields
+                .push(arrow2::datatypes::Field::new(
+                    <span class="kw-2">&amp;</span>key,
+                    arrow_type,
+                    info_optional,
+                )),
+            noodles::vcf::header::Number::R =&gt; fields.push(arrow2::datatypes::Field::new(
                 <span class="kw-2">&amp;</span>key,
-                arrow_type,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        <span class="kw-2">&amp;</span>key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    <span class="number">2</span>,
+                ),
                 info_optional,
             )),
-            noodles::vcf::header::Number::Count(<span class="number">1</span>) =&gt; fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::Count(n) =&gt; fields.push(arrow2::datatypes::Field::new(
                 <span class="kw-2">&amp;</span>key,
-                arrow_type,
-                info_optional,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        <span class="kw-2">&amp;</span>key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    n,
+                ),
+                <span class="bool-val">false</span>,
             )),
-            <span class="kw">_ </span>=&gt; fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::G =&gt; fields.push(arrow2::datatypes::Field::new(
+                <span class="kw-2">&amp;</span>key,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        <span class="kw-2">&amp;</span>key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    <span class="number">3</span>,
+                ),
+                <span class="bool-val">false</span>,
+            )),
+
+            noodles::vcf::header::Number::Unknown =&gt; fields.push(arrow2::datatypes::Field::new(
                 <span class="kw-2">&amp;</span>key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
                     <span class="kw-2">&amp;</span>key,
@@ -513,19 +588,45 @@
             };
 
             <span class="kw">match </span>value.number() {
-                noodles::vcf::header::Number::Count(<span class="number">0</span>) =&gt; {
+                noodles::vcf::header::Number::Count(<span class="number">0 </span>| <span class="number">1</span>) | noodles::vcf::header::Number::A =&gt; {
                     fields.push(arrow2::datatypes::Field::new(key, arrow_type, <span class="bool-val">false</span>))
                 }
-                noodles::vcf::header::Number::Count(<span class="number">1</span>) =&gt; {
-                    fields.push(arrow2::datatypes::Field::new(key, arrow_type, <span class="bool-val">false</span>))
-                }
-                <span class="kw">_ </span>=&gt; fields.push(arrow2::datatypes::Field::new(
+                noodles::vcf::header::Number::R =&gt; fields.push(arrow2::datatypes::Field::new(
                     <span class="kw-2">&amp;</span>key,
-                    arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                        <span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>,
-                    ))),
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(<span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>)),
+                        <span class="number">2</span>,
+                    ),
                     <span class="bool-val">false</span>,
                 )),
+                noodles::vcf::header::Number::Count(n) =&gt; {
+                    fields.push(arrow2::datatypes::Field::new(
+                        <span class="kw-2">&amp;</span>key,
+                        arrow2::datatypes::DataType::FixedSizeList(
+                            Box::new(arrow2::datatypes::Field::new(<span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>)),
+                            n,
+                        ),
+                        <span class="bool-val">false</span>,
+                    ))
+                }
+                noodles::vcf::header::Number::G =&gt; fields.push(arrow2::datatypes::Field::new(
+                    <span class="kw-2">&amp;</span>key,
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(<span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>)),
+                        <span class="number">3</span>,
+                    ),
+                    <span class="bool-val">false</span>,
+                )),
+
+                noodles::vcf::header::Number::Unknown =&gt; {
+                    fields.push(arrow2::datatypes::Field::new(
+                        <span class="kw-2">&amp;</span>key,
+                        arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                            <span class="kw-2">&amp;</span>key, arrow_type, <span class="bool-val">false</span>,
+                        ))),
+                        <span class="bool-val">false</span>,
+                    ))
+                }
             }
         }
     }
@@ -544,15 +645,20 @@
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=&lt;ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\"&gt;
-##INFO=&lt;ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\"&gt;
-##INFO=&lt;ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\"&gt;
-##INFO=&lt;ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\"&gt;
-##INFO=&lt;ID=CLNVC,Number=2,Type=String,Description=\"Variant type\"&gt;
-##FORMAT=&lt;ID=AB,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\"&gt;
-##FORMAT=&lt;ID=DC,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\"&gt;
-##FORMAT=&lt;ID=GE,Number=1,Type=Character,Description=\"Genotype Quality\"&gt;
-##FORMAT=&lt;ID=GC,Number=3,Type=String,Description=\"Genotype\"&gt;
+##INFO=&lt;ID=Flag,Number=0,Type=Flag,Description=\"flag\"&gt;
+##INFO=&lt;ID=Info1,Number=1,Type=Float,Description=\"1 float\"&gt;
+##INFO=&lt;ID=Info_fixed,Number=3,Type=Integer,Description=\"3 integer\"&gt;
+##INFO=&lt;ID=Info_A,Number=A,Type=Integer,Description=\"A integer\"&gt;
+##INFO=&lt;ID=Info_RString,Number=R,Type=Character,Description=\"R character\"&gt;
+##INFO=&lt;ID=Info_RChar,Number=R,Type=String,Description=\"R string\"&gt;
+##INFO=&lt;ID=Info_G,Number=G,Type=Integer,Description=\"G integer\"&gt;
+##INFO=&lt;ID=Info_.,Number=.,Type=Integer,Description=\"Unknown integer\"&gt;
+##FORMAT=&lt;ID=Format_1,Number=1,Type=Integer,Description=\"1 integer\"&gt;
+##FORMAT=&lt;ID=Format_fixed,Number=4,Type=Float,Description=\"4 float\"&gt;
+##FORMAT=&lt;ID=Format_A,Number=A,Type=String,Description=\"A string\"&gt;
+##FORMAT=&lt;ID=Format_R,Number=R,Type=Character,Description=\"R character\"&gt;
+##FORMAT=&lt;ID=Format_G,Number=G,Type=Integer,Description=\"G integer\"&gt;
+##FORMAT=&lt;ID=Format_.,Number=1,Type=Integer,Description=\"Unknow integer\"&gt;
 ##SAMPLE=&lt;ID=first,Genomes=Germline,Mixture=1.,Description=\"first\"&gt;
 ##SAMPLE=&lt;ID=second,Genomes=Germline,Mixture=1.,Description=\"second\"&gt;
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
@@ -572,15 +678,7 @@
                 <span class="bool-val">false</span>,
             ),
             arrow2::datatypes::Field::new(<span class="string">"reference"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
-            arrow2::datatypes::Field::new(
-                <span class="string">"alternate"</span>,
-                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    <span class="string">"alternate"</span>,
-                    arrow2::datatypes::DataType::Utf8,
-                    <span class="bool-val">false</span>,
-                ))),
-                <span class="bool-val">false</span>,
-            ),
+            arrow2::datatypes::Field::new(<span class="string">"alternate"</span>, arrow2::datatypes::DataType::Utf8, <span class="bool-val">false</span>),
             arrow2::datatypes::Field::new(<span class="string">"quality"</span>, arrow2::datatypes::DataType::Float32, <span class="bool-val">true</span>),
             arrow2::datatypes::Field::new(
                 <span class="string">"filter"</span>,
@@ -594,122 +692,124 @@
         ];
 
     <span class="kw">static </span><span class="kw-2">ref </span>INFO_COLS: Vec&lt;arrow2::datatypes::Field&gt; = <span class="macro">vec!</span>[
-            arrow2::datatypes::Field {
-                name: <span class="string">"info_ALLELEID"</span>.to_string(),
-                data_type: arrow2::datatypes::DataType::Int32,
-                is_nullable: <span class="bool-val">false</span>,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: <span class="string">"info_AF_ESP"</span>.to_string(),
-                data_type: arrow2::datatypes::DataType::Float32,
-                is_nullable: <span class="bool-val">false</span>,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: <span class="string">"info_DBVARI"</span>.to_string(),
-                data_type: arrow2::datatypes::DataType::Boolean,
-                is_nullable: <span class="bool-val">false</span>,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: <span class="string">"info_GENEINFO"</span>.to_string(),
-                data_type: arrow2::datatypes::DataType::Utf8,
-                is_nullable: <span class="bool-val">false</span>,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: <span class="string">"info_CLNVC"</span>.to_string(),
-                data_type: arrow2::datatypes::DataType::List(Box::new(
-                    arrow2::datatypes::Field {
-                        name: <span class="string">"info_CLNVC"</span>.to_string(),
-                        data_type: arrow2::datatypes::DataType::Utf8,
-                        is_nullable: <span class="bool-val">false</span>,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                )),
-                is_nullable: <span class="bool-val">false</span>,
-                metadata: std::collections::BTreeMap::new()
-            }
-    ];
+        arrow2::datatypes::Field { name: <span class="string">"info_Flag"</span>.to_string(), data_type: arrow2::datatypes::DataType::Boolean, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info1"</span>.to_string(), data_type: arrow2::datatypes::DataType::Float32, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_fixed"</span>.to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: <span class="string">"info_Info_fixed"</span>.to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }), <span class="number">3</span>), is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_A"</span>.to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_RString"</span>.to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: <span class="string">"info_Info_RString"</span>.to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }), <span class="number">2</span>), is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_RChar"</span>.to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: <span class="string">"info_Info_RChar"</span>.to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }), <span class="number">2</span>), is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_G"</span>.to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: <span class="string">"info_Info_G"</span>.to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }), <span class="number">3</span>), is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: <span class="string">"info_Info_."</span>.to_string(), data_type: arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field { name: <span class="string">"info_Info_."</span>.to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() })), is_nullable: <span class="bool-val">false</span>, metadata: std::collections::BTreeMap::new() }];
 
     <span class="kw">static </span><span class="kw-2">ref </span>FORMAT_COLS: Vec&lt;arrow2::datatypes::Field&gt; = <span class="macro">vec!</span>[
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_first_AB"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: <span class="string">"format_first_Format_1"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: <span class="bool-val">false</span>,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: <span class="string">"format_first_Format_fixed"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">"format_first_AB"</span>.to_string(),
-                            data_type: arrow2::datatypes::DataType::Int32,
+                            name: <span class="string">"format_first_Format_fixed"</span>.to_string(),
+                            data_type: arrow2::datatypes::DataType::Float32,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),<span class="number">4</span>),
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_first_DC"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::Float32,
-                    is_nullable: <span class="bool-val">false</span>,
-                    metadata: std::collections::BTreeMap::new()
-                },
-                arrow2::datatypes::Field {
-                    name: <span class="string">"format_first_GE"</span>.to_string(),
+                    name: <span class="string">"format_first_Format_A"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_first_GC"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: <span class="string">"format_first_Format_R"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">"format_first_GC"</span>.to_string(),
+                            name: <span class="string">"format_first_Format_R"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),<span class="number">2</span>),
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_second_AB"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: <span class="string">"format_first_Format_G"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">"format_second_AB"</span>.to_string(),
+                            name: <span class="string">"format_first_Format_G"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),<span class="number">3</span>),
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_second_DC"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::Float32,
+                    name: <span class="string">"format_first_Format_."</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_second_GE"</span>.to_string(),
+                    name: <span class="string">"format_second_Format_1"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: <span class="bool-val">false</span>,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: <span class="string">"format_second_Format_fixed"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
+                        arrow2::datatypes::Field {
+                            name: <span class="string">"format_second_Format_fixed"</span>.to_string(),
+                            data_type: arrow2::datatypes::DataType::Float32,
+                            is_nullable: <span class="bool-val">false</span>,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    ),<span class="number">4</span>),
+                    is_nullable: <span class="bool-val">false</span>,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: <span class="string">"format_second_Format_A"</span>.to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: <span class="string">"format_second_GC"</span>.to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: <span class="string">"format_second_Format_R"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: <span class="string">"format_second_GC"</span>.to_string(),
+                            name: <span class="string">"format_second_Format_R"</span>.to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: <span class="bool-val">false</span>,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),<span class="number">2</span>),
                     is_nullable: <span class="bool-val">false</span>,
                     metadata: std::collections::BTreeMap::new()
                 },
+                arrow2::datatypes::Field {
+                    name: <span class="string">"format_second_Format_G"</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
+                        arrow2::datatypes::Field {
+                            name: <span class="string">"format_second_Format_G"</span>.to_string(),
+                            data_type: arrow2::datatypes::DataType::Int32,
+                            is_nullable: <span class="bool-val">false</span>,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    ),<span class="number">3</span>),
+                    is_nullable: <span class="bool-val">false</span>,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: <span class="string">"format_second_Format_."</span>.to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: <span class="bool-val">false</span>,
+                    metadata: std::collections::BTreeMap::new()
+                }
+
             ];
     }
 
