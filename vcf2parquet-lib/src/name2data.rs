@@ -979,26 +979,27 @@ mod tests {
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
-##INFO=<ID=ALLELEIDS,Number=2,Type=Integer,Description=\"the ClinVar Allele ID\">
-##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=AF_ESPS,Number=2,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
-##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) \">
-##INFO=<ID=GENEINFOS,Number=2,Type=Character,Description=\"Gene(s) \">
-##INFO=<ID=CLNVC,Number=1,Type=String,Description=\"Variant type\">
-##INFO=<ID=CLNVCS,Number=2,Type=String,Description=\"Variant type\">
-##FORMAT=<ID=AB,Number=1,Type=Integer,Description=\"Allelic \">
-##FORMAT=<ID=ABS,Number=2,Type=Integer,Description=\"Allelic \">
-##FORMAT=<ID=DC,Number=1,Type=Float,Description=\"Approximate read \">
-##FORMAT=<ID=DCS,Number=2,Type=Float,Description=\"Approximate read \">
-##FORMAT=<ID=GF,Number=1,Type=Character,Description=\"Genotype Quality\">
-##FORMAT=<ID=GFS,Number=2,Type=Character,Description=\"Genotype Quality\">
+##INFO=<ID=Flag,Number=0,Type=Flag,Description=\"flag\">
+##INFO=<ID=Info1,Number=1,Type=Float,Description=\"1 float\">
+##INFO=<ID=Info_fixed,Number=3,Type=Integer,Description=\"3 integer\">
+##INFO=<ID=Info_A,Number=A,Type=Integer,Description=\"A integer\">
+##INFO=<ID=Info_RString,Number=R,Type=String,Description=\"R character\">
+##INFO=<ID=Info_RChar,Number=R,Type=Character,Description=\"R string\">
+##INFO=<ID=Info_G,Number=G,Type=Integer,Description=\"G integer\">
+##INFO=<ID=Info_u,Number=.,Type=Integer,Description=\"Unknown integer\">
+##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">
+##FORMAT=<ID=Format_1,Number=1,Type=Integer,Description=\"1 integer\">
+##FORMAT=<ID=Format_fixed,Number=4,Type=Float,Description=\"4 float\">
+##FORMAT=<ID=Format_A,Number=A,Type=String,Description=\"A string\">
+##FORMAT=<ID=Format_R,Number=R,Type=Character,Description=\"R character\">
+##FORMAT=<ID=Format_G,Number=G,Type=Integer,Description=\"G integer\">
+##FORMAT=<ID=Format_u,Number=.,Type=Integer,Description=\"Unknow integer\">
 ##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
 ##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
-1\t10\t.\tA\tC,T\t23\tPASS\tALLELEID=14;ALLELEIDS=14,15;AF_ESP=1.2;AF_ESPS=1.2,1.5;DBVARI;GENEINFO=c;GENEINFOS=c,d;CLNVC=test1;CLNVCS=test1,test2\tAB:ABS:GF:GFS:DC:DCS\t1:2,3:c:C,D:1.2:1.4,1.6\t1:2,3:c:C,D:1.2:1.4,1.6
-1\t20\t.\tA\tC\t23\tq5,q10\tALLELEID=14;AF_ESP=1.2;DBVARI;GENEINFO=c;CLNVC=test1;CLNVCS=test1,test2\tAB:GF:DC\t1:c:1.2\t2:a:4.5
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	first	second
+chr1	100	.	A	T	50	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	1/1:44:1,2,3,5:testA:r,a:1,2,3:0,2,5,6,1
+chr1	200	.	C	G,CG	60	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42,43;Info_RChar=r,a,A;Info_RString=ref,alt1,alt2;Info_G=1,2,3,4,5,6;Info_u=1,6,3,4,5	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:2,4,6,8:testA1,testA2:R,A,B:1,2,3,4,5,6:0,2,4	1/2:45:2,1,6,8:testB1,testB2:R,a,b:1,2,3,4,5,6:0,2,4,5,6
+chr2	300	.	G	A	70	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4;Flag	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6
 ";
 
     #[test]
@@ -1018,31 +1019,32 @@ mod tests {
                 "alternate".to_string(),
                 "chromosome".to_string(),
                 "filter".to_string(),
-                "format_first_AB".to_string(),
-                "format_first_ABS".to_string(),
-                "format_first_DC".to_string(),
-                "format_first_DCS".to_string(),
-                "format_first_GF".to_string(),
-                "format_first_GFS".to_string(),
-                "format_second_AB".to_string(),
-                "format_second_ABS".to_string(),
-                "format_second_DC".to_string(),
-                "format_second_DCS".to_string(),
-                "format_second_GF".to_string(),
-                "format_second_GFS".to_string(),
+                "format_first_Format_1".to_string(),
+                "format_first_Format_A".to_string(),
+                "format_first_Format_G".to_string(),
+                "format_first_Format_R".to_string(),
+                "format_first_Format_fixed".to_string(),
+                "format_first_Format_u".to_string(),
+                "format_first_GT".to_string(),
+                "format_second_Format_1".to_string(),
+                "format_second_Format_A".to_string(),
+                "format_second_Format_G".to_string(),
+                "format_second_Format_R".to_string(),
+                "format_second_Format_fixed".to_string(),
+                "format_second_Format_u".to_string(),
+                "format_second_GT".to_string(),
                 "identifier".to_string(),
-                "info_AF_ESP".to_string(),
-                "info_AF_ESPS".to_string(),
-                "info_ALLELEID".to_string(),
-                "info_ALLELEIDS".to_string(),
-                "info_CLNVC".to_string(),
-                "info_CLNVCS".to_string(),
-                "info_DBVARI".to_string(),
-                "info_GENEINFO".to_string(),
-                "info_GENEINFOS".to_string(),
+                "info_Flag".to_string(),
+                "info_Info1".to_string(),
+                "info_Info_A".to_string(),
+                "info_Info_G".to_string(),
+                "info_Info_RChar".to_string(),
+                "info_Info_RString".to_string(),
+                "info_Info_fixed".to_string(),
+                "info_Info_u".to_string(),
                 "position".to_string(),
                 "quality".to_string(),
-                "reference".to_string()
+                "reference".to_string(),
             ]
         );
 
@@ -1076,74 +1078,100 @@ mod tests {
         let record = iterator.next().unwrap().unwrap();
 
         data.add_record(record, &header, &schema).unwrap();
-        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 84] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [84] }, validity: None }))".to_string());
 
-        assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [49, 49] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4, 8]), values: [80, 65, 83, 83, 80, 65, 83, 83] }, validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [99, 104, 114, 49] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [80, 65, 83, 83] }, validity: None }, validity: None }))".to_string());
 
         assert_eq!(
-            format!("{:?}", data.get("format_first_AB")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1, 1], validity: None }))"
+            format!("{:?}", data.get("format_first_Format_1")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [44], validity: None }))"
                 .to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_ABS")),
-            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutablePrimitiveArray { data_type: Int32, values: [2, 3, 2, 3], validity: None }, validity: None }))"
+            format!("{:?}", data.get("format_first_Format_A")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 65] }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_G")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_R")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [82, 65] }, validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_fixed")),
+            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.0, 2.0, 3.0, 4.0], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_u")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 2, 4, 6], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("format_first_GT")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3]), values: [48, 47, 49] }, validity: None }))".to_string());
+
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_1")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [44], validity: None }))"
                 .to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_DC")),
-            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.2], validity: None }))".to_string()
+            format!("{:?}", data.get("format_second_Format_A")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 65] }, validity: None }))".to_string()
+        );
+
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_G")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_DCS")),
-            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6, 1.4, 1.6], validity: None }, validity: None }))".to_string()
+            format!("{:?}", data.get("format_second_Format_R")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [114, 97] }, validity: None }, validity: None }))".to_string()
         );
-        assert_eq!(format!("{:?}", data.get("format_first_GF")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [99, 99] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("format_first_GFS")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2, 3, 4]), values: [67, 68, 67, 68] }, validity: None }, validity: None }))".to_string());
         assert_eq!(
-            format!("{:?}", data.get("format_second_AB")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1, 1], validity: None }))"
+            format!("{:?}", data.get("format_second_Format_fixed")),
+            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.0, 2.0, 3.0, 5.0], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_u")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 5]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 2, 5, 6, 1], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_GT")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3]), values: [49, 47, 49] }, validity: None }))".to_string()
+        );
+
+        assert_eq!(format!("{:?}", data.get("identifier")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 0]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0]), values: [] }, validity: None }, validity: None }))".to_string());
+
+        assert_eq!(format!("{:?}", data.get("info_Flag")), "Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______0], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info1")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [0.0], validity: Some([0b_______0]) }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("info_Info_A")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [42], validity: None }))"
                 .to_string()
         );
+        assert_eq!(format!("{:?}", data.get("info_Info_G")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_RChar")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [114, 97] }, validity: None }, validity: None }))".to_string());
         assert_eq!(
-            format!("{:?}", data.get("format_second_DC")),
-            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.2], validity: None }))".to_string()
+            format!("{:?}", data.get("info_Info_RString")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3, 6]), values: [114, 101, 102, 97, 108, 116] }, validity: None }, validity: None }))".to_string()
         );
-        assert_eq!(
-            format!("{:?}", data.get("format_second_GF")),
-            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [99, 99] }, validity: None }))".to_string()
-        );
-        assert_eq!(format!("{:?}", data.get("identifier")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 0, 0]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0]), values: [] }, validity: None }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_AF_ESP")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.2], validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_AF_ESPS")), "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5, 1.2, 1.5], validity: None }, validity: None }))".to_string());
-        assert_eq!(
-            format!("{:?}", data.get("info_ALLELEID")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14, 14], validity: None }))"
-                .to_string()
-        );
-        assert_eq!(
-            format!("{:?}", data.get("info_ALLELEIDS")),
-            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutablePrimitiveArray { data_type: Int32, values: [14, 15, 14, 15], validity: None }, validity: None }))"
-                .to_string()
-        );
-        assert_eq!(format!("{:?}", data.get("info_CLNVC")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5, 10]), values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 49] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_CLNVCS")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2, 4]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5, 10, 15, 20]), values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50, 116, 101, 115, 116, 49, 116, 101, 115, 116, 50] }, validity: None }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_DBVARI")), "Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b______11], validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_GENEINFO")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [99, 99] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_fixed")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_u")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 5]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 1, 2, 3, 4], validity: None }, validity: None }))".to_string());
+
         assert_eq!(
             format!("{:?}", data.get("position")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10, 10], validity: None }))"
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [100], validity: None }))"
                 .to_string()
         );
-        assert_eq!(format!("{:?}", data.get("quality")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0, 23.0], validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("reference")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [65, 65] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("quality")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [50.0], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("reference")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [65] }, validity: None }))".to_string());
 
         let record = iterator.next().unwrap().unwrap();
         let mut data = Name2Data::new(10, &schema);
         data.add_record(record, &header, &schema).unwrap();
 
-        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 6]), values: [113, 53, 44, 113, 49, 48] }, validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 3]), values: [71, 67, 71] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4, 8]), values: [80, 65, 83, 83, 80, 65, 83, 83] }, validity: None }, validity: None }))".to_string());
     }
 }
