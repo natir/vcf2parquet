@@ -6,17 +6,32 @@
 
 /* project use */
 
+/// Compression available for user
 #[derive(Debug, clap::ValueEnum, Clone, Copy)]
 pub enum Compression {
+    /// No compression
     Uncompressed,
+
+    /// Snappy compression
     Snappy,
+
+    /// Gzip compression
     Gzip,
+
+    /// Lzo compression
     Lzo,
+
+    /// Brotly compression
     Brotli,
+
+    /// Lz4 compression
     Lz4,
+
+    /// Zstd compression
     Zstd,
 }
 
+/// Define cli of vcf2parquet
 #[derive(clap::Parser, std::fmt::Debug)]
 #[command(
     name = "vcf2parquet",
@@ -49,9 +64,13 @@ pub struct Command {
     subcommand: SubCommand,
 }
 
+/// Enum to manage sub command
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
 pub enum SubCommand {
+    /// Convert a vcf in a parquet
     Convert(Convert),
+
+    /// Convert a vcf in multiple parquet file each file contains `batch_size` record
     Split(Split),
 }
 

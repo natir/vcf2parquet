@@ -28,6 +28,10 @@ pub enum Error {
     /// Noodles header vcf error
     #[error(transparent)]
     NoodlesHeader(#[from] noodles::vcf::header::ParseError),
+
+    /// Niffler error
+    #[error(transparent)]
+    Niffler(#[from] niffler::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
