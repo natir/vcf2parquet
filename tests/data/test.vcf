@@ -1,0 +1,25 @@
+##fileformat=VCFv4.3
+##fileDate=20220528
+##source=ClinVar
+##reference=GRCh38
+##INFO=<ID=Flag,Number=0,Type=Flag,Description="flag">
+##INFO=<ID=Info1,Number=1,Type=Float,Description="1 float">
+##INFO=<ID=Info_fixed,Number=3,Type=Integer,Description="3 integer">
+##INFO=<ID=Info_A,Number=A,Type=Integer,Description="A integer">
+##INFO=<ID=Info_RString,Number=R,Type=String,Description="R character">
+##INFO=<ID=Info_RChar,Number=R,Type=Character,Description="R string">
+##INFO=<ID=Info_G,Number=G,Type=Integer,Description="G integer">
+##INFO=<ID=Info_u,Number=.,Type=Integer,Description="Unknown integer">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=Format_1,Number=1,Type=Integer,Description="1 integer">
+##FORMAT=<ID=Format_fixed,Number=4,Type=Float,Description="4 float">
+##FORMAT=<ID=Format_A,Number=A,Type=String,Description="A string">
+##FORMAT=<ID=Format_R,Number=R,Type=Character,Description="R character">
+##FORMAT=<ID=Format_G,Number=G,Type=Integer,Description="G integer">
+##FORMAT=<ID=Format_u,Number=.,Type=Integer,Description="Unknow integer">
+##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description="first">
+##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description="second">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	first	second
+chr1	100	.	A	T	50	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	1/1:44:1,2,3,5:testA:r,a:1,2,3:0,2,5,6,1
+chr1	200	.	C	G,CG	60	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42,43;Info_RChar=r,a,A;Info_RString=ref,alt1,alt2;Info_G=1,2,3,4,5,6;Info_u=1,6,3,4,5	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:2,4,6,8:testA1,testA2:R,A,B:1,2,3,4,5,6:0,2,4	1/2:45:2,1,6,8:testB1,testB2:R,a,b:1,2,3,4,5,6:0,2,4,5,6
+chr2	300	.	G	A	70	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4;Flag	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6

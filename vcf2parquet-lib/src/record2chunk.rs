@@ -61,12 +61,12 @@ where
             return None;
         }
 
-        let mut name2data = Name2Data::new(self.length, &self.header);
+        let mut name2data = Name2Data::new(self.length, &self.schema);
 
         for _ in 0..self.length {
             match self.inner.next() {
                 Some(Ok(record)) => {
-                    if let Err(e) = name2data.add_record(record, &self.header) {
+                    if let Err(e) = name2data.add_record(record, &self.header, &self.schema) {
                         return Some(Err(e));
                     }
                 }

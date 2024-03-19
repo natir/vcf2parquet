@@ -40,15 +40,7 @@ fn required_column() -> Vec<arrow2::datatypes::Field> {
             false,
         ),
         arrow2::datatypes::Field::new("reference", arrow2::datatypes::DataType::Utf8, false),
-        arrow2::datatypes::Field::new(
-            "alternate",
-            arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                "alternate",
-                arrow2::datatypes::DataType::Utf8,
-                false,
-            ))),
-            false,
-        ),
+        arrow2::datatypes::Field::new("alternate", arrow2::datatypes::DataType::Utf8, false),
         arrow2::datatypes::Field::new("quality", arrow2::datatypes::DataType::Float32, true),
         arrow2::datatypes::Field::new(
             "filter",
@@ -87,17 +79,50 @@ fn info(header: &noodles::vcf::Header, info_optional: bool) -> Vec<arrow2::datat
         };
 
         match value.number() {
-            noodles::vcf::header::Number::Count(0) => fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::Count(0 | 1) | noodles::vcf::header::Number::A => fields
+                .push(arrow2::datatypes::Field::new(
+                    &key,
+                    arrow_type,
+                    info_optional,
+                )),
+            noodles::vcf::header::Number::R => fields.push(arrow2::datatypes::Field::new(
                 &key,
-                arrow_type,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    2,
+                ),
                 info_optional,
             )),
-            noodles::vcf::header::Number::Count(1) => fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::Count(n) => fields.push(arrow2::datatypes::Field::new(
                 &key,
-                arrow_type,
-                info_optional,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    n,
+                ),
+                false,
             )),
-            _ => fields.push(arrow2::datatypes::Field::new(
+            noodles::vcf::header::Number::G => fields.push(arrow2::datatypes::Field::new(
+                &key,
+                arrow2::datatypes::DataType::FixedSizeList(
+                    Box::new(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow_type,
+                        info_optional,
+                    )),
+                    3,
+                ),
+                false,
+            )),
+
+            noodles::vcf::header::Number::Unknown => fields.push(arrow2::datatypes::Field::new(
                 &key,
                 arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
                     &key,
@@ -135,19 +160,45 @@ fn genotype(header: &noodles::vcf::Header) -> Vec<arrow2::datatypes::Field> {
             };
 
             match value.number() {
-                noodles::vcf::header::Number::Count(0) => {
+                noodles::vcf::header::Number::Count(0 | 1) | noodles::vcf::header::Number::A => {
                     fields.push(arrow2::datatypes::Field::new(key, arrow_type, false))
                 }
-                noodles::vcf::header::Number::Count(1) => {
-                    fields.push(arrow2::datatypes::Field::new(key, arrow_type, false))
-                }
-                _ => fields.push(arrow2::datatypes::Field::new(
+                noodles::vcf::header::Number::R => fields.push(arrow2::datatypes::Field::new(
                     &key,
-                    arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                        &key, arrow_type, false,
-                    ))),
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                        2,
+                    ),
                     false,
                 )),
+                noodles::vcf::header::Number::Count(n) => {
+                    fields.push(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow2::datatypes::DataType::FixedSizeList(
+                            Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                            n,
+                        ),
+                        false,
+                    ))
+                }
+                noodles::vcf::header::Number::G => fields.push(arrow2::datatypes::Field::new(
+                    &key,
+                    arrow2::datatypes::DataType::FixedSizeList(
+                        Box::new(arrow2::datatypes::Field::new(&key, arrow_type, false)),
+                        3,
+                    ),
+                    false,
+                )),
+
+                noodles::vcf::header::Number::Unknown => {
+                    fields.push(arrow2::datatypes::Field::new(
+                        &key,
+                        arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
+                            &key, arrow_type, false,
+                        ))),
+                        false,
+                    ))
+                }
             }
         }
     }
@@ -166,15 +217,20 @@ mod tests {
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
-##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
-##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) for the variant reported as gene symbol:gene id.\">
-##INFO=<ID=CLNVC,Number=2,Type=String,Description=\"Variant type\">
-##FORMAT=<ID=AB,Number=R,Type=Integer,Description=\"Allelic depths for the ref and alt alleles in the order listed\">
-##FORMAT=<ID=DC,Number=0,Type=Float,Description=\"Approximate read depth (reads with MQ=255 or with bad mates are filtered)\">
-##FORMAT=<ID=GE,Number=1,Type=Character,Description=\"Genotype Quality\">
-##FORMAT=<ID=GC,Number=3,Type=String,Description=\"Genotype\">
+##INFO=<ID=Flag,Number=0,Type=Flag,Description=\"flag\">
+##INFO=<ID=Info1,Number=1,Type=Float,Description=\"1 float\">
+##INFO=<ID=Info_fixed,Number=3,Type=Integer,Description=\"3 integer\">
+##INFO=<ID=Info_A,Number=A,Type=Integer,Description=\"A integer\">
+##INFO=<ID=Info_RString,Number=R,Type=Character,Description=\"R character\">
+##INFO=<ID=Info_RChar,Number=R,Type=String,Description=\"R string\">
+##INFO=<ID=Info_G,Number=G,Type=Integer,Description=\"G integer\">
+##INFO=<ID=Info_.,Number=.,Type=Integer,Description=\"Unknown integer\">
+##FORMAT=<ID=Format_1,Number=1,Type=Integer,Description=\"1 integer\">
+##FORMAT=<ID=Format_fixed,Number=4,Type=Float,Description=\"4 float\">
+##FORMAT=<ID=Format_A,Number=A,Type=String,Description=\"A string\">
+##FORMAT=<ID=Format_R,Number=R,Type=Character,Description=\"R character\">
+##FORMAT=<ID=Format_G,Number=G,Type=Integer,Description=\"G integer\">
+##FORMAT=<ID=Format_.,Number=1,Type=Integer,Description=\"Unknow integer\">
 ##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
 ##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
 #CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
@@ -194,15 +250,7 @@ mod tests {
                 false,
             ),
             arrow2::datatypes::Field::new("reference", arrow2::datatypes::DataType::Utf8, false),
-            arrow2::datatypes::Field::new(
-                "alternate",
-                arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field::new(
-                    "alternate",
-                    arrow2::datatypes::DataType::Utf8,
-                    false,
-                ))),
-                false,
-            ),
+            arrow2::datatypes::Field::new("alternate", arrow2::datatypes::DataType::Utf8, false),
             arrow2::datatypes::Field::new("quality", arrow2::datatypes::DataType::Float32, true),
             arrow2::datatypes::Field::new(
                 "filter",
@@ -216,122 +264,124 @@ mod tests {
         ];
 
     static ref INFO_COLS: Vec<arrow2::datatypes::Field> = vec![
-            arrow2::datatypes::Field {
-                name: "info_ALLELEID".to_string(),
-                data_type: arrow2::datatypes::DataType::Int32,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_AF_ESP".to_string(),
-                data_type: arrow2::datatypes::DataType::Float32,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_DBVARI".to_string(),
-                data_type: arrow2::datatypes::DataType::Boolean,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_GENEINFO".to_string(),
-                data_type: arrow2::datatypes::DataType::Utf8,
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            },
-            arrow2::datatypes::Field {
-                name: "info_CLNVC".to_string(),
-                data_type: arrow2::datatypes::DataType::List(Box::new(
-                    arrow2::datatypes::Field {
-                        name: "info_CLNVC".to_string(),
-                        data_type: arrow2::datatypes::DataType::Utf8,
-                        is_nullable: false,
-                        metadata: std::collections::BTreeMap::new()
-                    }
-                )),
-                is_nullable: false,
-                metadata: std::collections::BTreeMap::new()
-            }
-    ];
+        arrow2::datatypes::Field { name: "info_Flag".to_string(), data_type: arrow2::datatypes::DataType::Boolean, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info1".to_string(), data_type: arrow2::datatypes::DataType::Float32, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_fixed".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_fixed".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 3), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_A".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_RString".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_RString".to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 2), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_RChar".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_RChar".to_string(), data_type: arrow2::datatypes::DataType::Utf8, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 2), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_G".to_string(), data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(arrow2::datatypes::Field { name: "info_Info_G".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() }), 3), is_nullable: false, metadata: std::collections::BTreeMap::new() }, arrow2::datatypes::Field { name: "info_Info_.".to_string(), data_type: arrow2::datatypes::DataType::List(Box::new(arrow2::datatypes::Field { name: "info_Info_.".to_string(), data_type: arrow2::datatypes::DataType::Int32, is_nullable: false, metadata: std::collections::BTreeMap::new() })), is_nullable: false, metadata: std::collections::BTreeMap::new() }];
 
     static ref FORMAT_COLS: Vec<arrow2::datatypes::Field> = vec![
                 arrow2::datatypes::Field {
-                    name: "format_first_AB".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: "format_first_Format_1".to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_first_Format_fixed".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_first_AB".to_string(),
-                            data_type: arrow2::datatypes::DataType::Int32,
+                            name: "format_first_Format_fixed".to_string(),
+                            data_type: arrow2::datatypes::DataType::Float32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),4),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_first_DC".to_string(),
-                    data_type: arrow2::datatypes::DataType::Float32,
-                    is_nullable: false,
-                    metadata: std::collections::BTreeMap::new()
-                },
-                arrow2::datatypes::Field {
-                    name: "format_first_GE".to_string(),
+                    name: "format_first_Format_A".to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_first_GC".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: "format_first_Format_R".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_first_GC".to_string(),
+                            name: "format_first_Format_R".to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),2),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_AB".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: "format_first_Format_G".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_second_AB".to_string(),
+                            name: "format_first_Format_G".to_string(),
                             data_type: arrow2::datatypes::DataType::Int32,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),3),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_DC".to_string(),
-                    data_type: arrow2::datatypes::DataType::Float32,
+                    name: "format_first_Format_.".to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_GE".to_string(),
+                    name: "format_second_Format_1".to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_Format_fixed".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_second_Format_fixed".to_string(),
+                            data_type: arrow2::datatypes::DataType::Float32,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    ),4),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_Format_A".to_string(),
                     data_type: arrow2::datatypes::DataType::Utf8,
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
                 arrow2::datatypes::Field {
-                    name: "format_second_GC".to_string(),
-                    data_type: arrow2::datatypes::DataType::List(Box::new(
+                    name: "format_second_Format_R".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
                         arrow2::datatypes::Field {
-                            name: "format_second_GC".to_string(),
+                            name: "format_second_Format_R".to_string(),
                             data_type: arrow2::datatypes::DataType::Utf8,
                             is_nullable: false,
                             metadata: std::collections::BTreeMap::new()
                         }
-                    )),
+                    ),2),
                     is_nullable: false,
                     metadata: std::collections::BTreeMap::new()
                 },
+                arrow2::datatypes::Field {
+                    name: "format_second_Format_G".to_string(),
+                    data_type: arrow2::datatypes::DataType::FixedSizeList(Box::new(
+                        arrow2::datatypes::Field {
+                            name: "format_second_Format_G".to_string(),
+                            data_type: arrow2::datatypes::DataType::Int32,
+                            is_nullable: false,
+                            metadata: std::collections::BTreeMap::new()
+                        }
+                    ),3),
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                },
+                arrow2::datatypes::Field {
+                    name: "format_second_Format_.".to_string(),
+                    data_type: arrow2::datatypes::DataType::Int32,
+                    is_nullable: false,
+                    metadata: std::collections::BTreeMap::new()
+                }
+
             ];
     }
 

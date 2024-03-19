@@ -6,6 +6,7 @@
 use arrow2::array::MutableArray;
 use arrow2::array::MutablePrimitiveArray;
 use arrow2::array::TryPush;
+use noodles::vcf::record::genotypes::sample::value::genotype::allele::Phasing;
 
 /* project use */
 
@@ -16,59 +17,14 @@ pub struct Name2Data(rustc_hash::FxHashMap<String, ColumnData>);
 impl Name2Data {
     /// Create a new Name2Data, vcf header is required to add info and genotype column
     /// length parameter is used to preallocate memory
-    pub fn new(length: usize, header: &noodles::vcf::Header) -> Self {
-        let mut name2data = rustc_hash::FxHashMap::with_capacity_and_hasher(
-            header.infos().len() + header.sample_names().len() * header.formats().len(),
-            std::hash::BuildHasherDefault::<rustc_hash::FxHasher>::default(),
-        );
-
-        name2data.insert(
-            "chromosome".to_string(),
-            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
-                length,
-            )),
-        );
-        name2data.insert(
-            "position".to_string(),
-            ColumnData::Int(MutablePrimitiveArray::<i32>::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "identifier".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::<
-                i32,
-                arrow2::array::MutableUtf8Array<i32>,
-            >::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "reference".to_string(),
-            ColumnData::String(arrow2::array::MutableUtf8Array::<i32>::with_capacity(
-                length,
-            )),
-        );
-
-        name2data.insert(
-            "alternate".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "quality".to_string(),
-            ColumnData::Float(MutablePrimitiveArray::<f32>::with_capacity(length)),
-        );
-
-        name2data.insert(
-            "filter".to_string(),
-            ColumnData::ListString(arrow2::array::MutableListArray::<
-                i32,
-                arrow2::array::MutableUtf8Array<i32>,
-            >::with_capacity(length)),
-        );
-
-        Self::add_info(&mut name2data, header, length);
-        Self::add_genotype(&mut name2data, header, length);
-
+    pub fn new(length: usize, schema: &arrow2::datatypes::Schema) -> Self {
+        let mut name2data = rustc_hash::FxHashMap::default();
+        for field in schema.fields.iter() {
+            name2data.insert(
+                field.name.clone(),
+                ColumnData::new(&field.data_type, length),
+            );
+        }
         Name2Data(name2data)
     }
 
@@ -87,167 +43,716 @@ impl Name2Data {
         &mut self,
         record: noodles::vcf::Record,
         header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
     ) -> std::result::Result<(), arrow2::error::Error> {
-        let mut not_changed_key = self
-            .0
-            .keys()
-            .filter(|&x| x.starts_with("info_") || x.starts_with("format_"))
-            .cloned()
-            .collect::<rustc_hash::FxHashSet<String>>();
-
-        // Chromosome name
-        self.get_mut("chromosome")
-            .unwrap()
-            .push_string(record.chromosome().to_string());
-
-        // Position
-        self.get_mut("position")
-            .unwrap()
-            .push_i32(Some(usize::from(record.position()) as i32));
-
-        // ID
-        if record.ids().is_empty() {
-            self.get_mut("identifier").unwrap().push_null();
-        } else if let Err(e) = self
-            .get_mut("identifier")
-            .unwrap()
-            .push_vecstring(record.ids().iter().map(|x| Some(x.to_string())).collect())
-        {
-            return Err(e);
-        }
-
-        // Ref sequence
-        self.get_mut("reference")
-            .unwrap()
-            .push_string(record.reference_bases().to_string());
-
-        // Alt sequences
-        if record.alternate_bases().is_empty() {
-            self.get_mut("alternate").unwrap().push_null();
-        } else if let Err(e) = self.get_mut("alternate").unwrap().push_vecstring(
-            record
-                .alternate_bases()
-                .iter()
-                .map(|x| Some(x.to_string()))
-                .collect(),
-        ) {
-            return Err(e);
-        }
-
-        // Quality
-        #[allow(clippy::unnecessary_fallible_conversions)]
-        if let Some(quality) = record.quality_score() {
-            self.get_mut("quality")
-                .unwrap()
-                .push_f32(Some(f32::from(quality)));
-        } else {
-            self.get_mut("quality").unwrap().push_null();
-        }
-
-        // Filter
-        if let Some(f) = record.filters() {
-            match f {
-                noodles::vcf::record::Filters::Pass => self
-                    .get_mut("filter")
-                    .unwrap()
-                    .push_vecstring(vec![Some("PASS".to_string())])?,
-                noodles::vcf::record::Filters::Fail(fs) => self
-                    .get_mut("filter")
-                    .unwrap()
-                    .push_vecstring(fs.iter().map(|x| Some(x.to_string())).collect())?,
-            }
-        } else {
-            self.get_mut("filter").unwrap().push_null();
-        }
-
-        // Info
-        for (key, value) in record.info().keys().zip(record.info().values()) {
-            let key = format!("info_{key}");
-            not_changed_key.remove(&key);
-
-            match value {
-                Some(noodles::vcf::record::info::field::Value::Integer(val)) => {
-                    self.get_mut(&key).unwrap().push_i32(Some(*val))
-                }
-                Some(noodles::vcf::record::info::field::Value::Float(val)) => {
-                    self.get_mut(&key).unwrap().push_f32(Some(*val))
-                }
-                Some(noodles::vcf::record::info::field::Value::Flag) => {
-                    self.get_mut(&key).unwrap().push_bool(Some(true))
-                }
-
-                Some(noodles::vcf::record::info::field::Value::Character(val)) => {
-                    self.get_mut(&key).unwrap().push_string(val.to_string())
-                }
-                Some(noodles::vcf::record::info::field::Value::String(val)) => {
-                    self.get_mut(&key).unwrap().push_string(val.to_string())
-                }
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Integer(vals),
-                )) => self.get_mut(&key).unwrap().push_veci32(vals.to_vec())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Float(vals),
-                )) => self.get_mut(&key).unwrap().push_vecf32(vals.to_vec())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::Character(vals),
-                )) => self
-                    .get_mut(&key)
-                    .unwrap()
-                    .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())?,
-                Some(noodles::vcf::record::info::field::Value::Array(
-                    noodles::vcf::record::info::field::value::Array::String(vals),
-                )) => self.get_mut(&key).unwrap().push_vecstring(vals.to_vec())?,
-                None => self.get_mut(&key).unwrap().push_null(),
-            }
-        }
-
-        // format
-        for (name, sample) in header
-            .sample_names()
-            .iter()
-            .zip(record.genotypes().values())
-        {
-            for (key_name, value) in sample.keys().iter().zip(sample.values()) {
-                let key = format!("format_{name}_{key_name}");
-                not_changed_key.remove(&key);
-
-                match value {
-                    Some(noodles::vcf::record::genotypes::sample::Value::Integer(val)) => {
-                        self.get_mut(&key).unwrap().push_i32(Some(*val))
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Float(val)) => {
-                        self.get_mut(&key).unwrap().push_f32(Some(*val))
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Character(val)) => {
-                        self.get_mut(&key).unwrap().push_string(val.to_string())
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::String(val)) => {
-                        self.get_mut(&key).unwrap().push_string(val.to_string())
-                    }
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Integer(vals),
-                    )) => self.get_mut(&key).unwrap().push_veci32(vals.to_vec())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Float(vals),
-                    )) => self.get_mut(&key).unwrap().push_vecf32(vals.to_vec())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::Character(vals),
-                    )) => self
-                        .get_mut(&key)
-                        .unwrap()
-                        .push_vecstring(vals.iter().map(|x| x.map(String::from)).collect())?,
-                    Some(noodles::vcf::record::genotypes::sample::Value::Array(
-                        noodles::vcf::record::genotypes::sample::value::Array::String(vals),
-                    )) => self.get_mut(&key).unwrap().push_vecstring(vals.to_vec())?,
-                    None => self.get_mut(&key).unwrap().push_null(),
+        let allele_count = record.alternate_bases().len() + 1;
+        for (alt_id, allele) in record.alternate_bases().iter().enumerate() {
+            for (key, column) in self.0.iter_mut() {
+                match key.as_str() {
+                    "chromosome" => column.push_string(record.chromosome().to_string()),
+                    "position" => column.push_i32(Some(usize::from(record.position()) as i32)),
+                    "identifier" => column.push_vecstring(
+                        record.ids().iter().map(|s| Some(s.to_string())).collect(),
+                    )?,
+                    "reference" => column.push_string(record.reference_bases().to_string()),
+                    "alternate" => column.push_string(allele.to_string()),
+                    "quality" => column.push_f32(record.quality_score().map(|v| v.into())),
+                    "filter" => column.push_vecstring(
+                        record
+                            .filters()
+                            .iter()
+                            .map(|s| Some(s.to_string()))
+                            .collect(),
+                    )?,
+                    _ => {}
                 }
             }
+            self.add_info(&record, header, schema, alt_id, allele_count)?;
+            self.add_format(&record, header, schema, alt_id, allele_count)?;
         }
+        Ok(())
+    }
 
-        for key in not_changed_key {
-            self.get_mut(&key).unwrap().push_null();
+    fn add_info(
+        &mut self,
+        record: &noodles::vcf::Record,
+        header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
+        alt_id: usize,
+        allele_count: usize,
+    ) -> std::result::Result<(), arrow2::error::Error> {
+        let info = record.info();
+
+        for key in header.infos().keys() {
+            let key_name = format!("info_{}", key);
+            let info_def = header.infos().get(key).unwrap();
+            if let Some(column) = self.0.get_mut(&key_name) {
+                match info.get(key) {
+                    Some(value) => match value {
+                        Some(noodles::vcf::record::info::field::Value::Flag) => {
+                            column.push_bool(Some(true));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Integer(value)) => {
+                            column.push_i32(Some(*value));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Float(value)) => {
+                            column.push_f32(Some(*value));
+                        }
+                        Some(noodles::vcf::record::info::field::Value::String(value)) => {
+                            column.push_string(value.to_string());
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Character(value)) => {
+                            column.push_string(value.to_string());
+                        }
+                        Some(noodles::vcf::record::info::field::Value::Array(arr)) => match arr
+                            .clone()
+                        {
+                            noodles::vcf::record::info::field::value::Array::Integer(array_val) => {
+                                match info_def.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            key
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_veci32(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_i32(*array_val.get(alt_id).unwrap());
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_veci32(vec![
+                                            *array_val.first().unwrap(),
+                                            *array_val.get(alt_id + 1).unwrap(),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_veci32(vec![
+                                                *array_val.first().unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_veci32(vec![
+                                                *array_val.first().unwrap(),
+                                                Some(0),
+                                                *array_val.get(alt_id + 1).unwrap(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
+                                    }
+                                    noodles::vcf::header::Number::Unknown => {
+                                        column.push_veci32(array_val)?;
+                                    }
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::Float(array_val) => {
+                                match info_def.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            key
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_vecf32(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_f32(*array_val.get(alt_id).unwrap());
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_vecf32(vec![
+                                            *array_val.first().unwrap(),
+                                            *array_val.get(alt_id + 1).unwrap(),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_vecf32(vec![
+                                                *array_val.first().unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap(),
+                                                *array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_vecf32(vec![
+                                                *array_val.first().unwrap(),
+                                                Some(0.),
+                                                *array_val.get(alt_id + 1).unwrap(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
+                                    }
+                                    noodles::vcf::header::Number::Unknown => {
+                                        column.push_vecf32(array_val)?;
+                                    }
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::String(array_val) => {
+                                match info_def.number() {
+                                    noodles::vcf::header::Number::Count(0 | 1) => {
+                                        unreachable!(
+                                            "Field {} declared as single value but found array",
+                                            key_name
+                                        )
+                                    }
+                                    noodles::vcf::header::Number::Count(_) => {
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                    noodles::vcf::header::Number::A => {
+                                        column.push_string(
+                                            array_val.get(alt_id).unwrap().clone().unwrap(),
+                                        );
+                                    }
+                                    noodles::vcf::header::Number::R => {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.first().unwrap().clone().unwrap()),
+                                            Some(
+                                                array_val.get(alt_id + 1).unwrap().clone().unwrap(),
+                                            ),
+                                        ])?;
+                                    }
+                                    noodles::vcf::header::Number::G => {
+                                        if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                        {
+                                            column.push_vecstring(vec![
+                                                array_val.first().unwrap().clone(),
+                                                array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap()
+                                                    .clone(),
+                                                array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap()
+                                                    .clone(),
+                                            ])?;
+                                        } else if array_val.len() == allele_count {
+                                            column.push_vecstring(vec![
+                                                array_val.first().unwrap().clone(),
+                                                Some(".".to_string()),
+                                                array_val.get(alt_id + 1).unwrap().clone(),
+                                            ])?;
+                                        } else {
+                                            eprintln!(
+                                                "Field {} declared as G but found array of size {}",
+                                                key,
+                                                array_val.len()
+                                            );
+                                            column.push_null();
+                                        }
+                                    }
+                                    noodles::vcf::header::Number::Unknown => {
+                                        column.push_vecstring(array_val)?;
+                                    }
+                                }
+                            }
+                            noodles::vcf::record::info::field::value::Array::Character(
+                                array_val,
+                            ) => match info_def.number() {
+                                noodles::vcf::header::Number::Count(0 | 1) => {
+                                    unreachable!(
+                                        "Field {} declared as single value but found array",
+                                        key_name
+                                    )
+                                }
+                                noodles::vcf::header::Number::Count(_) => {
+                                    column.push_vecstring(
+                                        array_val
+                                            .iter()
+                                            .map(|s| s.as_ref().map(|s| s.to_string()))
+                                            .collect::<Vec<Option<String>>>(),
+                                    )?;
+                                }
+                                noodles::vcf::header::Number::A => {
+                                    column.push_string(
+                                        (*array_val.get(alt_id).unwrap()).unwrap().to_string(),
+                                    );
+                                }
+                                noodles::vcf::header::Number::R => {
+                                    column.push_vecstring(vec![
+                                        Some(array_val.first().unwrap().unwrap().to_string()),
+                                        Some(
+                                            array_val.get(alt_id + 1).unwrap().unwrap().to_string(),
+                                        ),
+                                    ])?;
+                                }
+                                noodles::vcf::header::Number::G => {
+                                    if array_val.len() == (allele_count * (allele_count + 1) / 2) {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.first().unwrap().unwrap().to_string()),
+                                            Some(
+                                                array_val
+                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
+                                            ),
+                                            Some(
+                                                array_val
+                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
+                                            ),
+                                        ])?;
+                                    } else if array_val.len() == allele_count {
+                                        column.push_vecstring(vec![
+                                            Some(array_val.first().unwrap().unwrap().to_string()),
+                                            Some(".".to_string()),
+                                            Some(
+                                                array_val
+                                                    .get(alt_id + 1)
+                                                    .unwrap()
+                                                    .unwrap()
+                                                    .to_string(),
+                                            ),
+                                        ])?;
+                                    } else {
+                                        eprintln!(
+                                            "Field {} declared as G but found array of size {}",
+                                            key,
+                                            array_val.len()
+                                        );
+                                        column.push_null();
+                                    }
+                                }
+                                noodles::vcf::header::Number::Unknown => {
+                                    column.push_vecstring(
+                                        array_val
+                                            .iter()
+                                            .map(|s| s.as_ref().map(|s| s.to_string()))
+                                            .collect::<Vec<Option<String>>>(),
+                                    )?;
+                                }
+                            },
+                        },
+                        None => column.push_null(),
+                    },
+                    None => {
+                        if info_def.ty()
+                            == noodles::vcf::header::record::value::map::info::Type::Flag
+                        {
+                            column.push_bool(Some(false));
+                        } else {
+                            //Handle missing info field, only matters for FixedSizeList
+                            for field in schema.fields.iter() {
+                                if field.name == key_name {
+                                    match field.data_type {
+                                        arrow2::datatypes::DataType::FixedSizeList(
+                                            ref field_type,
+                                            fixed_size,
+                                        ) => match &field_type.data_type() {
+                                            arrow2::datatypes::DataType::Int32 => {
+                                                column.push_veci32(vec![None; fixed_size])?
+                                            }
+
+                                            arrow2::datatypes::DataType::Float32 => {
+                                                column.push_vecf32(vec![None; fixed_size])?
+                                            }
+
+                                            arrow2::datatypes::DataType::Utf8 => {
+                                                column.push_vecstring(vec![None; fixed_size])?
+                                            }
+
+                                            _ => column.push_null(),
+                                        },
+                                        _ => column.push_null(), //Otherwise, just push null
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
+        Ok(())
+    }
 
+    fn add_format(
+        &mut self,
+        record: &noodles::vcf::Record,
+        header: &noodles::vcf::Header,
+        schema: &arrow2::datatypes::Schema,
+        alt_id: usize,
+        allele_count: usize,
+    ) -> std::result::Result<(), arrow2::error::Error> {
+        for key in header.formats().keys() {
+            for (idx, sample) in header.sample_names().iter().enumerate() {
+                let key_name = format!("format_{}_{}", sample, key);
+                let format_def = header.formats().get(key).unwrap();
+                if let Some(column) = self.0.get_mut(&key_name) {
+                    if let Some(format_field) = record.genotypes().get_index(idx) {
+                        match format_field.get(key) {
+                            Some(value) => match value {
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Integer(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_i32(Some(*value));
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Float(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_f32(Some(*value));
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::String(
+                                        value,
+                                    ),
+                                ) => {
+                                    if key.to_string()=="GT" {
+                                        let mut gt_str = String::with_capacity(32);//Arbitrary capacity
+                                        if let Some(Ok(gt)) = format_field.genotype()
+                                        {
+                                            gt.iter().enumerate().for_each(|(i,allele)| {
+                                                let (position, phasing) = (allele.position(), allele.phasing());
+                                                match position {
+                                                    Some(a) if a == alt_id + 1 => {
+                                                        gt_str.push('1');
+                                                    }
+                                                    Some(0)=>{
+                                                        gt_str.push('0');
+                                                    }
+                                                    Some(_) =>{
+                                                        gt_str.push('.');
+                                                    }
+                                                    None=>{
+                                                        gt_str.push('.');
+                                                    }
+                                                }
+                                                if i < gt.len() - 1 {
+                                                gt_str.push(match phasing {
+                                                    Phasing::Phased => '|',
+                                                    Phasing::Unphased => '/',
+                                                });
+                                                }
+                                            });
+                                        }
+                                        else {
+                                            eprintln!("Should be unreachable");
+                                            gt_str.push_str("./.");
+                                        }
+                                        column.push_string(gt_str);
+                                    } else {
+                                        column.push_string(value.to_string());
+                                    }
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Character(
+                                        value,
+                                    ),
+                                ) => {
+                                    column.push_string(value.to_string());
+                                }
+                                Some(
+                                    noodles::vcf::record::genotypes::sample::Value::Array(arr),
+                                ) => match arr.clone() {
+                                    noodles::vcf::record::genotypes::sample::value::Array::Integer(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key
+                                            )
+                                        }
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_veci32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_i32(*array_val.get(alt_id).unwrap());
+                                        }
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_i32
+                                            column.push_veci32(vec![
+                                                *array_val.first().unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
+                                            ])?;
+                                        }
+                                        noodles::vcf::header::Number::G => {
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_veci32(vec![
+                                                    *array_val.first().unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_veci32(vec![
+                                                    *array_val.first().unwrap(),
+                                                    Some(0),
+                                                    *array_val.get(alt_id + 1).unwrap(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_veci32(array_val)?;
+                                        }
+                                    },
+                                    noodles::vcf::record::genotypes::sample::value::Array::Float(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key
+                                            )
+                                        }
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecf32(array_val)?;
+                                        }
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_f32(*array_val.get(alt_id).unwrap());
+                                        }
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_f32
+                                            column.push_vecf32(vec![
+                                                *array_val.first().unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap(),
+                                            ])?;
+                                        }
+                                        noodles::vcf::header::Number::G => {
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_vecf32(vec![
+                                                    *array_val.first().unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap(),
+                                                    *array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecf32(vec![
+                                                    *array_val.first().unwrap(),
+                                                    Some(0.),
+                                                    *array_val.get(alt_id + 1).unwrap(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecf32(array_val)?;
+                                        }
+                                    },
+                                    noodles::vcf::record::genotypes::sample::value::Array::String(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key_name
+                                            )
+                                        },
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecstring(array_val)?;
+                                        },
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_string(
+                                                array_val.get(alt_id).unwrap().clone().unwrap(),
+                                            );
+                                        },
+                                        noodles::vcf::header::Number::R => {
+                                            //TODO: Use push_fixed_size_string
+                                            column.push_vecstring(vec![
+                                                Some(array_val.first().unwrap().clone().unwrap()),
+                                                Some(array_val.get(alt_id + 1).unwrap().clone().unwrap()),
+                                            ])?;
+                                        },
+                                        noodles::vcf::header::Number::G => {
+                                            if array_val.len()
+                                            == (allele_count * (allele_count + 1) / 2)
+                                            {
+                                                column.push_vecstring(vec![
+                                                    array_val.first().unwrap().clone(),
+                                                    array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap()
+                                                        .clone(),
+                                                    array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap()
+                                                        .clone(),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecstring(vec![
+                                                    array_val.first().unwrap().clone(),
+                                                    Some(".".to_string()),
+                                                    array_val.get(alt_id + 1).unwrap().clone(),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
+                                        }
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecstring(array_val)?;
+                                        }
+                                    },
+                                    noodles::vcf::record::genotypes::sample::value::Array::Character(
+                                        array_val,
+                                    ) => match format_def.number() {
+                                        noodles::vcf::header::Number::Count(0 | 1) => {
+                                            unreachable!(
+                                                "Field {} declared as single value but found array",
+                                                key_name
+                                            )
+                                        },
+                                        noodles::vcf::header::Number::Count(_) => {
+                                            column.push_vecstring(
+                                                array_val
+                                                    .iter()
+                                                    .map(|s| s.as_ref().map(|s| s.to_string()))
+                                                    .collect::<Vec<Option<String>>>(),
+                                            )?;
+                                        },
+                                        noodles::vcf::header::Number::A => {
+                                            column.push_string(
+                                                (*array_val.get(alt_id).unwrap()).unwrap().to_string(),
+                                            );
+                                        },
+                                        noodles::vcf::header::Number::R => {
+                                            column.push_vecstring(vec![
+                                                Some(array_val.first().unwrap().unwrap().to_string()),
+                                                Some(array_val.get(alt_id + 1).unwrap().unwrap().to_string()),
+                                            ])?;
+                                        },
+                                        noodles::vcf::header::Number::G => {
+                                            if array_val.len() == (allele_count * (allele_count + 1) / 2) {
+                                                column.push_vecstring(vec![
+                                                    Some(array_val.first().unwrap().unwrap().to_string()),
+                                                    Some(
+                                                        array_val
+                                                            .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                            .unwrap()
+                                                            .unwrap()
+                                                            .to_string(),
+                                                    ),
+                                                    Some(
+                                                        array_val
+                                                            .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                            .unwrap()
+                                                            .unwrap()
+                                                            .to_string(),
+                                                    ),
+                                                ])?;
+                                            } else if array_val.len() == allele_count {
+                                                column.push_vecstring(vec![
+                                                    Some(array_val.first().unwrap().unwrap().to_string()),
+                                                    Some(".".to_string()),
+                                                    Some(
+                                                        array_val.get(alt_id + 1).unwrap().unwrap().to_string(),
+                                                    ),
+                                                ])?;
+                                            } else {
+                                                eprintln!(
+                                                    "Field {} declared as G but found array of size {}",
+                                                    key,
+                                                    array_val.len()
+                                                );
+                                                column.push_null();
+                                            }
+                                        }
+                                        ,
+                                        noodles::vcf::header::Number::Unknown => {
+                                            column.push_vecstring(
+                                                array_val
+                                                    .iter()
+                                                    .map(|s| s.as_ref().map(|s| s.to_string()))
+                                                    .collect::<Vec<Option<String>>>(),
+                                            )?;
+                                        },
+                                    },
+
+                                },
+                                None => column.push_null(),
+                            },
+                            None => column.push_null(),
+                        }
+                    } else {
+                        //Handle missing format field, only matters for FixedSizeList
+                        for field in schema.fields.iter() {
+                            if field.name == key_name {
+                                match field.data_type {
+                                    arrow2::datatypes::DataType::FixedSizeList(
+                                        ref field_type,
+                                        fixed_size,
+                                    ) => match &field_type.data_type() {
+                                        arrow2::datatypes::DataType::Int32 => {
+                                            column.push_veci32(vec![None; fixed_size])?
+                                        }
+
+                                        arrow2::datatypes::DataType::Float32 => {
+                                            column.push_vecf32(vec![None; fixed_size])?
+                                        }
+
+                                        arrow2::datatypes::DataType::Utf8 => {
+                                            column.push_vecstring(vec![None; fixed_size])?
+                                        }
+
+                                        _ => column.push_null(),
+                                    },
+                                    _ => column.push_null(),
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         Ok(())
     }
 
@@ -264,154 +769,6 @@ impl Name2Data {
 
         s
     }
-
-    fn add_info(
-        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
-        header: &noodles::vcf::Header,
-        length: usize,
-    ) {
-        for (key, value) in header.infos() {
-            match (value.ty(), value.number()) {
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Integer,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Int(arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(
-                        length,
-                    )),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Integer, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Float,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Float(arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(
-                        length,
-                    )),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Float, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Flag,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Flag, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListBool(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::Character,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::Character, _) => data
-                    .insert(
-                        format!("info_{key}"),
-                        ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                            length,
-                        )),
-                    ),
-                (
-                    noodles::vcf::header::record::value::map::info::Type::String,
-                    noodles::vcf::header::Number::Count(0 | 1),
-                ) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                ),
-                (noodles::vcf::header::record::value::map::info::Type::String, _) => data.insert(
-                    format!("info_{key}"),
-                    ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(length)),
-                ),
-            };
-        }
-    }
-
-    fn add_genotype(
-        data: &mut rustc_hash::FxHashMap<String, ColumnData>,
-        header: &noodles::vcf::Header,
-        length: usize,
-    ) {
-        for sample in header.sample_names() {
-            for (key, value) in header.formats() {
-                let key = format!("format_{sample}_{key}");
-
-                match (value.ty(), value.number()) {
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Integer,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::Int(
-                            arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(length),
-                        ),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Integer, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListInt(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Float,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::Float(
-                            arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(length),
-                        ),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Float, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListFloat(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::Character,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::Character, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                    (
-                        noodles::vcf::header::record::value::map::format::Type::String,
-                        noodles::vcf::header::Number::Count(0 | 1),
-                    ) => data.insert(
-                        key,
-                        ColumnData::String(arrow2::array::MutableUtf8Array::with_capacity(length)),
-                    ),
-                    (noodles::vcf::header::record::value::map::format::Type::String, _) => data
-                        .insert(
-                            key,
-                            ColumnData::ListString(arrow2::array::MutableListArray::with_capacity(
-                                length,
-                            )),
-                        ),
-                };
-            }
-        }
-    }
 }
 
 #[derive(Debug)]
@@ -427,6 +784,77 @@ pub enum ColumnData {
 }
 
 impl ColumnData {
+    pub fn new(arrow_type: &arrow2::datatypes::DataType, length: usize) -> Self {
+        match arrow_type {
+            arrow2::datatypes::DataType::Boolean => {
+                ColumnData::Bool(arrow2::array::MutableBooleanArray::with_capacity(length))
+            }
+            arrow2::datatypes::DataType::Int32 => ColumnData::Int(
+                arrow2::array::MutablePrimitiveArray::<i32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::Float32 => ColumnData::Float(
+                arrow2::array::MutablePrimitiveArray::<f32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::Utf8 => ColumnData::String(
+                arrow2::array::MutableUtf8Array::<i32>::with_capacity(length),
+            ),
+            arrow2::datatypes::DataType::List(field) => match field.data_type() {
+                arrow2::datatypes::DataType::Boolean => {
+                    ColumnData::ListBool(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableBooleanArray,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Int32 => {
+                    ColumnData::ListInt(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<i32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Float32 => {
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<f32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Utf8 => {
+                    ColumnData::ListString(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableUtf8Array<i32>,
+                    >::with_capacity(length))
+                }
+                _ => todo!(),
+            },
+            arrow2::datatypes::DataType::FixedSizeList(field, _) => match field.data_type() {
+                arrow2::datatypes::DataType::Boolean => {
+                    ColumnData::ListBool(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableBooleanArray,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Int32 => {
+                    ColumnData::ListInt(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<i32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Float32 => {
+                    ColumnData::ListFloat(arrow2::array::MutableListArray::<
+                        i32,
+                        MutablePrimitiveArray<f32>,
+                    >::with_capacity(length))
+                }
+                arrow2::datatypes::DataType::Utf8 => {
+                    ColumnData::ListString(arrow2::array::MutableListArray::<
+                        i32,
+                        arrow2::array::MutableUtf8Array<i32>,
+                    >::with_capacity(length))
+                }
+                _ => todo!(),
+            },
+            dt => unreachable!("Unsupported arrow type, please check Schema: {:?}", dt),
+        }
+    }
     /// Add a Null value in array
     pub fn push_null(&mut self) {
         match self {
@@ -443,6 +871,23 @@ impl ColumnData {
                 }
             }
         }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            ColumnData::Bool(a) => a.len(),
+            ColumnData::Int(a) => a.len(),
+            ColumnData::Float(a) => a.len(),
+            ColumnData::String(a) => a.len(),
+            ColumnData::ListBool(a) => a.len(),
+            ColumnData::ListInt(a) => a.len(),
+            ColumnData::ListFloat(a) => a.len(),
+            ColumnData::ListString(a) => a.len(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// Add a boolean value in array, if it's not a boolean array failled
@@ -526,32 +971,35 @@ impl ColumnData {
 
 #[cfg(test)]
 mod tests {
+    use crate::schema;
+
     use super::*;
 
     static VCF_FILE: &[u8] = b"##fileformat=VCFv4.3
 ##fileDate=20220528
 ##source=ClinVar
 ##reference=GRCh38
-##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description=\"the ClinVar Allele ID\">
-##INFO=<ID=ALLELEIDS,Number=2,Type=Integer,Description=\"the ClinVar Allele ID\">
-##INFO=<ID=AF_ESP,Number=1,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=AF_ESPS,Number=2,Type=Float,Description=\"allele frequencies from GO-ESP\">
-##INFO=<ID=DBVARI,Number=0,Type=Flag,Description=\"nsv accessions from dbVar for the variant\">
-##INFO=<ID=GENEINFO,Number=1,Type=Character,Description=\"Gene(s) \">
-##INFO=<ID=GENEINFOS,Number=2,Type=Character,Description=\"Gene(s) \">
-##INFO=<ID=CLNVC,Number=1,Type=String,Description=\"Variant type\">
-##INFO=<ID=CLNVCS,Number=2,Type=String,Description=\"Variant type\">
-##FORMAT=<ID=AB,Number=1,Type=Integer,Description=\"Allelic \">
-##FORMAT=<ID=ABS,Number=2,Type=Integer,Description=\"Allelic \">
-##FORMAT=<ID=DC,Number=1,Type=Float,Description=\"Approximate read \">
-##FORMAT=<ID=DCS,Number=2,Type=Float,Description=\"Approximate read \">
-##FORMAT=<ID=GF,Number=1,Type=Character,Description=\"Genotype Quality\">
-##FORMAT=<ID=GFS,Number=2,Type=Character,Description=\"Genotype Quality\">
+##INFO=<ID=Flag,Number=0,Type=Flag,Description=\"flag\">
+##INFO=<ID=Info1,Number=1,Type=Float,Description=\"1 float\">
+##INFO=<ID=Info_fixed,Number=3,Type=Integer,Description=\"3 integer\">
+##INFO=<ID=Info_A,Number=A,Type=Integer,Description=\"A integer\">
+##INFO=<ID=Info_RString,Number=R,Type=String,Description=\"R character\">
+##INFO=<ID=Info_RChar,Number=R,Type=Character,Description=\"R string\">
+##INFO=<ID=Info_G,Number=G,Type=Integer,Description=\"G integer\">
+##INFO=<ID=Info_u,Number=.,Type=Integer,Description=\"Unknown integer\">
+##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">
+##FORMAT=<ID=Format_1,Number=1,Type=Integer,Description=\"1 integer\">
+##FORMAT=<ID=Format_fixed,Number=4,Type=Float,Description=\"4 float\">
+##FORMAT=<ID=Format_A,Number=A,Type=String,Description=\"A string\">
+##FORMAT=<ID=Format_R,Number=R,Type=Character,Description=\"R character\">
+##FORMAT=<ID=Format_G,Number=G,Type=Integer,Description=\"G integer\">
+##FORMAT=<ID=Format_u,Number=.,Type=Integer,Description=\"Unknow integer\">
 ##SAMPLE=<ID=first,Genomes=Germline,Mixture=1.,Description=\"first\">
 ##SAMPLE=<ID=second,Genomes=Germline,Mixture=1.,Description=\"second\">
-#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tfirst\tsecond
-1\t10\t.\tA\tC,T\t23\tPASS\tALLELEID=14;ALLELEIDS=14,15;AF_ESP=1.2;AF_ESPS=1.2,1.5;DBVARI;GENEINFO=c;GENEINFOS=c,d;CLNVC=test1;CLNVCS=test1,test2\tAB:ABS:GF:GFS:DC:DCS\t1:2,3:c:C,D:1.2:1.4,1.6\t1:2,3:c:C,D:1.2:1.4,1.6
-1\t20\t.\tA\tC\t23\tq5,q10\tALLELEID=14;AF_ESP=1.2;DBVARI;GENEINFO=c;CLNVC=test1;CLNVCS=test1,test2\tAB:GF:DC\t1:c:1.2\t2:a:4.5
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	first	second
+chr1	100	.	A	T	50	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	1/1:44:1,2,3,5:testA:r,a:1,2,3:0,2,5,6,1
+chr1	200	.	C	G,CG	60	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42,43;Info_RChar=r,a,A;Info_RString=ref,alt1,alt2;Info_G=1,2,3,4,5,6;Info_u=1,6,3,4,5	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:2,4,6,8:testA1,testA2:R,A,B:1,2,3,4,5,6:0,2,4	1/2:45:2,1,6,8:testB1,testB2:R,a,b:1,2,3,4,5,6:0,2,4,5,6
+chr2	300	.	G	A	70	PASS	Info_1=0;Info_fixed=1,2,3;Info_A=42;Info_RChar=r,a;Info_RString=ref,alt;Info_G=1,2,3;Info_u=0,1,2,3,4;Flag	GT:Format_1:Format_fixed:Format_A:Format_R:Format_G:Format_u	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6	0/1:44:1,2,3,4:testA:R,A:1,2,3:0,2,4,6
 ";
 
     #[test]
@@ -559,8 +1007,9 @@ mod tests {
         let mut reader = noodles::vcf::Reader::new(VCF_FILE);
 
         let header: noodles::vcf::Header = reader.read_header().unwrap();
+        let schema = schema::from_header(&header, false).unwrap();
 
-        let mut data = Name2Data::new(10, &header);
+        let mut data = Name2Data::new(10, &schema);
         let mut col_names = data.0.keys().cloned().collect::<Vec<String>>();
         col_names.sort();
 
@@ -570,31 +1019,32 @@ mod tests {
                 "alternate".to_string(),
                 "chromosome".to_string(),
                 "filter".to_string(),
-                "format_first_AB".to_string(),
-                "format_first_ABS".to_string(),
-                "format_first_DC".to_string(),
-                "format_first_DCS".to_string(),
-                "format_first_GF".to_string(),
-                "format_first_GFS".to_string(),
-                "format_second_AB".to_string(),
-                "format_second_ABS".to_string(),
-                "format_second_DC".to_string(),
-                "format_second_DCS".to_string(),
-                "format_second_GF".to_string(),
-                "format_second_GFS".to_string(),
+                "format_first_Format_1".to_string(),
+                "format_first_Format_A".to_string(),
+                "format_first_Format_G".to_string(),
+                "format_first_Format_R".to_string(),
+                "format_first_Format_fixed".to_string(),
+                "format_first_Format_u".to_string(),
+                "format_first_GT".to_string(),
+                "format_second_Format_1".to_string(),
+                "format_second_Format_A".to_string(),
+                "format_second_Format_G".to_string(),
+                "format_second_Format_R".to_string(),
+                "format_second_Format_fixed".to_string(),
+                "format_second_Format_u".to_string(),
+                "format_second_GT".to_string(),
                 "identifier".to_string(),
-                "info_AF_ESP".to_string(),
-                "info_AF_ESPS".to_string(),
-                "info_ALLELEID".to_string(),
-                "info_ALLELEIDS".to_string(),
-                "info_CLNVC".to_string(),
-                "info_CLNVCS".to_string(),
-                "info_DBVARI".to_string(),
-                "info_GENEINFO".to_string(),
-                "info_GENEINFOS".to_string(),
+                "info_Flag".to_string(),
+                "info_Info1".to_string(),
+                "info_Info_A".to_string(),
+                "info_Info_G".to_string(),
+                "info_Info_RChar".to_string(),
+                "info_Info_RString".to_string(),
+                "info_Info_fixed".to_string(),
+                "info_Info_u".to_string(),
                 "position".to_string(),
                 "quality".to_string(),
-                "reference".to_string()
+                "reference".to_string(),
             ]
         );
 
@@ -621,80 +1071,107 @@ mod tests {
 
         let header: noodles::vcf::Header = reader.read_header().unwrap();
 
-        let mut data = Name2Data::new(10, &header);
+        let schema = schema::from_header(&header, false).unwrap();
+        let mut data = Name2Data::new(10, &schema);
 
         let mut iterator = reader.records(&header);
         let record = iterator.next().unwrap().unwrap();
 
-        data.add_record(record, &header).unwrap();
-        assert_eq!(format!("{:?}", data.get("alternate")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 84] }, validity: None }, validity: None }))".to_string());
+        data.add_record(record, &header, &schema).unwrap();
+        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [84] }, validity: None }))".to_string());
 
-        assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [49] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("chromosome")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [99, 104, 114, 49] }, validity: None }))".to_string());
         assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4]), values: [80, 65, 83, 83] }, validity: None }, validity: None }))".to_string());
 
         assert_eq!(
-            format!("{:?}", data.get("format_first_AB")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))"
+            format!("{:?}", data.get("format_first_Format_1")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [44], validity: None }))"
                 .to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_ABS")),
-            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [2, 3], validity: None }, validity: None }))"
+            format!("{:?}", data.get("format_first_Format_A")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 65] }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_G")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_R")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [82, 65] }, validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_fixed")),
+            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.0, 2.0, 3.0, 4.0], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_first_Format_u")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 2, 4, 6], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(format!("{:?}", data.get("format_first_GT")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3]), values: [48, 47, 49] }, validity: None }))".to_string());
+
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_1")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [44], validity: None }))"
                 .to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_DC")),
-            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))".to_string()
+            format!("{:?}", data.get("format_second_Format_A")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 65] }, validity: None }))".to_string()
+        );
+
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_G")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string()
         );
         assert_eq!(
-            format!("{:?}", data.get("format_first_DCS")),
-            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.4, 1.6], validity: None }, validity: None }))".to_string()
+            format!("{:?}", data.get("format_second_Format_R")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [114, 97] }, validity: None }, validity: None }))".to_string()
         );
-        assert_eq!(format!("{:?}", data.get("format_first_GF")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("format_first_GFS")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [67, 68] }, validity: None }, validity: None }))".to_string());
         assert_eq!(
-            format!("{:?}", data.get("format_second_AB")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [1], validity: None }))"
+            format!("{:?}", data.get("format_second_Format_fixed")),
+            "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 4]), values: MutablePrimitiveArray { data_type: Float32, values: [1.0, 2.0, 3.0, 5.0], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_Format_u")),
+            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 5]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 2, 5, 6, 1], validity: None }, validity: None }))".to_string()
+        );
+        assert_eq!(
+            format!("{:?}", data.get("format_second_GT")),
+            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3]), values: [49, 47, 49] }, validity: None }))".to_string()
+        );
+
+        assert_eq!(format!("{:?}", data.get("identifier")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 0]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0]), values: [] }, validity: None }, validity: None }))".to_string());
+
+        assert_eq!(format!("{:?}", data.get("info_Flag")), "Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______0], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info1")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [0.0], validity: Some([0b_______0]) }))".to_string());
+        assert_eq!(
+            format!("{:?}", data.get("info_Info_A")),
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [42], validity: None }))"
                 .to_string()
         );
+        assert_eq!(format!("{:?}", data.get("info_Info_G")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_RChar")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 2]), values: [114, 97] }, validity: None }, validity: None }))".to_string());
         assert_eq!(
-            format!("{:?}", data.get("format_second_DC")),
-            "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))".to_string()
+            format!("{:?}", data.get("info_Info_RString")),
+            "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 3, 6]), values: [114, 101, 102, 97, 108, 116] }, validity: None }, validity: None }))".to_string()
         );
-        assert_eq!(
-            format!("{:?}", data.get("format_second_GF")),
-            "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))".to_string()
-        );
-        assert_eq!(format!("{:?}", data.get("identifier")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 0]), values: [] }, validity: Some([0b_______0]) }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_AF_ESP")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [1.2], validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_AF_ESPS")), "Some(ListFloat(MutableListArray { data_type: List(Field { name: \"item\", data_type: Float32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Float32, values: [1.2, 1.5], validity: None }, validity: None }))".to_string());
-        assert_eq!(
-            format!("{:?}", data.get("info_ALLELEID")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [14], validity: None }))"
-                .to_string()
-        );
-        assert_eq!(
-            format!("{:?}", data.get("info_ALLELEIDS")),
-            "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutablePrimitiveArray { data_type: Int32, values: [14, 15], validity: None }, validity: None }))"
-                .to_string()
-        );
-        assert_eq!(format!("{:?}", data.get("info_CLNVC")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5]), values: [116, 101, 115, 116, 49] }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_CLNVCS")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 5, 10]), values: [116, 101, 115, 116, 49, 116, 101, 115, 116, 50] }, validity: None }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_DBVARI")), "Some(Bool(MutableBooleanArray { data_type: Boolean, values: [0b_______1], validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("info_GENEINFO")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [99] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_fixed")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 3]), values: MutablePrimitiveArray { data_type: Int32, values: [1, 2, 3], validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("info_Info_u")), "Some(ListInt(MutableListArray { data_type: List(Field { name: \"item\", data_type: Int32, is_nullable: true, metadata: {} }), offsets: Offsets([0, 5]), values: MutablePrimitiveArray { data_type: Int32, values: [0, 1, 2, 3, 4], validity: None }, validity: None }))".to_string());
+
         assert_eq!(
             format!("{:?}", data.get("position")),
-            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [10], validity: None }))"
+            "Some(Int(MutablePrimitiveArray { data_type: Int32, values: [100], validity: None }))"
                 .to_string()
         );
-        assert_eq!(format!("{:?}", data.get("quality")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [23.0], validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("quality")), "Some(Float(MutablePrimitiveArray { data_type: Float32, values: [50.0], validity: None }))".to_string());
         assert_eq!(format!("{:?}", data.get("reference")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [65] }, validity: None }))".to_string());
 
         let record = iterator.next().unwrap().unwrap();
-        let mut data = Name2Data::new(10, &header);
-        data.add_record(record, &header).unwrap();
+        let mut data = Name2Data::new(10, &schema);
+        data.add_record(record, &header, &schema).unwrap();
 
-        assert_eq!(format!("{:?}", data.get("alternate")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1]), values: [67] }, validity: None }, validity: None }))".to_string());
-        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 6]), values: [113, 53, 44, 113, 49, 48] }, validity: None }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("alternate")), "Some(String(MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 1, 3]), values: [71, 67, 71] }, validity: None }))".to_string());
+        assert_eq!(format!("{:?}", data.get("filter")), "Some(ListString(MutableListArray { data_type: List(Field { name: \"item\", data_type: Utf8, is_nullable: true, metadata: {} }), offsets: Offsets([0, 1, 2]), values: MutableUtf8Array { values: MutableUtf8ValuesArray { data_type: Utf8, offsets: Offsets([0, 4, 8]), values: [80, 65, 83, 83, 80, 65, 83, 83] }, validity: None }, validity: None }))".to_string());
     }
 }
