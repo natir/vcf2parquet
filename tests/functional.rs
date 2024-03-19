@@ -14,7 +14,27 @@ fn help() -> Result<(), assert_cmd::cargo::CargoError> {
 
     cmd.args(["-h"]);
 
-    let truth: &[u8] = b"Convert a vcf in parquet
+    let truth: &[u8] = if cfg!(windows) {
+        b"Convert a vcf in parquet
+
+Usage: vcf2parquet.exe [OPTIONS] --input <INPUT> <COMMAND>
+
+Commands:
+  convert  Convert a vcf in a parquet
+  split    Convert a vcf in multiple parquet file each file contains `batch_size` record
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+  -i, --input <INPUT>              Input path
+  -b, --batch-size <BATCH_SIZE>    Batch size (default 100,000)
+  -c, --compression <COMPRESSION>  Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
+  -r, --read-buffer <READ_BUFFER>  Read buffer size in bytes (default 8192)
+  -I, --info-optional              All information fields are optional
+  -h, --help                       Print help (see more with '--help')
+  -V, --version                    Print version
+"
+    } else {
+        b"Convert a vcf in parquet
 
 Usage: vcf2parquet [OPTIONS] --input <INPUT> <COMMAND>
 
@@ -29,9 +49,10 @@ Options:
   -c, --compression <COMPRESSION>  Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
   -r, --read-buffer <READ_BUFFER>  Read buffer size in bytes (default 8192)
   -I, --info-optional              All information fields are optional
-  -h, --help                       Print help
+  -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version
-";
+"
+    };
 
     let assert = cmd.assert();
 
