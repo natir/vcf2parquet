@@ -4,6 +4,8 @@ build-backend = "maturin"
 
 [project]
 name = "vcf2parquet"
+readme = "Readme.md"
+license = "MIT"
 requires-python = ">=3.7"
 classifiers = [
     "Programming Language :: Rust",

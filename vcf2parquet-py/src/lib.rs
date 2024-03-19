@@ -1,8 +1,16 @@
-use arrow2;
-use error::PyVcf2ParquetErr;
-use pyo3::prelude::*;
-mod error;
+//! vcf2parquet python binding
+
+/* std use */
 use vcf2parquet_lib as lib;
+
+/* crate use */
+use pyo3::prelude::*;
+
+/* mod decalaration */
+mod error;
+
+/* projet use */
+use error::PyVcf2ParquetErr;
 
 #[pyclass]
 #[derive(Debug, Clone, Copy)]
@@ -30,7 +38,7 @@ fn convert_vcf(
         .map(Box::new)
         .map(|x| niffler::get_reader(x))?
         .map(|(file, _)| std::io::BufReader::with_capacity(read_buffer, file))
-        .map_err(|niffle_err| PyVcf2ParquetErr::Niffle(niffle_err))?;
+        .map_err(PyVcf2ParquetErr::Niffle)?;
 
     let mut output = std::fs::File::create(output)?;
 

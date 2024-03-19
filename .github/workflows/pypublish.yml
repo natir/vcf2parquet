@@ -32,7 +32,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter
+          args: --sdist --release --out dist --find-interpreter
           sccache: 'true'
           working-directory: vcf2parquet-py
           manylinux: auto
@@ -57,7 +57,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter
+          args: --sdist --release --out dist --find-interpreter
           sccache: 'true'
           working-directory: vcf2parquet-py
       - name: Upload wheels
@@ -80,7 +80,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter
+          args: --sdist --release --out dist --find-interpreter
           sccache: 'true'
           working-directory: vcf2parquet-py
       - name: Upload wheels
