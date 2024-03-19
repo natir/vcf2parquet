@@ -11,8 +11,6 @@ on:
       - main
     tags:
       - '*'
-  pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,8 +22,8 @@ jobs:
       matrix:
         target: [x86_64, x86, aarch64, armv7, s390x, ppc64le]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Build wheels
@@ -37,7 +35,7 @@ jobs:
           working-directory: vcf2parquet-py
           manylinux: auto
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: vcf2parquet-py/dist
@@ -48,8 +46,8 @@ jobs:
       matrix:
         target: [x64, x86]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           architecture: ${{ matrix.target }}
@@ -61,7 +59,7 @@ jobs:
           sccache: 'true'
           working-directory: vcf2parquet-py
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: vcf2parquet-py/dist
@@ -72,8 +70,8 @@ jobs:
       matrix:
         target: [x86_64, aarch64]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Build wheels
@@ -84,7 +82,7 @@ jobs:
           sccache: 'true'
           working-directory: vcf2parquet-py
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: vcf2parquet-py/dist
