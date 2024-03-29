@@ -4,6 +4,8 @@
 
 /* crate use */
 
+use arrow2::datatypes::Field;
+
 /* project use */
 use crate::name2data::*;
 
@@ -12,6 +14,7 @@ pub struct Record2Chunk<T> {
     length: usize,
     header: noodles::vcf::Header,
     schema: arrow2::datatypes::Schema,
+    schema_map: std::collections::HashMap<String, Field>,
     end: bool,
 }
 
@@ -25,13 +28,22 @@ where
         header: noodles::vcf::Header,
         schema: arrow2::datatypes::Schema,
     ) -> Self {
-        Self {
+        let mut res = Self {
             inner,
             length,
             header,
             schema,
+            schema_map: Default::default(),
             end: false,
-        }
+        };
+        res.schema_map = res
+            .schema
+            .fields
+            .iter()
+            .cloned()
+            .map(|f| (f.name.clone(), f))
+            .collect();
+        res
     }
 
     pub fn encodings(&self) -> Vec<Vec<arrow2::io::parquet::write::Encoding>> {
@@ -66,7 +78,7 @@ where
         for _ in 0..self.length {
             match self.inner.next() {
                 Some(Ok(record)) => {
-                    if let Err(e) = name2data.add_record(record, &self.header, &self.schema) {
+                    if let Err(e) = name2data.add_record(record, &self.header, &self.schema_map) {
                         return Some(Err(e));
                     }
                 }
