@@ -1,7 +1,7 @@
 //! vcf2parquet python binding
 
 /* std use */
-use vcf2parquet_lib as lib;
+use vcf2parquet as lib;
 
 /* crate use */
 use pyo3::prelude::*;
