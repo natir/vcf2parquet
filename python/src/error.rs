@@ -11,7 +11,7 @@ use pyo3::{
     },
 };
 use thiserror::Error;
-use vcf2parquet_lib::error::Error as Vcf2ParquetError;
+use vcf2parquet::error::Error as Vcf2ParquetError;
 
 #[derive(Error)]
 pub enum PyVcf2ParquetErr {

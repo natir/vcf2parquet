@@ -6,6 +6,7 @@
 
 /* project use */
 
+/// Error type
 #[non_exhaustive]
 #[derive(thiserror::Error, std::fmt::Debug)]
 pub enum Error {
@@ -15,11 +16,11 @@ pub enum Error {
 
     /// Arrow error
     #[error(transparent)]
-    Arrow(#[from] arrow2::error::Error),
+    Arrow(#[from] arrow::error::ArrowError),
 
     /// Parquet error
     #[error(transparent)]
-    Parquet(#[from] arrow2::io::parquet::read::ParquetError),
+    Parquet(#[from] parquet::errors::ParquetError),
 
     /// Io error
     #[error(transparent)]
@@ -34,4 +35,5 @@ pub enum Error {
     Niffler(#[from] niffler::Error),
 }
 
+/// Result type
 pub type Result<T> = std::result::Result<T, Error>;

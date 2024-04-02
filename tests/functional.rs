@@ -25,13 +25,22 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-  -i, --input <INPUT>              Input path
-  -b, --batch-size <BATCH_SIZE>    Batch size (default 100,000)
-  -c, --compression <COMPRESSION>  Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
-  -r, --read-buffer <READ_BUFFER>  Read buffer size in bytes (default 8192)
-  -I, --info-optional              All information fields are optional
-  -h, --help                       Print help (see more with '--help')
-  -V, --version                    Print version
+  -i, --input <INPUT>
+          Input path
+  -b, --batch-size <BATCH_SIZE>
+          Batch size (default 100,000)
+  -c, --compression <COMPRESSION>
+          Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
+  -r, --read-buffer <READ_BUFFER>
+          Read buffer size in bytes (default 8192)
+  -I, --info-optional
+          All information fields are optional
+      --parquet-version <PARQUET_VERSION>
+          [possible values: v1, v2]
+  -h, --help
+          Print help (see more with \'--help\')
+  -V, --version
+          Print version
 "
     } else {
         b"Convert a vcf in parquet
@@ -44,13 +53,22 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-  -i, --input <INPUT>              Input path
-  -b, --batch-size <BATCH_SIZE>    Batch size (default 100,000)
-  -c, --compression <COMPRESSION>  Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
-  -r, --read-buffer <READ_BUFFER>  Read buffer size in bytes (default 8192)
-  -I, --info-optional              All information fields are optional
-  -h, --help                       Print help (see more with '--help')
-  -V, --version                    Print version
+  -i, --input <INPUT>
+          Input path
+  -b, --batch-size <BATCH_SIZE>
+          Batch size (default 100,000)
+  -c, --compression <COMPRESSION>
+          Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
+  -r, --read-buffer <READ_BUFFER>
+          Read buffer size in bytes (default 8192)
+  -I, --info-optional
+          All information fields are optional
+      --parquet-version <PARQUET_VERSION>
+          [possible values: v1, v2]
+  -h, --help
+          Print help (see more with \'--help\')
+  -V, --version
+          Print version
 "
     };
 
@@ -70,6 +88,7 @@ fn convert() -> Result<(), assert_cmd::cargo::CargoError> {
     let parquet_path = temp_path.join("tests.parquet");
 
     cmd.args([
+        "-I",
         "-i",
         "tests/data/test.vcf",
         "convert",
@@ -107,6 +126,7 @@ fn split() -> Result<(), assert_cmd::cargo::CargoError> {
     let parquet_path = temp_path.join("test_{}.parquet");
 
     cmd.args([
+        "-I",
         "-i",
         "tests/data/test.vcf",
         "split",
