@@ -149,11 +149,6 @@ impl Name2Data {
                                                 *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         } else {
-                                            eprintln!(
-                                                "Field {} declared as G but found array of size {}",
-                                                key,
-                                                array_val.len()
-                                            );
                                             column.push_null();
                                         }
                                     }
@@ -202,11 +197,6 @@ impl Name2Data {
                                                 *array_val.get(alt_id + 1).unwrap(),
                                             ])?;
                                         } else {
-                                            eprintln!(
-                                                "Field {} declared as G but found array of size {}",
-                                                key,
-                                                array_val.len()
-                                            );
                                             column.push_null();
                                         }
                                     }
@@ -261,11 +251,6 @@ impl Name2Data {
                                                 array_val.get(alt_id + 1).unwrap().clone(),
                                             ])?;
                                         } else {
-                                            eprintln!(
-                                                "Field {} declared as G but found array of size {}",
-                                                key,
-                                                array_val.len()
-                                            );
                                             column.push_null();
                                         }
                                     }
@@ -336,11 +321,6 @@ impl Name2Data {
                                             ),
                                         ])?;
                                     } else {
-                                        eprintln!(
-                                            "Field {} declared as G but found array of size {}",
-                                            key,
-                                            array_val.len()
-                                        );
                                         column.push_null();
                                     }
                                 }
@@ -407,28 +387,13 @@ impl Name2Data {
                     if let Some(format_field) = record.genotypes().get_index(idx) {
                         match format_field.get(key).flatten() {
                             Some(value) => match value {
-                                
-                                    noodles::vcf::record::genotypes::sample::Value::Integer(
-                                        value,
-                                    )
-                                 => {
-                                    column.push_i32(Some(*value));
-                                }
-                                
-                                    noodles::vcf::record::genotypes::sample::Value::Float(
-                                        value,
-                                    
-                                ) => {
-                                    column.push_f32(Some(*value));
-                                }
-                                    noodles::vcf::record::genotypes::sample::Value::String(
-                                        value,
-                                ) => {
+                                    noodles::vcf::record::genotypes::sample::Value::Integer(value) => column.push_i32(Some(*value)),
+                                    noodles::vcf::record::genotypes::sample::Value::Float(value) => column.push_f32(Some(*value)),
+                                    noodles::vcf::record::genotypes::sample::Value::String(value) => {
                                     if key.to_string()=="GT" {
-                                        let mut gt_str = String::with_capacity(32);//Arbitrary capacity
+                                        let mut gt_str = String::with_capacity(32); //Arbitrary capacity
                                         if let Some(gt) = format_field.genotype().and_then(|g|g.ok())
                                         {
-                                            eprintln!("GT: {:?} ({:?},{:?})", gt,record.chromosome(),record.position());
                                             gt.iter().enumerate().for_each(|(i,allele)| {
                                                 let (position, phasing) = (allele.position(), allele.phasing());
                                                 match position {
@@ -446,10 +411,10 @@ impl Name2Data {
                                                     }
                                                 }
                                                 if i < gt.len() - 1 {
-                                                gt_str.push(match phasing {
-                                                    Phasing::Phased => '|',
-                                                    Phasing::Unphased => '/',
-                                                });
+                                                    gt_str.push(match phasing {
+							Phasing::Phased => '|',
+							Phasing::Unphased => '/',
+                                                    });
                                                 }
                                             });
                                         }
@@ -510,11 +475,6 @@ impl Name2Data {
                                                     *array_val.get(alt_id + 1).unwrap(),
                                                 ])?;
                                             } else {
-                                                eprintln!(
-                                                    "Field {} declared as G but found array of size {}",
-                                                    key,
-                                                    array_val.len()
-                                                );
                                                 column.push_null();
                                             }
                                         }
@@ -564,11 +524,6 @@ impl Name2Data {
                                                     *array_val.get(alt_id + 1).unwrap(),
                                                 ])?;
                                             } else {
-                                                eprintln!(
-                                                    "Field {} declared as G but found array of size {}",
-                                                    key,
-                                                    array_val.len()
-                                                );
                                                 column.push_null();
                                             }
                                         }
@@ -622,11 +577,6 @@ impl Name2Data {
                                                     array_val.get(alt_id + 1).unwrap().clone(),
                                                 ])?;
                                             } else {
-                                                eprintln!(
-                                                    "Field {} declared as G but found array of size {}",
-                                                    key,
-                                                    array_val.len()
-                                                );
                                                 column.push_null();
                                             }
                                         }
@@ -690,11 +640,6 @@ impl Name2Data {
                                                     ),
                                                 ])?;
                                             } else {
-                                                eprintln!(
-                                                    "Field {} declared as G but found array of size {}",
-                                                    key,
-                                                    array_val.len()
-                                                );
                                                 column.push_null();
                                             }
                                         }
@@ -731,8 +676,7 @@ impl Name2Data {
                                 unreachable!("{} should be in schema", key_name);
                             },
                         }
-                    }
-                    else {
+                    } else {
                         todo!("Understand how we could get there (the tests never did)");
                     }
                 }
