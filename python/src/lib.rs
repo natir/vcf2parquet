@@ -24,8 +24,15 @@ pub enum Compression {
     Zstd,
 }
 
+#[pyclass]
+#[derive(Debug, Clone, Copy)]
+pub enum ParquetVersion {
+    V2_0,
+    V1_0,
+}
+
 #[pyfunction]
-#[pyo3(signature = (input,output,read_buffer=8192,batch_size=100_000,compression=Compression::Snappy,info_optional=false))]
+#[pyo3(signature = (input,output,read_buffer=8192,batch_size=100_000,compression=Compression::Snappy,info_optional=false,parquet_version=ParquetVersion::V2_0))]
 fn convert_vcf(
     input: std::path::PathBuf,
     output: std::path::PathBuf,
@@ -33,6 +40,7 @@ fn convert_vcf(
     batch_size: usize,
     compression: Compression,
     info_optional: bool,
+    parquet_version: ParquetVersion,
 ) -> PyResult<()> {
     let mut reader = std::fs::File::open(input)
         .map(Box::new)
@@ -43,13 +51,24 @@ fn convert_vcf(
     let mut output = std::fs::File::create(output)?;
 
     let compression = match compression {
-        Compression::Uncompressed => arrow2::io::parquet::write::CompressionOptions::Uncompressed,
-        Compression::Snappy => arrow2::io::parquet::write::CompressionOptions::Snappy,
-        Compression::Gzip => arrow2::io::parquet::write::CompressionOptions::Gzip(None),
-        Compression::Lzo => arrow2::io::parquet::write::CompressionOptions::Lzo,
-        Compression::Brotli => arrow2::io::parquet::write::CompressionOptions::Brotli(None),
-        Compression::Lz4 => arrow2::io::parquet::write::CompressionOptions::Lz4,
-        Compression::Zstd => arrow2::io::parquet::write::CompressionOptions::Zstd(None),
+        Compression::Uncompressed => parquet::basic::Compression::UNCOMPRESSED,
+        Compression::Snappy => parquet::basic::Compression::SNAPPY,
+        Compression::Gzip => {
+            parquet::basic::Compression::GZIP(parquet::basic::GzipLevel::default())
+        }
+        Compression::Lzo => parquet::basic::Compression::LZO,
+        Compression::Brotli => {
+            parquet::basic::Compression::BROTLI(parquet::basic::BrotliLevel::default())
+        }
+        Compression::Lz4 => parquet::basic::Compression::LZ4,
+        Compression::Zstd => {
+            parquet::basic::Compression::ZSTD(parquet::basic::ZstdLevel::default())
+        }
+    };
+
+    let parquet_version = match parquet_version {
+        ParquetVersion::V2_0 => parquet::file::properties::WriterVersion::PARQUET_2_0,
+        ParquetVersion::V1_0 => parquet::file::properties::WriterVersion::PARQUET_1_0,
     };
 
     lib::vcf2parquet(
@@ -58,6 +77,7 @@ fn convert_vcf(
         batch_size,
         compression,
         info_optional,
+        parquet_version,
     )
     .map_err(PyVcf2ParquetErr::from)
     .map_err(PyErr::from)

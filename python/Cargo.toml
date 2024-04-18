@@ -9,9 +9,10 @@ name = "pyvcf2parquet"
 crate-type = ["cdylib"]
 
 [dependencies]
-vcf2parquet = { version = "0.6.0", path = "../" }
-thiserror       = "1"
+vcf2parquet     = { version = "0.6", path = "../../vcf2parquet" }
+thiserror       = { version = "1" }
 niffler         = { version = "2" }
-arrow2          = { version = "0.17", features = ["io_parquet", "io_parquet_compression"] }
-tempfile        = "3.10.0"
+arrow           = { version = "51", default-features = false }
+parquet         = { version = "51" }
+tempfile        = { version = "3.10.0" }
 pyo3            = { version = "0.20", features = ["extension-module"] }

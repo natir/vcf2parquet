@@ -19,7 +19,8 @@ rayon      = { version = "1" }
 # input output management
 niffler     = { version = "2" }
 noodles     = { version = "0.64", features = ["vcf"] }
-arrow2      = { version = "0.18", features = ["io_parquet", "io_parquet_compression"] }
+arrow       = { version = "51", default-features = false }
+parquet     = { version = "51" }
 rustc-hash  = { version = "1" }
 
 # logging management

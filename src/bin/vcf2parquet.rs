@@ -11,7 +11,7 @@ use vcf2parquet::error;
 
 /* mod section */
 
-pub fn main() -> error::Result<()> {
+fn main() -> error::Result<()> {
     let params = cli::Command::parse();
 
     match params.subcommand() {
@@ -34,6 +34,7 @@ fn convert(params: &cli::Command, subparams: &cli::Convert) -> error::Result<()>
         params.batch_size(),
         params.compression(),
         params.info_optional(),
+        params.parquet_version(),
     )?;
 
     Ok(())
@@ -51,6 +52,7 @@ fn split(params: &cli::Command, subparams: &cli::Split) -> error::Result<()> {
         params.batch_size(),
         params.compression(),
         params.info_optional(),
+        params.parquet_version(),
     )?;
 
     Ok(())
