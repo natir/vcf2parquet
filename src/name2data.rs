@@ -89,26 +89,24 @@ impl Name2Data {
             let key_name = format!("info_{}", key);
             let info_def = header.infos().get(key).unwrap();
             if let Some(column) = self.0.get_mut(&key_name) {
-                match info.get(key) {
+                match info.get(key).flatten() {
                     Some(value) => match value {
-                        Some(noodles::vcf::record::info::field::Value::Flag) => {
+                        noodles::vcf::record::info::field::Value::Flag => {
                             column.push_bool(true);
                         }
-                        Some(noodles::vcf::record::info::field::Value::Integer(value)) => {
+                        noodles::vcf::record::info::field::Value::Integer(value) => {
                             column.push_i32(Some(*value));
                         }
-                        Some(noodles::vcf::record::info::field::Value::Float(value)) => {
+                        noodles::vcf::record::info::field::Value::Float(value) => {
                             column.push_f32(Some(*value));
                         }
-                        Some(noodles::vcf::record::info::field::Value::String(value)) => {
+                        noodles::vcf::record::info::field::Value::String(value) => {
                             column.push_string(value.to_string());
                         }
-                        Some(noodles::vcf::record::info::field::Value::Character(value)) => {
+                        noodles::vcf::record::info::field::Value::Character(value) => {
                             column.push_string(value.to_string());
                         }
-                        Some(noodles::vcf::record::info::field::Value::Array(arr)) => match arr
-                            .clone()
-                        {
+                        noodles::vcf::record::info::field::Value::Array(arr) => match arr.clone() {
                             noodles::vcf::record::info::field::value::Array::Integer(array_val) => {
                                 match info_def.number() {
                                     noodles::vcf::header::Number::Count(0 | 1) => {
@@ -334,11 +332,6 @@ impl Name2Data {
                                 }
                             },
                         },
-                        None => {
-                            unreachable!(
-                                "Since the outermost option is Some, this should be unreachable"
-                            );
-                        }
                     },
                     None => {
                         if info_def.ty()
