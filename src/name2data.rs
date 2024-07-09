@@ -119,12 +119,12 @@ impl Name2Data {
                                         column.push_veci32(array_val)?;
                                     }
                                     noodles::vcf::header::Number::A => {
-                                        column.push_i32(*array_val.get(alt_id).unwrap());
+                                        column.push_i32(*array_val.get(alt_id).unwrap_or(&None));
                                     }
                                     noodles::vcf::header::Number::R => {
                                         column.push_veci32(vec![
-                                            *array_val.first().unwrap(),
-                                            *array_val.get(alt_id + 1).unwrap(),
+                                            *array_val.first().unwrap_or(&None),
+                                            *array_val.get(alt_id + 1).unwrap_or(&None),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
@@ -132,19 +132,19 @@ impl Name2Data {
                                             == (allele_count * (allele_count + 1) / 2)
                                         {
                                             column.push_veci32(vec![
-                                                *array_val.first().unwrap(),
+                                                *array_val.first().unwrap_or(&None),
                                                 *array_val
                                                     .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
-                                                    .unwrap(),
+                                                    .unwrap_or(&None),
                                                 *array_val
                                                     .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
-                                                    .unwrap(),
+                                                    .unwrap_or(&None),
                                             ])?;
                                         } else if array_val.len() == allele_count {
                                             column.push_veci32(vec![
-                                                *array_val.first().unwrap(),
+                                                *array_val.first().unwrap_or(&None),
                                                 Some(0),
-                                                *array_val.get(alt_id + 1).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap_or(&None),
                                             ])?;
                                         } else {
                                             column.push_null();
@@ -167,12 +167,12 @@ impl Name2Data {
                                         column.push_vecf32(array_val)?;
                                     }
                                     noodles::vcf::header::Number::A => {
-                                        column.push_f32(*array_val.get(alt_id).unwrap());
+                                        column.push_f32(*array_val.get(alt_id).unwrap_or(&None));
                                     }
                                     noodles::vcf::header::Number::R => {
                                         column.push_vecf32(vec![
-                                            *array_val.first().unwrap(),
-                                            *array_val.get(alt_id + 1).unwrap(),
+                                            *array_val.first().unwrap_or(&None),
+                                            *array_val.get(alt_id + 1).unwrap_or(&None),
                                         ])?;
                                     }
                                     noodles::vcf::header::Number::G => {
@@ -180,19 +180,19 @@ impl Name2Data {
                                             == (allele_count * (allele_count + 1) / 2)
                                         {
                                             column.push_vecf32(vec![
-                                                *array_val.first().unwrap(),
+                                                *array_val.first().unwrap_or(&None),
                                                 *array_val
                                                     .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
-                                                    .unwrap(),
+                                                    .unwrap_or(&None),
                                                 *array_val
                                                     .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
-                                                    .unwrap(),
+                                                    .unwrap_or(&None),
                                             ])?;
                                         } else if array_val.len() == allele_count {
                                             column.push_vecf32(vec![
-                                                *array_val.first().unwrap(),
+                                                *array_val.first().unwrap_or(&None),
                                                 Some(0.),
-                                                *array_val.get(alt_id + 1).unwrap(),
+                                                *array_val.get(alt_id + 1).unwrap_or(&None),
                                             ])?;
                                         } else {
                                             column.push_null();
@@ -216,14 +216,28 @@ impl Name2Data {
                                     }
                                     noodles::vcf::header::Number::A => {
                                         column.push_string(
-                                            array_val.get(alt_id).unwrap().clone().unwrap(),
+                                            array_val
+                                                .get(alt_id)
+                                                .unwrap()
+                                                .clone()
+                                                .unwrap_or_default(),
                                         );
                                     }
                                     noodles::vcf::header::Number::R => {
                                         column.push_vecstring(vec![
-                                            Some(array_val.first().unwrap().clone().unwrap()),
                                             Some(
-                                                array_val.get(alt_id + 1).unwrap().clone().unwrap(),
+                                                array_val
+                                                    .first()
+                                                    .unwrap()
+                                                    .clone()
+                                                    .unwrap_or_default(),
+                                            ),
+                                            Some(
+                                                array_val
+                                                    .get(alt_id + 1)
+                                                    .unwrap()
+                                                    .clone()
+                                                    .unwrap_or_default(),
                                             ),
                                         ])?;
                                     }
@@ -232,15 +246,27 @@ impl Name2Data {
                                             == (allele_count * (allele_count + 1) / 2)
                                         {
                                             column.push_vecstring(vec![
-                                                array_val.first().unwrap().clone(),
-                                                array_val
-                                                    .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
-                                                    .unwrap()
-                                                    .clone(),
-                                                array_val
-                                                    .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
-                                                    .unwrap()
-                                                    .clone(),
+                                                Some(
+                                                    array_val
+                                                        .first()
+                                                        .unwrap()
+                                                        .clone()
+                                                        .unwrap_or_default(),
+                                                ),
+                                                Some(
+                                                    array_val
+                                                        .get((alt_id * alt_id + 3 * alt_id + 2) / 2)
+                                                        .unwrap()
+                                                        .clone()
+                                                        .unwrap_or_default(),
+                                                ),
+                                                Some(
+                                                    array_val
+                                                        .get((alt_id * alt_id + 5 * alt_id + 4) / 2)
+                                                        .unwrap()
+                                                        .clone()
+                                                        .unwrap_or_default(),
+                                                ),
                                             ])?;
                                         } else if array_val.len() == allele_count {
                                             column.push_vecstring(vec![
