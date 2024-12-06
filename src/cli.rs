@@ -70,6 +70,7 @@ pub struct Command {
     #[clap(short = 'I', long = "info-optional")]
     info_optional: bool,
 
+    /// Select version of parquet version default v2
     #[clap(long = "parquet-version")]
     parquet_version: Option<ParquetVersion>,
 

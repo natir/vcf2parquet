@@ -60,7 +60,7 @@ where
                         &self.header,
                         &self
                             .schema
-                            .all_fields()
+                            .flattened_fields()
                             .into_iter()
                             .map(|f| (f.name().to_string(), f.clone()))
                             .collect::<rustc_hash::FxHashMap<String, Field>>(),

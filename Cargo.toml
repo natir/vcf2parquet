@@ -19,15 +19,15 @@ rayon      = { version = "1" }
 # input output management
 niffler     = { version = "2" }
 noodles     = { version = "0.64", features = ["vcf"] }
-arrow       = { version = "51", default-features = false }
-parquet     = { version = "51" }
-rustc-hash  = { version = "1" }
+arrow       = { version = "53", default-features = false }
+parquet     = { version = "53" }
+rustc-hash  = { version = "2" }
 
 # logging management
 log         = { version = "0.4" }
 
 # error management
-thiserror       = { version = "1" }
+thiserror       = { version = "2" }
 
 # cli management
 clap            = { version = "4", features = ["derive"] }

@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Generate code coverage
-        run: cargo +nightly tarpaulin --all-features --workspace --engine llvm --timeout 120 --out xml
+        run: cargo +nightly tarpaulin --all-features --workspace --follow-exec --engine llvm --timeout 120 --out xml
 
       - name: Upload to codecov.io
         uses: codecov/codecov-action@v2

@@ -916,7 +916,7 @@ ENA|LT795502|LT795502.1	566884162	.	t	c	22	.	info_Integer_1=-63306296;info_Integ
 
         let schema = schema::from_header(&header, false).unwrap();
         let schema_map: rustc_hash::FxHashMap<String, Field> = schema
-            .all_fields()
+            .flattened_fields()
             .into_iter()
             .map(|f| (f.name().to_string(), f.clone()))
             .collect::<rustc_hash::FxHashMap<String, Field>>();

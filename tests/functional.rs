@@ -36,7 +36,7 @@ Options:
   -I, --info-optional
           All information fields are optional
       --parquet-version <PARQUET_VERSION>
-          [possible values: v1, v2]
+          Select version of parquet version default v2 [possible values: v1, v2]
   -h, --help
           Print help (see more with \'--help\')
   -V, --version
@@ -64,7 +64,7 @@ Options:
   -I, --info-optional
           All information fields are optional
       --parquet-version <PARQUET_VERSION>
-          [possible values: v1, v2]
+          Select version of parquet version default v2 [possible values: v1, v2]
   -h, --help
           Print help (see more with \'--help\')
   -V, --version
@@ -108,6 +108,46 @@ fn convert() -> Result<(), assert_cmd::cargo::CargoError> {
 
     let mut truth = Vec::new();
     std::fs::File::open("tests/data/test.parquet")
+        .unwrap()
+        .read_to_end(&mut truth)
+        .unwrap();
+
+    assert_eq!(output, truth);
+
+    Ok(())
+}
+
+#[test]
+fn convert_v1() -> Result<(), assert_cmd::cargo::CargoError> {
+    let mut cmd = assert_cmd::Command::cargo_bin("vcf2parquet")?;
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let temp_path = temp_dir.path();
+    let parquet_path = temp_path.join("tests_v1.parquet");
+
+    cmd.args([
+        "-I",
+        "--parquet-version",
+        "v1",
+        "-i",
+        "tests/data/test.vcf",
+        "convert",
+        "-o",
+        parquet_path.as_os_str().to_str().unwrap(),
+    ]);
+
+    let assert = cmd.assert();
+
+    assert.success();
+
+    let mut output = Vec::new();
+    std::fs::File::open(parquet_path)
+        .unwrap()
+        .read_to_end(&mut output)
+        .unwrap();
+
+    let mut truth = Vec::new();
+    std::fs::File::open("tests/data/test_v1.parquet")
         .unwrap()
         .read_to_end(&mut truth)
         .unwrap();
