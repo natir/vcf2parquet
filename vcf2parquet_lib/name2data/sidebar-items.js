@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ColumnData"],"struct":["Name2Data"]};
