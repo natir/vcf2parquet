@@ -3,20 +3,45 @@
 /* std use */
 
 /* crate use */
+use parquet::file::properties::WriterVersion;
 
 /* project use */
 
+/// Parquet version available for user
+#[derive(Debug, clap::ValueEnum, Clone, Copy)]
+pub enum ParquetVersion {
+    ///Parquet version 1
+    V1,
+    ///Parquet version 2
+    V2,
+}
+
+/// Compression available for user
 #[derive(Debug, clap::ValueEnum, Clone, Copy)]
 pub enum Compression {
+    /// No compression
     Uncompressed,
+
+    /// Snappy compression
     Snappy,
+
+    /// Gzip compression
     Gzip,
+
+    /// Lzo compression
     Lzo,
+
+    /// Brotly compression
     Brotli,
+
+    /// Lz4 compression
     Lz4,
+
+    /// Zstd compression
     Zstd,
 }
 
+/// Define cli of vcf2parquet
 #[derive(clap::Parser, std::fmt::Debug)]
 #[command(
     name = "vcf2parquet",
@@ -45,13 +70,21 @@ pub struct Command {
     #[clap(short = 'I', long = "info-optional")]
     info_optional: bool,
 
+    /// Select version of parquet version default v2
+    #[clap(long = "parquet-version")]
+    parquet_version: Option<ParquetVersion>,
+
     #[clap(subcommand)]
     subcommand: SubCommand,
 }
 
+/// Enum to manage sub command
 #[derive(clap::Parser, std::fmt::Debug, Clone)]
 pub enum SubCommand {
+    /// Convert a vcf in a parquet
     Convert(Convert),
+
+    /// Convert a vcf in multiple parquet file each file contains `batch_size` record
     Split(Split),
 }
 
@@ -83,20 +116,31 @@ impl Command {
     }
 
     /// Get compression set by user or default value
-    pub fn compression(&self) -> arrow2::io::parquet::write::CompressionOptions {
+    pub fn compression(&self) -> parquet::basic::Compression {
         match self.compression {
-            Some(Compression::Uncompressed) => {
-                arrow2::io::parquet::write::CompressionOptions::Uncompressed
+            Some(Compression::Uncompressed) => parquet::basic::Compression::UNCOMPRESSED,
+            Some(Compression::Snappy) => parquet::basic::Compression::SNAPPY,
+            Some(Compression::Gzip) => {
+                parquet::basic::Compression::GZIP(parquet::basic::GzipLevel::default())
             }
-            Some(Compression::Snappy) => arrow2::io::parquet::write::CompressionOptions::Snappy,
-            Some(Compression::Gzip) => arrow2::io::parquet::write::CompressionOptions::Gzip(None),
-            Some(Compression::Lzo) => arrow2::io::parquet::write::CompressionOptions::Lzo,
+            Some(Compression::Lzo) => parquet::basic::Compression::LZO,
             Some(Compression::Brotli) => {
-                arrow2::io::parquet::write::CompressionOptions::Brotli(None)
+                parquet::basic::Compression::BROTLI(parquet::basic::BrotliLevel::default())
             }
-            Some(Compression::Lz4) => arrow2::io::parquet::write::CompressionOptions::Lz4,
-            Some(Compression::Zstd) => arrow2::io::parquet::write::CompressionOptions::Zstd(None),
-            None => arrow2::io::parquet::write::CompressionOptions::Snappy,
+            Some(Compression::Lz4) => parquet::basic::Compression::LZ4,
+            Some(Compression::Zstd) => {
+                parquet::basic::Compression::ZSTD(parquet::basic::ZstdLevel::default())
+            }
+            None => parquet::basic::Compression::SNAPPY,
+        }
+    }
+
+    /// Get parquet version
+    pub fn parquet_version(&self) -> WriterVersion {
+        match self.parquet_version {
+            Some(ParquetVersion::V1) => WriterVersion::PARQUET_1_0,
+            Some(ParquetVersion::V2) => WriterVersion::PARQUET_2_0,
+            None => WriterVersion::PARQUET_2_0,
         }
     }
 
@@ -132,6 +176,7 @@ impl Split {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -145,6 +190,7 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
         assert_eq!(
@@ -172,10 +218,12 @@ mod tests {
                 format: "test_{}.parquet".to_string(),
             }),
             info_optional: false,
+            parquet_version: Some(ParquetVersion::V1),
         };
 
         assert_eq!(params.batch_size(), 100);
         assert_eq!(params.read_buffer(), 8194);
+        assert_eq!(params.parquet_version(), WriterVersion::PARQUET_1_0);
 
         match params.subcommand.clone() {
             SubCommand::Split(s) => assert_eq!(s.format(), "test_{}.parquet"),
@@ -194,12 +242,11 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
-        assert_eq!(
-            params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Snappy
-        );
+        assert_eq!(params.compression(), parquet::basic::Compression::SNAPPY);
+        assert_eq!(params.parquet_version(), WriterVersion::PARQUET_2_0);
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
@@ -210,11 +257,12 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
         assert_eq!(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Uncompressed
+            parquet::basic::Compression::UNCOMPRESSED
         );
 
         params = Command {
@@ -226,12 +274,10 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
-        assert_eq!(
-            params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Snappy
-        );
+        assert_eq!(params.compression(), parquet::basic::Compression::SNAPPY);
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
@@ -242,11 +288,12 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
         assert_eq!(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Gzip(None)
+            parquet::basic::Compression::GZIP(parquet::basic::GzipLevel::default())
         );
 
         params = Command {
@@ -258,12 +305,10 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
-        assert_eq!(
-            params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Lzo
-        );
+        assert_eq!(params.compression(), parquet::basic::Compression::LZO);
 
         params = Command {
             input: std::path::Path::new("test/input.vcf").to_path_buf(),
@@ -274,11 +319,12 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
         assert_eq!(
             params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Brotli(None)
+            parquet::basic::Compression::BROTLI(parquet::basic::BrotliLevel::default())
         );
 
         params = Command {
@@ -290,11 +336,9 @@ mod tests {
                 output: std::path::Path::new("test/output.parquet").to_path_buf(),
             }),
             info_optional: false,
+            parquet_version: None,
         };
 
-        assert_eq!(
-            params.compression(),
-            arrow2::io::parquet::write::CompressionOptions::Lz4
-        );
+        assert_eq!(params.compression(), parquet::basic::Compression::LZ4);
     }
 }

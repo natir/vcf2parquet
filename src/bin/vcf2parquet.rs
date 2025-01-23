@@ -6,13 +6,12 @@
 use clap::Parser as _;
 
 /* project use */
-use vcf2parquet_lib as lib;
+use vcf2parquet::cli;
+use vcf2parquet::error;
 
 /* mod section */
-pub mod cli;
-pub mod error;
 
-pub fn main() -> error::Result<()> {
+fn main() -> error::Result<()> {
     let params = cli::Command::parse();
 
     match params.subcommand() {
@@ -23,42 +22,38 @@ pub fn main() -> error::Result<()> {
 
 fn convert(params: &cli::Command, subparams: &cli::Convert) -> error::Result<()> {
     let mut reader = std::fs::File::open(params.input())
-        .map_err(error::mapping)
         .map(Box::new)
-        .map(|x| niffler::get_reader(x))
-        .map_err(error::mapping)?
+        .map(|x| niffler::get_reader(x))?
         .map(|(file, _)| std::io::BufReader::with_capacity(params.read_buffer(), file))?;
 
-    let mut output = std::fs::File::create(subparams.output()).map_err(error::mapping)?;
+    let mut output = std::fs::File::create(subparams.output())?;
 
-    lib::vcf2parquet(
+    vcf2parquet::vcf2parquet(
         &mut reader,
         &mut output,
         params.batch_size(),
         params.compression(),
         params.info_optional(),
-    )
-    .map_err(error::mapping)?;
+        params.parquet_version(),
+    )?;
 
     Ok(())
 }
 
 fn split(params: &cli::Command, subparams: &cli::Split) -> error::Result<()> {
     let mut reader = std::fs::File::open(params.input())
-        .map_err(error::mapping)
         .map(Box::new)
-        .map(|x| niffler::get_reader(x))
-        .map_err(error::mapping)?
+        .map(|x| niffler::get_reader(x))?
         .map(|(file, _)| std::io::BufReader::with_capacity(params.read_buffer(), file))?;
 
-    lib::vcf2multiparquet(
+    vcf2parquet::vcf2multiparquet(
         &mut reader,
         subparams.format(),
         params.batch_size(),
         params.compression(),
         params.info_optional(),
-    )
-    .map_err(error::mapping)?;
+        params.parquet_version(),
+    )?;
 
     Ok(())
 }

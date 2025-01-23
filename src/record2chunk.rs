@@ -4,14 +4,17 @@
 
 /* crate use */
 
+use arrow::datatypes::Field;
+
 /* project use */
 use crate::name2data::*;
 
+/// Convert vcf record iterator into Parquet chunk
 pub struct Record2Chunk<T> {
     inner: T,
     length: usize,
     header: noodles::vcf::Header,
-    schema: arrow2::datatypes::Schema,
+    schema: std::sync::Arc<arrow::datatypes::Schema>,
     end: bool,
 }
 
@@ -19,11 +22,12 @@ impl<T> Record2Chunk<T>
 where
     T: Iterator<Item = std::io::Result<noodles::vcf::Record>>,
 {
+    /// Create a new Record2Chunk
     pub fn new(
         inner: T,
         length: usize,
         header: noodles::vcf::Header,
-        schema: arrow2::datatypes::Schema,
+        schema: std::sync::Arc<arrow::datatypes::Schema>,
     ) -> Self {
         Self {
             inner,
@@ -33,28 +37,13 @@ where
             end: false,
         }
     }
-
-    pub fn encodings(&self) -> Vec<Vec<arrow2::io::parquet::write::Encoding>> {
-        self.schema
-            .fields
-            .iter()
-            .map(|f| {
-                arrow2::io::parquet::write::transverse(&f.data_type, |_| {
-                    arrow2::io::parquet::write::Encoding::Plain
-                })
-            })
-            .collect()
-    }
 }
 
 impl<T> Iterator for Record2Chunk<T>
 where
     T: Iterator<Item = std::io::Result<noodles::vcf::Record>>,
 {
-    type Item = Result<
-        arrow2::chunk::Chunk<std::sync::Arc<dyn arrow2::array::Array>>,
-        arrow2::error::Error,
-    >;
+    type Item = Result<arrow::array::RecordBatch, arrow::error::ArrowError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.end {
@@ -66,23 +55,36 @@ where
         for _ in 0..self.length {
             match self.inner.next() {
                 Some(Ok(record)) => {
-                    if let Err(e) = name2data.add_record(record, &self.header, &self.schema) {
+                    if let Err(e) = name2data.add_record(
+                        record,
+                        &self.header,
+                        &self
+                            .schema
+                            .flattened_fields()
+                            .into_iter()
+                            .map(|f| (f.name().to_string(), f.clone()))
+                            .collect::<rustc_hash::FxHashMap<String, Field>>(),
+                    ) {
                         return Some(Err(e));
                     }
                 }
-                Some(Err(e)) => return Some(Err(arrow2::error::Error::Io(e))),
+                Some(Err(e)) => {
+                    return Some(Err(arrow::error::ArrowError::IoError("".to_string(), e)))
+                }
                 None => {
                     self.end = true;
 
-                    return Some(Ok(arrow2::chunk::Chunk::new(
+                    return Some(arrow::record_batch::RecordBatch::try_new(
+                        self.schema.clone(),
                         name2data.into_arc(&self.schema),
-                    )));
+                    ));
                 }
             }
         }
 
-        Some(Ok(arrow2::chunk::Chunk::new(
+        Some(arrow::record_batch::RecordBatch::try_new(
+            self.schema.clone(),
             name2data.into_arc(&self.schema),
-        )))
+        ))
     }
 }

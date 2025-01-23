@@ -14,7 +14,36 @@ fn help() -> Result<(), assert_cmd::cargo::CargoError> {
 
     cmd.args(["-h"]);
 
-    let truth: &[u8] = b"Convert a vcf in parquet
+    let truth: &[u8] = if cfg!(windows) {
+        b"Convert a vcf in parquet
+
+Usage: vcf2parquet.exe [OPTIONS] --input <INPUT> <COMMAND>
+
+Commands:
+  convert  Convert a vcf in a parquet
+  split    Convert a vcf in multiple parquet file each file contains `batch_size` record
+  help     Print this message or the help of the given subcommand(s)
+
+Options:
+  -i, --input <INPUT>
+          Input path
+  -b, --batch-size <BATCH_SIZE>
+          Batch size (default 100,000)
+  -c, --compression <COMPRESSION>
+          Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
+  -r, --read-buffer <READ_BUFFER>
+          Read buffer size in bytes (default 8192)
+  -I, --info-optional
+          All information fields are optional
+      --parquet-version <PARQUET_VERSION>
+          Select version of parquet version default v2 [possible values: v1, v2]
+  -h, --help
+          Print help (see more with \'--help\')
+  -V, --version
+          Print version
+"
+    } else {
+        b"Convert a vcf in parquet
 
 Usage: vcf2parquet [OPTIONS] --input <INPUT> <COMMAND>
 
@@ -24,14 +53,24 @@ Commands:
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-  -i, --input <INPUT>              Input path
-  -b, --batch-size <BATCH_SIZE>    Batch size (default 100,000)
-  -c, --compression <COMPRESSION>  Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
-  -r, --read-buffer <READ_BUFFER>  Read buffer size in bytes (default 8192)
-  -I, --info-optional              All information fields are optional
-  -h, --help                       Print help
-  -V, --version                    Print version
-";
+  -i, --input <INPUT>
+          Input path
+  -b, --batch-size <BATCH_SIZE>
+          Batch size (default 100,000)
+  -c, --compression <COMPRESSION>
+          Compression method (default snappy) [possible values: uncompressed, snappy, gzip, lzo, brotli, lz4, zstd]
+  -r, --read-buffer <READ_BUFFER>
+          Read buffer size in bytes (default 8192)
+  -I, --info-optional
+          All information fields are optional
+      --parquet-version <PARQUET_VERSION>
+          Select version of parquet version default v2 [possible values: v1, v2]
+  -h, --help
+          Print help (see more with \'--help\')
+  -V, --version
+          Print version
+"
+    };
 
     let assert = cmd.assert();
 
@@ -49,6 +88,7 @@ fn convert() -> Result<(), assert_cmd::cargo::CargoError> {
     let parquet_path = temp_path.join("tests.parquet");
 
     cmd.args([
+        "-I",
         "-i",
         "tests/data/test.vcf",
         "convert",
@@ -78,6 +118,46 @@ fn convert() -> Result<(), assert_cmd::cargo::CargoError> {
 }
 
 #[test]
+fn convert_v1() -> Result<(), assert_cmd::cargo::CargoError> {
+    let mut cmd = assert_cmd::Command::cargo_bin("vcf2parquet")?;
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let temp_path = temp_dir.path();
+    let parquet_path = temp_path.join("tests_v1.parquet");
+
+    cmd.args([
+        "-I",
+        "--parquet-version",
+        "v1",
+        "-i",
+        "tests/data/test.vcf",
+        "convert",
+        "-o",
+        parquet_path.as_os_str().to_str().unwrap(),
+    ]);
+
+    let assert = cmd.assert();
+
+    assert.success();
+
+    let mut output = Vec::new();
+    std::fs::File::open(parquet_path)
+        .unwrap()
+        .read_to_end(&mut output)
+        .unwrap();
+
+    let mut truth = Vec::new();
+    std::fs::File::open("tests/data/test_v1.parquet")
+        .unwrap()
+        .read_to_end(&mut truth)
+        .unwrap();
+
+    assert_eq!(output, truth);
+
+    Ok(())
+}
+
+#[test]
 fn split() -> Result<(), assert_cmd::cargo::CargoError> {
     let mut cmd = assert_cmd::Command::cargo_bin("vcf2parquet")?;
 
@@ -86,6 +166,7 @@ fn split() -> Result<(), assert_cmd::cargo::CargoError> {
     let parquet_path = temp_path.join("test_{}.parquet");
 
     cmd.args([
+        "-I",
         "-i",
         "tests/data/test.vcf",
         "split",
